@@ -518,6 +518,17 @@ export type Database = {
         };
         Returns: boolean;
       };
+      has_any_role: {
+        Args: {
+          _roles: Database["public"]["Enums"]["app_role"][];
+          _user_id: string;
+        };
+        Returns: boolean;
+      };
+      is_content_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
     };
     Enums: {
       app_role: "admin" | "super_admin" | "content_admin" | "seller" | "customer";
@@ -646,7 +657,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "seller", "customer"],
+      app_role: ["admin", "super_admin", "content_admin", "seller", "customer"],
     },
   },
 } as const;

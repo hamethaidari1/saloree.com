@@ -5,10 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   useSiteSettings,
   useHeroSlides,
-  useHomepageSections,
-  usePromoBanners,
   useFooterLinks,
 } from "@/hooks/useSiteSettings";
+import { useHomepageSections } from "@/hooks/useHomepageSections";
+import { usePromoBanners } from "@/hooks/usePromoBanners";
 import { Button } from "@/components/ui/button";
 import {
   Card,

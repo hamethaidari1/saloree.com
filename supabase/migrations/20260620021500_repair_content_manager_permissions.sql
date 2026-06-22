@@ -1,8 +1,4 @@
--- ============================================================
--- SALOREE CONTENT MANAGER — RLS FULL AUDIT & FIX
--- Paste this in: https://supabase.com/dashboard/project/yjxgdohfrkqdcahtxezz/sql/new
--- Safe to run multiple times.
--- ============================================================
+-- Repair content-manager permissions and restore helper functions relied on by RLS.
 
 DO $$
 BEGIN
@@ -299,54 +295,3 @@ CREATE POLICY "Admin delete site-assets"
     bucket_id = 'site-assets'
     AND public.is_content_admin()
   );
-
--- Optional: assign admin role to the currently authenticated user when no content role exists.
-DO $$
-DECLARE
-  v_uid uuid := auth.uid();
-BEGIN
-  IF v_uid IS NOT NULL
-     AND NOT public.has_any_role(
-       v_uid,
-       ARRAY['admin', 'super_admin', 'content_admin']::public.app_role[]
-     ) THEN
-    INSERT INTO public.user_roles (user_id, role)
-    VALUES (v_uid, 'admin')
-    ON CONFLICT (user_id, role) DO NOTHING;
-  END IF;
-END$$;
-
--- Verification output
-SELECT
-  'roles' AS section,
-  ur.user_id::text AS ref,
-  ur.role::text AS detail
-FROM public.user_roles ur
-WHERE ur.user_id = auth.uid()
-
-UNION ALL
-
-SELECT
-  'content_admin' AS section,
-  COALESCE(auth.uid()::text, 'null') AS ref,
-  public.is_content_admin()::text AS detail
-
-UNION ALL
-
-SELECT
-  'policy' AS section,
-  tablename AS ref,
-  policyname AS detail
-FROM pg_policies
-WHERE
-  (schemaname = 'public' AND tablename IN (
-    'user_roles',
-    'site_settings',
-    'hero_slides',
-    'homepage_sections',
-    'promo_banners',
-    'footer_links'
-  ))
-  OR
-  (schemaname = 'storage' AND tablename = 'objects' AND policyname LIKE '%site-assets%')
-ORDER BY section, ref, detail;

@@ -13,12 +13,25 @@ function SellerLayout() {
 
   return (
     <DashboardShell
-      title={t("seller_dashboard", language)}
+      title={t("seller_dashboard", language) || "Seller Dashboard"}
       nav={[
-        { to: "/seller", label: t("main_menu", language) ? "Overview" : "Overview" },
-        { to: "/seller/store", label: t("seller_store_settings", language) },
-        { to: "/seller/products", label: t("seller_products", language) },
-        { to: "/seller/orders", label: t("seller_orders", language) },
+        { to: "/seller", label: "Home" },
+        { to: "/seller/orders", label: "Orders" },
+        { to: "/seller/products", label: "Products" },
+        { to: "/seller/customers", label: "Customers" },
+        { to: "/seller/analytics", label: "Analytics" },
+        { to: "/seller/discounts", label: "Discounts" },
+        { to: "/seller/content", label: "Content" },
+        {
+          label: "Online Store",
+          items: [
+            { to: "/seller/themes", label: "Themes" },
+            { to: "/seller/pages", label: "Pages" },
+            { to: "/seller/navigation", label: "Navigation" },
+            { to: "/seller/preferences", label: "Preferences" },
+          ],
+        },
+        { to: "/seller/store", label: "Settings" },
       ]}
     >
       <Outlet />

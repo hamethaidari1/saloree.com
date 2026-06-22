@@ -12,6 +12,9 @@ export type TranslationKey =
   | "orders"
   | "sell_on_saloree"
   | "my_orders"
+  | "my_profile"
+  | "wishlist"
+  | "notifications"
   | "seller_dashboard"
   | "admin_dashboard"
   | "sign_out"
@@ -167,6 +170,9 @@ const translations: Record<LangCode, Record<TranslationKey, string>> = {
     orders: "Orders",
     sell_on_saloree: "Sell on Saloree",
     my_orders: "My Orders",
+    my_profile: "My Profile",
+    wishlist: "Wishlist",
+    notifications: "Notifications",
     seller_dashboard: "Seller Dashboard",
     admin_dashboard: "Admin Dashboard",
     sign_out: "Sign out",
@@ -302,6 +308,9 @@ const translations: Record<LangCode, Record<TranslationKey, string>> = {
     orders: "Siparişler",
     sell_on_saloree: "Saloree'de Sat",
     my_orders: "Siparişlerim",
+    my_profile: "Profilim",
+    wishlist: "İstek Listem",
+    notifications: "Bildirimler",
     seller_dashboard: "Satıcı Paneli",
     admin_dashboard: "Yönetici Paneli",
     sign_out: "Çıkış Yap",
@@ -437,6 +446,9 @@ const translations: Record<LangCode, Record<TranslationKey, string>> = {
     orders: "سفارشات",
     sell_on_saloree: "در سالوری بفروشید",
     my_orders: "سفارشات من",
+    my_profile: "پروفایل من",
+    wishlist: "لیست علاقمندی‌ها",
+    notifications: "اطلاعیه‌ها",
     seller_dashboard: "پنل فروشنده",
     admin_dashboard: "پنل مدیر",
     sign_out: "خروج",
@@ -572,6 +584,9 @@ const translations: Record<LangCode, Record<TranslationKey, string>> = {
     orders: "سفارشات",
     sell_on_saloree: "در سالوری بفروشید",
     my_orders: "سفارشات من",
+    my_profile: "پروفایل من",
+    wishlist: "لیست علاقمندی‌ها",
+    notifications: "اطلاعیه‌ها",
     seller_dashboard: "پنل فروشنده",
     admin_dashboard: "پنل مدیر",
     sign_out: "خروج",
@@ -707,6 +722,9 @@ const translations: Record<LangCode, Record<TranslationKey, string>> = {
     orders: "الطلبات",
     sell_on_saloree: "البيع على سالوري",
     my_orders: "طلباتي",
+    my_profile: "ملفي الشخصي",
+    wishlist: "قائمة الرغبات",
+    notifications: "الإشعارات",
     seller_dashboard: "لوحة البائع",
     admin_dashboard: "لوحة المدير",
     sign_out: "تسجيل الخروج",
@@ -842,6 +860,9 @@ const translations: Record<LangCode, Record<TranslationKey, string>> = {
     orders: "Bestellungen",
     sell_on_saloree: "Auf Saloree verkaufen",
     my_orders: "Meine Bestellungen",
+    my_profile: "Mein Profil",
+    wishlist: "Wunschzettel",
+    notifications: "Benachrichtigungen",
     seller_dashboard: "Verkäufer-Dashboard",
     admin_dashboard: "Admin-Dashboard",
     sign_out: "Abmelden",
@@ -977,6 +998,9 @@ const translations: Record<LangCode, Record<TranslationKey, string>> = {
     orders: "Commandes",
     sell_on_saloree: "Vendre sur Saloree",
     my_orders: "Mes commandes",
+    my_profile: "Mon profil",
+    wishlist: "Liste de souhaits",
+    notifications: "Notifications",
     seller_dashboard: "Tableau de bord vendeur",
     admin_dashboard: "Tableau de bord admin",
     sign_out: "Déconnexion",
@@ -1112,6 +1136,9 @@ const translations: Record<LangCode, Record<TranslationKey, string>> = {
     orders: "آرڈرز",
     sell_on_saloree: "سالوری پر فروخت کریں",
     my_orders: "میرے آرڈرز",
+    my_profile: "میری پروفائل",
+    wishlist: "خواہشات کی فہرست",
+    notifications: "اطلاعات",
     seller_dashboard: "سیلر ڈیش بورڈ",
     admin_dashboard: "ایڈمن ڈیش بورڈ",
     sign_out: "سائن آوٹ",

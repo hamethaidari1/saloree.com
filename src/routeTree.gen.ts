@@ -22,9 +22,18 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SellerIndexRouteImport } from './routes/seller.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as StoresSlugRouteImport } from './routes/stores.$slug'
+import { Route as SellerThemesRouteImport } from './routes/seller.themes'
+import { Route as SellerThemeCustomizerRouteImport } from './routes/seller.theme-customizer'
 import { Route as SellerStoreRouteImport } from './routes/seller.store'
 import { Route as SellerProductsRouteImport } from './routes/seller.products'
+import { Route as SellerPreferencesRouteImport } from './routes/seller.preferences'
+import { Route as SellerPagesRouteImport } from './routes/seller.pages'
 import { Route as SellerOrdersRouteImport } from './routes/seller.orders'
+import { Route as SellerNavigationRouteImport } from './routes/seller.navigation'
+import { Route as SellerDiscountsRouteImport } from './routes/seller.discounts'
+import { Route as SellerCustomersRouteImport } from './routes/seller.customers'
+import { Route as SellerContentRouteImport } from './routes/seller.content'
+import { Route as SellerAnalyticsRouteImport } from './routes/seller.analytics'
 import { Route as SaloreeControlContentRouteImport } from './routes/saloree-control.content'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as CategoriesSlugRouteImport } from './routes/categories.$slug'
@@ -100,6 +109,16 @@ const StoresSlugRoute = StoresSlugRouteImport.update({
   path: '/stores/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SellerThemesRoute = SellerThemesRouteImport.update({
+  id: '/themes',
+  path: '/themes',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerThemeCustomizerRoute = SellerThemeCustomizerRouteImport.update({
+  id: '/theme-customizer',
+  path: '/theme-customizer',
+  getParentRoute: () => SellerRoute,
+} as any)
 const SellerStoreRoute = SellerStoreRouteImport.update({
   id: '/store',
   path: '/store',
@@ -110,9 +129,44 @@ const SellerProductsRoute = SellerProductsRouteImport.update({
   path: '/products',
   getParentRoute: () => SellerRoute,
 } as any)
+const SellerPreferencesRoute = SellerPreferencesRouteImport.update({
+  id: '/preferences',
+  path: '/preferences',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerPagesRoute = SellerPagesRouteImport.update({
+  id: '/pages',
+  path: '/pages',
+  getParentRoute: () => SellerRoute,
+} as any)
 const SellerOrdersRoute = SellerOrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerNavigationRoute = SellerNavigationRouteImport.update({
+  id: '/navigation',
+  path: '/navigation',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerDiscountsRoute = SellerDiscountsRouteImport.update({
+  id: '/discounts',
+  path: '/discounts',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerCustomersRoute = SellerCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerContentRoute = SellerContentRouteImport.update({
+  id: '/content',
+  path: '/content',
+  getParentRoute: () => SellerRoute,
+} as any)
+const SellerAnalyticsRoute = SellerAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => SellerRoute,
 } as any)
 const SaloreeControlContentRoute = SaloreeControlContentRouteImport.update({
@@ -181,9 +235,18 @@ export interface FileRoutesByFullPath {
   '/categories/$slug': typeof CategoriesSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/saloree-control/content': typeof SaloreeControlContentRoute
+  '/seller/analytics': typeof SellerAnalyticsRoute
+  '/seller/content': typeof SellerContentRoute
+  '/seller/customers': typeof SellerCustomersRoute
+  '/seller/discounts': typeof SellerDiscountsRoute
+  '/seller/navigation': typeof SellerNavigationRoute
   '/seller/orders': typeof SellerOrdersRoute
+  '/seller/pages': typeof SellerPagesRoute
+  '/seller/preferences': typeof SellerPreferencesRoute
   '/seller/products': typeof SellerProductsRoute
   '/seller/store': typeof SellerStoreRoute
+  '/seller/theme-customizer': typeof SellerThemeCustomizerRoute
+  '/seller/themes': typeof SellerThemesRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/seller/': typeof SellerIndexRoute
@@ -206,9 +269,18 @@ export interface FileRoutesByTo {
   '/categories/$slug': typeof CategoriesSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/saloree-control/content': typeof SaloreeControlContentRoute
+  '/seller/analytics': typeof SellerAnalyticsRoute
+  '/seller/content': typeof SellerContentRoute
+  '/seller/customers': typeof SellerCustomersRoute
+  '/seller/discounts': typeof SellerDiscountsRoute
+  '/seller/navigation': typeof SellerNavigationRoute
   '/seller/orders': typeof SellerOrdersRoute
+  '/seller/pages': typeof SellerPagesRoute
+  '/seller/preferences': typeof SellerPreferencesRoute
   '/seller/products': typeof SellerProductsRoute
   '/seller/store': typeof SellerStoreRoute
+  '/seller/theme-customizer': typeof SellerThemeCustomizerRoute
+  '/seller/themes': typeof SellerThemesRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/admin': typeof AdminIndexRoute
   '/seller': typeof SellerIndexRoute
@@ -234,9 +306,18 @@ export interface FileRoutesById {
   '/categories/$slug': typeof CategoriesSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/saloree-control/content': typeof SaloreeControlContentRoute
+  '/seller/analytics': typeof SellerAnalyticsRoute
+  '/seller/content': typeof SellerContentRoute
+  '/seller/customers': typeof SellerCustomersRoute
+  '/seller/discounts': typeof SellerDiscountsRoute
+  '/seller/navigation': typeof SellerNavigationRoute
   '/seller/orders': typeof SellerOrdersRoute
+  '/seller/pages': typeof SellerPagesRoute
+  '/seller/preferences': typeof SellerPreferencesRoute
   '/seller/products': typeof SellerProductsRoute
   '/seller/store': typeof SellerStoreRoute
+  '/seller/theme-customizer': typeof SellerThemeCustomizerRoute
+  '/seller/themes': typeof SellerThemesRoute
   '/stores/$slug': typeof StoresSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/seller/': typeof SellerIndexRoute
@@ -263,9 +344,18 @@ export interface FileRouteTypes {
     | '/categories/$slug'
     | '/products/$slug'
     | '/saloree-control/content'
+    | '/seller/analytics'
+    | '/seller/content'
+    | '/seller/customers'
+    | '/seller/discounts'
+    | '/seller/navigation'
     | '/seller/orders'
+    | '/seller/pages'
+    | '/seller/preferences'
     | '/seller/products'
     | '/seller/store'
+    | '/seller/theme-customizer'
+    | '/seller/themes'
     | '/stores/$slug'
     | '/admin/'
     | '/seller/'
@@ -288,9 +378,18 @@ export interface FileRouteTypes {
     | '/categories/$slug'
     | '/products/$slug'
     | '/saloree-control/content'
+    | '/seller/analytics'
+    | '/seller/content'
+    | '/seller/customers'
+    | '/seller/discounts'
+    | '/seller/navigation'
     | '/seller/orders'
+    | '/seller/pages'
+    | '/seller/preferences'
     | '/seller/products'
     | '/seller/store'
+    | '/seller/theme-customizer'
+    | '/seller/themes'
     | '/stores/$slug'
     | '/admin'
     | '/seller'
@@ -315,9 +414,18 @@ export interface FileRouteTypes {
     | '/categories/$slug'
     | '/products/$slug'
     | '/saloree-control/content'
+    | '/seller/analytics'
+    | '/seller/content'
+    | '/seller/customers'
+    | '/seller/discounts'
+    | '/seller/navigation'
     | '/seller/orders'
+    | '/seller/pages'
+    | '/seller/preferences'
     | '/seller/products'
     | '/seller/store'
+    | '/seller/theme-customizer'
+    | '/seller/themes'
     | '/stores/$slug'
     | '/admin/'
     | '/seller/'
@@ -432,6 +540,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoresSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/seller/themes': {
+      id: '/seller/themes'
+      path: '/themes'
+      fullPath: '/seller/themes'
+      preLoaderRoute: typeof SellerThemesRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/theme-customizer': {
+      id: '/seller/theme-customizer'
+      path: '/theme-customizer'
+      fullPath: '/seller/theme-customizer'
+      preLoaderRoute: typeof SellerThemeCustomizerRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/seller/store': {
       id: '/seller/store'
       path: '/store'
@@ -446,11 +568,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SellerProductsRouteImport
       parentRoute: typeof SellerRoute
     }
+    '/seller/preferences': {
+      id: '/seller/preferences'
+      path: '/preferences'
+      fullPath: '/seller/preferences'
+      preLoaderRoute: typeof SellerPreferencesRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/pages': {
+      id: '/seller/pages'
+      path: '/pages'
+      fullPath: '/seller/pages'
+      preLoaderRoute: typeof SellerPagesRouteImport
+      parentRoute: typeof SellerRoute
+    }
     '/seller/orders': {
       id: '/seller/orders'
       path: '/orders'
       fullPath: '/seller/orders'
       preLoaderRoute: typeof SellerOrdersRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/navigation': {
+      id: '/seller/navigation'
+      path: '/navigation'
+      fullPath: '/seller/navigation'
+      preLoaderRoute: typeof SellerNavigationRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/discounts': {
+      id: '/seller/discounts'
+      path: '/discounts'
+      fullPath: '/seller/discounts'
+      preLoaderRoute: typeof SellerDiscountsRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/customers': {
+      id: '/seller/customers'
+      path: '/customers'
+      fullPath: '/seller/customers'
+      preLoaderRoute: typeof SellerCustomersRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/content': {
+      id: '/seller/content'
+      path: '/content'
+      fullPath: '/seller/content'
+      preLoaderRoute: typeof SellerContentRouteImport
+      parentRoute: typeof SellerRoute
+    }
+    '/seller/analytics': {
+      id: '/seller/analytics'
+      path: '/analytics'
+      fullPath: '/seller/analytics'
+      preLoaderRoute: typeof SellerAnalyticsRouteImport
       parentRoute: typeof SellerRoute
     }
     '/saloree-control/content': {
@@ -554,16 +725,34 @@ const SaloreeControlRouteWithChildren = SaloreeControlRoute._addFileChildren(
 )
 
 interface SellerRouteChildren {
+  SellerAnalyticsRoute: typeof SellerAnalyticsRoute
+  SellerContentRoute: typeof SellerContentRoute
+  SellerCustomersRoute: typeof SellerCustomersRoute
+  SellerDiscountsRoute: typeof SellerDiscountsRoute
+  SellerNavigationRoute: typeof SellerNavigationRoute
   SellerOrdersRoute: typeof SellerOrdersRoute
+  SellerPagesRoute: typeof SellerPagesRoute
+  SellerPreferencesRoute: typeof SellerPreferencesRoute
   SellerProductsRoute: typeof SellerProductsRoute
   SellerStoreRoute: typeof SellerStoreRoute
+  SellerThemeCustomizerRoute: typeof SellerThemeCustomizerRoute
+  SellerThemesRoute: typeof SellerThemesRoute
   SellerIndexRoute: typeof SellerIndexRoute
 }
 
 const SellerRouteChildren: SellerRouteChildren = {
+  SellerAnalyticsRoute: SellerAnalyticsRoute,
+  SellerContentRoute: SellerContentRoute,
+  SellerCustomersRoute: SellerCustomersRoute,
+  SellerDiscountsRoute: SellerDiscountsRoute,
+  SellerNavigationRoute: SellerNavigationRoute,
   SellerOrdersRoute: SellerOrdersRoute,
+  SellerPagesRoute: SellerPagesRoute,
+  SellerPreferencesRoute: SellerPreferencesRoute,
   SellerProductsRoute: SellerProductsRoute,
   SellerStoreRoute: SellerStoreRoute,
+  SellerThemeCustomizerRoute: SellerThemeCustomizerRoute,
+  SellerThemesRoute: SellerThemesRoute,
   SellerIndexRoute: SellerIndexRoute,
 }
 

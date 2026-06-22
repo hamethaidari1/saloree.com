@@ -62,55 +62,6 @@ export function useHeroSlides() {
   });
 }
 
-export function useHomepageSections() {
-  return useQuery({
-    queryKey: ["homepage_sections"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("homepage_sections")
-        .select("*")
-        .maybeSingle();
-      if (error) {
-        if (isSchemaMissingError(error)) {
-          console.warn(
-            "[useHomepageSections] Table 'homepage_sections' does not exist yet. " +
-              "Please run supabase/apply_content_manager.sql in the Supabase SQL Editor.",
-            error
-          );
-          return null;
-        }
-        console.error("[useHomepageSections] Supabase error:", error);
-      }
-      return data ?? null;
-    },
-    retry: false,
-  });
-}
-
-export function usePromoBanners() {
-  return useQuery({
-    queryKey: ["promo_banners"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("promo_banners")
-        .select("*")
-        .order("display_order", { ascending: true });
-      if (error) {
-        if (isSchemaMissingError(error)) {
-          console.warn(
-            "[usePromoBanners] Table 'promo_banners' does not exist yet. " +
-              "Please run supabase/apply_content_manager.sql in the Supabase SQL Editor.",
-            error
-          );
-          return [];
-        }
-        console.error("[usePromoBanners] Supabase error:", error);
-      }
-      return data ?? [];
-    },
-    retry: false,
-  });
-}
 
 export function useFooterLinks() {
   return useQuery({
