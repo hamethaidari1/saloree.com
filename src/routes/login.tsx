@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,20 +7,38 @@ import { Logo } from "@/components/Logo";
 import { useLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
 import { Eye, EyeOff, Loader2, Globe, ShieldCheck, Store, Sparkles } from "lucide-react";
+import { z } from "zod";
+
+const loginSearchSchema = z.object({
+  error: z.string().optional(),
+});
 
 export const Route = createFileRoute("/login")({
+  validateSearch: (search) => loginSearchSchema.parse(search),
   head: () => ({ meta: [{ title: "Login — Saloree" }] }),
   component: Login,
 });
 
 function Login() {
   const navigate = useNavigate();
+  const searchParams = Route.useSearch();
   const { language } = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [redirectUrl, setRedirectUrl] = useState("");
+
+  useEffect(() => {
+    // Avoid hydration mismatch by evaluating window.location.origin only on the client
+    setRedirectUrl(`${window.location.origin}/auth/callback`);
+    
+    // Set error from redirect if present
+    if (searchParams.error) {
+      setErrorMsg("Google sign-in failed. Please try again.");
+    }
+  }, [searchParams.error]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,12 +70,13 @@ function Login() {
   };
 
   const loginWithGoogle = async () => {
+    if (!redirectUrl) return;
     setLoading(true);
     setErrorMsg("");
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectUrl,
       },
     });
     if (error) {
@@ -137,7 +156,7 @@ function Login() {
 
         {/* Footer info */}
         <div className="relative z-10 text-xs text-rose-200">
-          <p>© {new Date().getFullYear()} Saloree Inc. All rights reserved.</p>
+          <p>© 2026 Saloree Inc. All rights reserved.</p>
         </div>
       </div>
 

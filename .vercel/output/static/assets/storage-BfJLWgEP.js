@@ -1,0 +1,1 @@
+import{t as e}from"./client-BGGAKgQv.js";var t=`saloree-media`,n={async upload(n,{userId:r,folder:i,bucket:a=t}){let o=n.name.split(`.`).pop()||`bin`,s=`${r}/${i}/${crypto.randomUUID()}.${o}`,{error:c}=await e.storage.from(a).upload(s,n,{cacheControl:`3600`,upsert:!1});if(c)throw c;let{data:l}=e.storage.from(a).getPublicUrl(s);return l.publicUrl}};export{n as t};

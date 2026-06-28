@@ -17,12 +17,26 @@ function AuthCallback() {
     let active = true;
 
     async function handleCallback() {
+      // Ensure window is defined (always true inside useEffect, but good practice)
+      if (typeof window === "undefined") return;
+
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
+        console.log("[AuthCallback] Processing OAuth code exchange for URL:", window.location.href);
+        
+        // Correctly handle Supabase OAuth code exchange
+        const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+        if (error) {
+          console.error("Supabase OAuth code exchange error:", error);
+          throw error;
+        }
+
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
 
         if (session?.user) {
           if (!active) return;
+          
+          console.log("[AuthCallback] Session established for user ID:", session.user.id);
           
           // Check roles
           const { data: roleData, error: roleError } = await supabase
@@ -43,41 +57,16 @@ function AuthCallback() {
             navigate({ to: "/" });
           }
         } else {
-          // If no session immediately, listen to onAuthStateChange for a brief window
-          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
-            if (event === "SIGNED_IN" && currentSession?.user && active) {
-              subscription.unsubscribe();
-              const { data: roleData } = await supabase
-                .from("user_roles")
-                .select("role")
-                .eq("user_id", currentSession.user.id);
-              const roles = roleData?.map((r) => r.role) || [];
-              if (roles.includes("seller")) {
-                toast.success("Successfully logged in as Seller!");
-                navigate({ to: "/seller" });
-              } else {
-                toast.success("Welcome back!");
-                navigate({ to: "/" });
-              }
-            }
-          });
-
-          // Timeout after 6 seconds to prevent hanging
-          setTimeout(() => {
-            if (active) {
-              subscription.unsubscribe();
-              setErrorMsg("Authentication session expired or failed. Please try again.");
-              toast.error("Authentication failed. Please try signing in again.");
-              navigate({ to: "/login" });
-            }
-          }, 6000);
+          throw new Error("No active session found after code exchange.");
         }
       } catch (err: any) {
-        console.error("OAuth callback error:", err);
+        // Log full error message to console
+        console.error("OAuth callback full error message:", err?.message || err);
+        
         if (active) {
-          setErrorMsg(err.message || "An error occurred during authentication.");
-          toast.error(err.message || "Authentication failed.");
-          navigate({ to: "/login" });
+          setErrorMsg("Google sign-in failed. Please try again.");
+          toast.error("Google sign-in failed. Please try again.");
+          navigate({ to: "/login", search: { error: "Google sign-in failed. Please try again." } });
         }
       }
     }
