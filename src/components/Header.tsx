@@ -95,8 +95,14 @@ export function Header() {
     }
   };
 
-  const location = useLocation();
-  const isAuthPage = ["/login", "/register", "/auth/callback"].includes(location.pathname);
+  let pathname = "";
+  try {
+    const location = useLocation();
+    pathname = location?.pathname || "";
+  } catch (e) {
+    console.error("[Header] Router location not ready:", e);
+  }
+  const isAuthPage = ["/login", "/register", "/auth/callback"].includes(pathname);
 
   if (isAuthPage) {
     return (
