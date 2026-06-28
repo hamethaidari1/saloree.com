@@ -11,7 +11,7 @@ import { z } from "zod";
 
 const loginSearchSchema = z.object({
   error: z.string().optional(),
-});
+}).passthrough();
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search) => loginSearchSchema.parse(search),

@@ -11,7 +11,7 @@ import { z } from "zod";
 
 const registerSearchSchema = z.object({
   error: z.string().optional(),
-});
+}).passthrough();
 
 export const Route = createFileRoute("/register")({
   validateSearch: (search) => registerSearchSchema.parse(search),

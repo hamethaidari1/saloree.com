@@ -3,31 +3,60 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { z } from "zod";
+
+const callbackSearchSchema = z.object({
+  code: z.string().optional(),
+  error: z.string().optional(),
+  error_code: z.string().optional(),
+  error_description: z.string().optional(),
+}).passthrough();
 
 export const Route = createFileRoute("/auth/callback")({
+  validateSearch: (search) => callbackSearchSchema.parse(search),
   head: () => ({ meta: [{ title: "Authenticating — Saloree" }] }),
   component: AuthCallback,
 });
 
 function AuthCallback() {
   const navigate = useNavigate();
+  const searchParams = Route.useSearch();
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     let active = true;
 
     async function handleCallback() {
-      // Ensure window is defined (always true inside useEffect, but good practice)
+      // 2 & 3. Only run OAuth handling on the client side
       if (typeof window === "undefined") return;
 
       try {
-        console.log("[AuthCallback] Processing OAuth code exchange for URL:", window.location.href);
+        console.log("[AuthCallback] URL:", window.location.href);
+
+        // Get parameters from both search and hash fragment (since Supabase can return them in hash)
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+
+        const error = urlParams.get("error") || hashParams.get("error") || searchParams.error;
+        const errorDescription = urlParams.get("error_description") || hashParams.get("error_description") || searchParams.error_description;
+
+        // 4. If URL contains error or error_description, show clean message and redirect to /login
+        if (error || errorDescription) {
+          const fullMsg = errorDescription || error || "Google authentication failed";
+          console.error("Supabase OAuth callback redirect error details:", fullMsg);
+          throw new Error(fullMsg);
+        }
+
+        const code = urlParams.get("code") || hashParams.get("code") || searchParams.code;
         
-        // Correctly handle Supabase OAuth code exchange
-        const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
-        if (error) {
-          console.error("Supabase OAuth code exchange error:", error);
-          throw error;
+        // 5. If URL contains code, call exchangeCodeForSession
+        if (code) {
+          console.log("[AuthCallback] Code found in URL, exchanging for session...");
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href);
+          if (exchangeError) {
+            console.error("Supabase OAuth code exchange error:", exchangeError);
+            throw exchangeError;
+          }
         }
 
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -38,7 +67,7 @@ function AuthCallback() {
           
           console.log("[AuthCallback] Session established for user ID:", session.user.id);
           
-          // Check roles
+          // 6. After success: redirect to /seller if user has seller role, otherwise /
           const { data: roleData, error: roleError } = await supabase
             .from("user_roles")
             .select("role")
@@ -57,7 +86,8 @@ function AuthCallback() {
             navigate({ to: "/" });
           }
         } else {
-          throw new Error("No active session found after code exchange.");
+          console.warn("[AuthCallback] No active session or code found in URL.");
+          navigate({ to: "/" });
         }
       } catch (err: any) {
         // Log full error message to console
@@ -76,7 +106,7 @@ function AuthCallback() {
     return () => {
       active = false;
     };
-  }, [navigate]);
+  }, [navigate, searchParams]);
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center p-6 text-center">
