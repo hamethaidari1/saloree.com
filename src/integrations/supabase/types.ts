@@ -274,33 +274,45 @@ export type Database = {
       stores: {
         Row: {
           banner_url: string | null;
+          category: string | null;
           created_at: string;
           description: string | null;
           id: string;
+          location: string | null;
           logo_url: string | null;
           name: string;
           owner_id: string;
           slug: string;
+          status: string;
+          updated_at: string | null;
         };
         Insert: {
           banner_url?: string | null;
+          category?: string | null;
           created_at?: string;
           description?: string | null;
           id?: string;
+          location?: string | null;
           logo_url?: string | null;
           name: string;
           owner_id: string;
           slug: string;
+          status?: string;
+          updated_at?: string | null;
         };
         Update: {
           banner_url?: string | null;
+          category?: string | null;
           created_at?: string;
           description?: string | null;
           id?: string;
+          location?: string | null;
           logo_url?: string | null;
           name?: string;
           owner_id?: string;
           slug?: string;
+          status?: string;
+          updated_at?: string | null;
         };
         Relationships: [
           {

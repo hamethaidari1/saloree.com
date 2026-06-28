@@ -120,7 +120,8 @@ const DEFAULT_SETTINGS: CustomizerSettings = {
   social_twitter: "",
   social_facebook: "",
   social_tiktok: "",
-  footer_text: "© 2026 My Store. All rights reserved.",
+  footer_text: "",
+
 };
 
 // ─── Color Input Component ──────────────────────────────────────────────────
@@ -158,9 +159,11 @@ function ColorInput({
 function CenterPreview({
   settings,
   viewMode,
+  storeName,
 }: {
   settings: CustomizerSettings;
   viewMode: "desktop" | "mobile";
+  storeName?: string;
 }) {
   const isDark =
     settings.bg_color === "#0a0a0a" ||
@@ -346,7 +349,7 @@ function CenterPreview({
           })}
         </div>
         <p className="text-[10px]" style={{ color: mutedTextColor }}>
-          {settings.footer_text || "© 2026 My Store"}
+          © {new Date().getFullYear()} {storeName || "Store"}, Powered by Saloree
         </p>
       </div>
     </div>
@@ -407,29 +410,31 @@ function ThemeCustomizer() {
   useEffect(() => {
     if (installData?.store_theme_settings?.[0]) {
       const dbSettings = installData.store_theme_settings[0];
+      const jsonSettings = dbSettings.settings || {};
+      
       setSettings((prev) => ({
         ...prev,
-        announcement_text: dbSettings.announcement_text ?? prev.announcement_text,
-        announcement_bg: dbSettings.announcement_bg ?? prev.announcement_bg,
-        announcement_text_color: dbSettings.announcement_text_color ?? prev.announcement_text_color,
-        show_announcement: dbSettings.show_announcement ?? prev.show_announcement,
+        announcement_text: jsonSettings.announcement_text ?? dbSettings.announcement_text ?? prev.announcement_text,
+        announcement_bg: jsonSettings.announcement_bg ?? dbSettings.announcement_bg ?? prev.announcement_bg,
+        announcement_text_color: jsonSettings.announcement_text_color ?? dbSettings.announcement_text_color ?? prev.announcement_text_color,
+        show_announcement: jsonSettings.show_announcement ?? dbSettings.show_announcement ?? prev.show_announcement,
         primary_color: dbSettings.primary_color ?? prev.primary_color,
         bg_color: dbSettings.bg_color ?? prev.bg_color,
-        accent_color: dbSettings.accent_color ?? prev.accent_color,
-        button_color: dbSettings.button_color ?? prev.button_color,
-        font_family: dbSettings.font_family ?? prev.font_family,
-        homepage_layout: dbSettings.homepage_layout ?? prev.homepage_layout,
-        card_style: dbSettings.card_style ?? prev.card_style,
-        hero_title: dbSettings.hero_title ?? prev.hero_title,
-        hero_subtitle: dbSettings.hero_subtitle ?? prev.hero_subtitle,
-        cta_text: dbSettings.cta_text ?? prev.cta_text,
-        about_title: dbSettings.about_title ?? prev.about_title,
-        about_text: dbSettings.about_text ?? prev.about_text,
-        social_instagram: dbSettings.social_instagram ?? prev.social_instagram,
-        social_twitter: dbSettings.social_twitter ?? prev.social_twitter,
-        social_facebook: dbSettings.social_facebook ?? prev.social_facebook,
-        social_tiktok: dbSettings.social_tiktok ?? prev.social_tiktok,
-        footer_text: dbSettings.footer_text ?? prev.footer_text,
+        accent_color: jsonSettings.accent_color ?? dbSettings.accent_color ?? prev.accent_color,
+        button_color: jsonSettings.button_color ?? dbSettings.button_color ?? prev.button_color,
+        font_family: jsonSettings.font_family ?? dbSettings.font_family ?? prev.font_family,
+        homepage_layout: jsonSettings.homepage_layout ?? dbSettings.homepage_layout ?? prev.homepage_layout,
+        card_style: jsonSettings.card_style ?? dbSettings.card_style ?? prev.card_style,
+        hero_title: jsonSettings.hero_title ?? dbSettings.hero_title ?? prev.hero_title,
+        hero_subtitle: jsonSettings.hero_subtitle ?? dbSettings.hero_subtitle ?? prev.hero_subtitle,
+        cta_text: jsonSettings.cta_text ?? dbSettings.cta_text ?? prev.cta_text,
+        about_title: jsonSettings.about_title ?? dbSettings.about_title ?? prev.about_title,
+        about_text: jsonSettings.about_text ?? dbSettings.about_text ?? prev.about_text,
+        social_instagram: jsonSettings.social_instagram ?? dbSettings.social_instagram ?? prev.social_instagram,
+        social_twitter: jsonSettings.social_twitter ?? dbSettings.social_twitter ?? prev.social_twitter,
+        social_facebook: jsonSettings.social_facebook ?? dbSettings.social_facebook ?? prev.social_facebook,
+        social_tiktok: jsonSettings.social_tiktok ?? dbSettings.social_tiktok ?? prev.social_tiktok,
+        footer_text: jsonSettings.footer_text ?? dbSettings.footer_text ?? prev.footer_text,
       }));
       setLogoUrl(dbSettings.logo_url || "");
       setBannerUrl(dbSettings.banner_url || "");
@@ -442,27 +447,30 @@ function ThemeCustomizer() {
       const installationId = id || installData?.id;
       if (!installationId) throw new Error("No theme installation selected.");
 
+      // Build payload — split into core columns and JSONB settings
+      const { footer_text: _ignored, logo_url: _logo, banner_url: _banner, primary_color: _primary, bg_color: _bg, ...optionalSettings } = settings;
       const payload = {
         theme_installation_id: installationId,
-        ...settings,
         logo_url: logoUrl,
         banner_url: bannerUrl,
+        primary_color: settings.primary_color,
+        bg_color: settings.bg_color,
+        settings: {
+          ...optionalSettings,
+          footer_text: `\u00a9 ${new Date().getFullYear()} ${store?.name || "Store"}, Powered by Saloree`,
+        },
         updated_at: new Date().toISOString(),
       };
 
-      const hasSettings = installData?.store_theme_settings?.length > 0;
+      const { error } = await supabase
+        .from("store_theme_settings" as any)
+        .upsert({
+          ...payload,
+          created_at: installData?.store_theme_settings?.[0]?.created_at || new Date().toISOString(),
+        }, { onConflict: "theme_installation_id" });
 
-      if (hasSettings) {
-        const { error } = await supabase
-          .from("store_theme_settings" as any)
-          .update(payload)
-          .eq("theme_installation_id", installationId);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from("store_theme_settings" as any)
-          .insert({ ...payload, created_at: new Date().toISOString() });
-        if (error) throw error;
+      if (error) {
+        throw error;
       }
     },
     onSuccess: () => {
@@ -470,7 +478,14 @@ function ThemeCustomizer() {
       qc.invalidateQueries({ queryKey: ["store-theme-installations"] });
       toast.success("Theme settings saved successfully! 🎨");
     },
-    onError: (err) => {
+    onError: (err: any) => {
+      console.error("[RLS Failure Log] Table: store_theme_settings, Policy: Owner updates/inserts store_theme_settings, Error Details:", {
+        message: err?.message,
+        details: err?.details,
+        hint: err?.hint,
+        code: err?.code,
+        fullError: err
+      });
       toast.error("Failed to save: " + err.message);
     },
   });
@@ -485,14 +500,35 @@ function ThemeCustomizer() {
     try {
       const bucket = type === "logo" ? "store-logos" : "store-banners";
       const folder = type === "logo" ? "logos" : "banners";
+      
+      // Verification helper checks before upload
+      console.log(`[Storage Upload] Verifying parameters:`, {
+        bucket,
+        folder,
+        userId: user?.id,
+        userLoggedIn: !!user,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type
+      });
+
       const url = await storage.upload(file, { userId: user!.id, folder, bucket });
 
       if (type === "logo") setLogoUrl(url);
       else setBannerUrl(url);
 
       toast.success("Image uploaded!");
-    } catch (err) {
-      toast.error("Upload failed.");
+    } catch (err: any) {
+      console.error("Supabase Storage Upload Error Details:", {
+        message: err?.message || "No error message",
+        details: err?.details || "No details",
+        hint: err?.hint || "No hint",
+        statusCode: err?.status || err?.statusCode || err?.status_code || "No status code",
+        fullError: err
+      });
+      // Propagate the real message instead of generic "Upload failed."
+      toast.error(err?.message || "Upload failed.");
+      // Do not swallow: rethrow/propagate if needed, but since it's a UI handler, logging and displaying it is standard.
     } finally {
       if (type === "logo") setUploadingLogo(false);
       else setUploadingBanner(false);
@@ -519,7 +555,6 @@ function ThemeCustomizer() {
     { id: "product_grid", label: "Product grid", icon: Grid },
     { id: "about", label: "About store", icon: Info },
     { id: "social", label: "Social links", icon: Share2 },
-    { id: "footer", label: "Footer", icon: Footprints },
     { id: "general", label: "Colors & Fonts", icon: Sliders },
   ];
 
@@ -603,7 +638,7 @@ function ThemeCustomizer() {
 
         {/* Center: Live Preview frame */}
         <div className="overflow-y-auto p-6 bg-muted/40 flex justify-center items-start min-h-[400px]">
-          <CenterPreview settings={settings} viewMode={viewMode} />
+          <CenterPreview settings={settings} viewMode={viewMode} storeName={store?.name || "Store"} />
         </div>
 
         {/* Right Side: Configuration Editor */}
@@ -783,17 +818,7 @@ function ThemeCustomizer() {
             </div>
           )}
 
-          {activeSection === "footer" && (
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Footer Text</Label>
-                <Input
-                  value={settings.footer_text}
-                  onChange={(e) => setVal("footer_text")(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
+
 
           {activeSection === "general" && (
             <div className="space-y-4">

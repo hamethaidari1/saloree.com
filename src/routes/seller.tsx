@@ -31,7 +31,7 @@ function SellerLayout() {
             { to: "/seller/preferences", label: "Preferences" },
           ],
         },
-        { to: "/seller/store", label: "Settings" },
+        { to: "/seller/store", label: "Store Settings" },
       ]}
     >
       <Outlet />

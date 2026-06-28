@@ -40,6 +40,12 @@ const BUILTIN_THEMES = [
     fontFamily: "'Inter', sans-serif",
     gradient: "linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%)",
     tags: ["clean", "modern", "versatile"],
+    isFree: true,
+    price: 0,
+    previewImage: "/src/assets/saloree_minimal_theme_preview_1782422811157.png",
+    benefit: "Best for clean and minimalistic catalog layout structures.",
+    features: ["Responsive design", "Fast loading", "Custom colors", "Mobile optimized"],
+    isPopular: false,
   },
   {
     id: "saloree-fashion",
@@ -52,6 +58,12 @@ const BUILTIN_THEMES = [
     fontFamily: "'Playfair Display', serif",
     gradient: "linear-gradient(135deg,#ec4899 0%,#f43f5e 100%)",
     tags: ["elegant", "fashion", "lifestyle"],
+    isFree: true,
+    price: 0,
+    previewImage: "/src/assets/saloree_fashion_theme_preview_1782422824021.png",
+    benefit: "Immersive editorial visuals designed specifically for fashion lines.",
+    features: ["Responsive design", "Fast loading", "Custom colors", "Mobile optimized"],
+    isPopular: true,
   },
   {
     id: "saloree-electronics",
@@ -64,6 +76,12 @@ const BUILTIN_THEMES = [
     fontFamily: "'Roboto', sans-serif",
     gradient: "linear-gradient(135deg,#3b82f6 0%,#06b6d4 100%)",
     tags: ["dark", "tech", "modern"],
+    isFree: true,
+    price: 0,
+    previewImage: "/src/assets/saloree_electronics_theme_preview_1782422835384.png",
+    benefit: "High-contrast dark layout prioritizing technical specifications.",
+    features: ["Responsive design", "Fast loading", "Custom colors", "Mobile optimized"],
+    isPopular: false,
   },
   {
     id: "saloree-beauty",
@@ -76,6 +94,12 @@ const BUILTIN_THEMES = [
     fontFamily: "'Lora', serif",
     gradient: "linear-gradient(135deg,#db2777 0%,#f97316 100%)",
     tags: ["soft", "luxury", "feminine"],
+    isFree: false,
+    price: 30.99,
+    previewImage: "/src/assets/saloree_premium_theme_preview_1782422849406.png",
+    benefit: "Soft, warm tones crafted to highlight premium beauty and cosmetics.",
+    features: ["Responsive design", "Fast loading", "Custom colors", "Mobile optimized"],
+    isPopular: false,
   },
   {
     id: "saloree-luxury",
@@ -88,6 +112,12 @@ const BUILTIN_THEMES = [
     fontFamily: "'Cormorant Garamond', serif",
     gradient: "linear-gradient(135deg,#ca8a04 0%,#d4af37 100%)",
     tags: ["gold", "premium", "dark"],
+    isFree: false,
+    price: 60.00,
+    previewImage: "/src/assets/saloree_premium_theme_preview_1782422849406.png",
+    benefit: "Sleek gold-on-black layout for high-end boutique brands.",
+    features: ["Responsive design", "Fast loading", "Custom colors", "Mobile optimized"],
+    isPopular: false,
   },
   {
     id: "saloree-home",
@@ -100,6 +130,12 @@ const BUILTIN_THEMES = [
     fontFamily: "'Merriweather', serif",
     gradient: "linear-gradient(135deg,#d97706 0%,#16a34a 100%)",
     tags: ["warm", "earthy", "cozy"],
+    isFree: false,
+    price: 30.99,
+    previewImage: "/src/assets/saloree_premium_theme_preview_1782422849406.png",
+    benefit: "Cozy layout styling designed for home furniture and decor.",
+    features: ["Responsive design", "Fast loading", "Custom colors", "Mobile optimized"],
+    isPopular: false,
   },
   {
     id: "saloree-digital",
@@ -112,6 +148,12 @@ const BUILTIN_THEMES = [
     fontFamily: "'Space Grotesk', sans-serif",
     gradient: "linear-gradient(135deg,#7c3aed 0%,#2563eb 100%)",
     tags: ["dark", "neon", "digital"],
+    isFree: false,
+    price: 45.99,
+    previewImage: "/src/assets/saloree_premium_theme_preview_1782422849406.png",
+    benefit: "Cyberpunk neon vibes built to maximize digital download sales.",
+    features: ["Responsive design", "Fast loading", "Custom colors", "Mobile optimized"],
+    isPopular: false,
   },
   {
     id: "saloree-classic",
@@ -124,6 +166,12 @@ const BUILTIN_THEMES = [
     fontFamily: "'Outfit', sans-serif",
     gradient: "linear-gradient(135deg,#0ea5e9 0%,#6366f1 100%)",
     tags: ["colorful", "grid", "marketplace"],
+    isFree: false,
+    price: 45.99,
+    previewImage: "/src/assets/saloree_premium_theme_preview_1782422849406.png",
+    benefit: "High-density product grid format for large catalog marketplaces.",
+    features: ["Responsive design", "Fast loading", "Custom colors", "Mobile optimized"],
+    isPopular: false,
   },
 ];
 
@@ -201,12 +249,14 @@ function ThemePreviewModal({
   onClose,
   onAdd,
   adding,
+  isInstalled,
 }: {
   theme: (typeof BUILTIN_THEMES)[0] | null;
   open: boolean;
   onClose: () => void;
   onAdd: () => void;
   adding: boolean;
+  isInstalled: boolean;
 }) {
   const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
   if (!theme) return null;
@@ -237,9 +287,19 @@ function ThemePreviewModal({
             <Button variant="outline" size="sm" onClick={onClose}>
               Close
             </Button>
-            <Button size="sm" disabled={adding} onClick={onAdd}>
-              {adding ? "Adding…" : "Add to Library (Free)"}
-            </Button>
+            {isInstalled ? (
+              <Button size="sm" disabled>
+                Installed
+              </Button>
+            ) : theme.isFree ? (
+              <Button size="sm" disabled={adding} onClick={onAdd}>
+                {adding ? "Adding…" : "Add to Library (Free)"}
+              </Button>
+            ) : (
+              <Button size="sm" onClick={onAdd}>
+                Buy Theme (${theme.price.toFixed(2)})
+              </Button>
+            )}
           </div>
         </DialogHeader>
 
@@ -275,6 +335,13 @@ function ThemePreviewModal({
                   </div>
                 ))}
               </div>
+              {/* Footer */}
+              <div
+                className="px-4 py-4 border-t text-center text-[10px] text-muted-foreground mt-4"
+                style={{ background: theme.primaryColor + "10" }}
+              >
+                © {new Date().getFullYear()} Store, Powered by Saloree
+              </div>
             </div>
           </div>
         </div>
@@ -297,6 +364,11 @@ function SellerThemes() {
   const [publishingId, setPublishingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [buyModalTheme, setBuyModalTheme] = useState<(typeof BUILTIN_THEMES)[0] | null>(null);
+
+  // Filters & Search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
 
   // Fetch seller's store
   const { data: store } = useQuery({
@@ -306,8 +378,8 @@ function SellerThemes() {
       (await supabase.from("stores").select("*").eq("owner_id", user!.id).maybeSingle()).data as any,
   });
 
-  // Fetch all installed themes
-  const { data: installations = [], isLoading: installationsLoading } = useQuery({
+  // Fetch all installed themes — deduplicate by theme_id client-side as extra safety layer
+  const { data: rawInstallations = [], isLoading: installationsLoading } = useQuery({
     queryKey: ["store-theme-installations", store?.id],
     enabled: !!store?.id,
     queryFn: async () => {
@@ -321,12 +393,39 @@ function SellerThemes() {
     },
   });
 
-  // Automatically install minimal theme if no theme installations exist
+  // Client-side dedup: keep only the first (most-recently-updated) record per theme_id
+  const installations = (() => {
+    const seen = new Set<string>();
+    return rawInstallations.filter((inst) => {
+      if (seen.has(inst.theme_id)) return false;
+      seen.add(inst.theme_id);
+      return true;
+    });
+  })();
+
+  // Set of installed theme IDs for O(1) lookup
+  const installedThemeIds = new Set(installations.map((i) => i.theme_id));
+
+  // Automatically install minimal theme if no theme installations exist at all
   useEffect(() => {
-    if (store?.id && !installationsLoading && installations.length === 0) {
+    if (store?.id && !installationsLoading && rawInstallations.length === 0) {
       const autoInstallDefault = async () => {
         try {
           const defaultTheme = BUILTIN_THEMES[0]; // minimal
+
+          // Guard: check DB directly to avoid race conditions
+          const { data: existing } = await supabase
+            .from("store_theme_installations" as any)
+            .select("id")
+            .eq("store_id", store.id)
+            .eq("theme_id", defaultTheme.id)
+            .maybeSingle();
+          if (existing) {
+            // Already in DB — just refresh
+            qc.invalidateQueries({ queryKey: ["store-theme-installations", store.id] });
+            return;
+          }
+
           const { data: inst, error: instErr } = (await supabase
             .from("store_theme_installations" as any)
             .insert({
@@ -337,6 +436,7 @@ function SellerThemes() {
             })
             .select()
             .single()) as any;
+          console.log("Auto-installing default theme:", inst);
 
           if (instErr) throw instErr;
 
@@ -354,7 +454,7 @@ function SellerThemes() {
               cta_text: "Shop Now",
               homepage_layout: "standard",
               card_style: "shadow",
-              footer_text: `© ${new Date().getFullYear()} ${store.name || "My Store"}. All rights reserved.`,
+              footer_text: `© ${new Date().getFullYear()} ${store.name || "Store"}, Powered by Saloree`,
             });
 
           if (settingsErr) throw settingsErr;
@@ -367,12 +467,25 @@ function SellerThemes() {
       };
       autoInstallDefault();
     }
-  }, [store?.id, installations, installationsLoading, qc]);
+  }, [store?.id, rawInstallations.length, installationsLoading, qc]);
 
   // Mutations
   const addThemeMutation = useMutation({
     mutationFn: async (theme: (typeof BUILTIN_THEMES)[0]) => {
       if (!store?.id) throw new Error("No store found");
+
+      // ── Duplicate guard: check DB before inserting ─────────────────────────
+      const { data: existing } = await supabase
+        .from("store_theme_installations" as any)
+        .select("id")
+        .eq("store_id", store.id)
+        .eq("theme_id", theme.id)
+        .maybeSingle();
+
+      if (existing) {
+        throw new Error("__ALREADY_INSTALLED__");
+      }
+
       const { data: inst, error: instErr } = (await supabase
         .from("store_theme_installations" as any)
         .insert({
@@ -383,6 +496,7 @@ function SellerThemes() {
         })
         .select()
         .single()) as any;
+      console.log("Adding new theme:", inst);
       if (instErr) throw instErr;
 
       const { error: settingsErr } = await supabase
@@ -399,7 +513,7 @@ function SellerThemes() {
           cta_text: "Shop Now",
           homepage_layout: "standard",
           card_style: "shadow",
-          footer_text: `© ${new Date().getFullYear()} ${store.name || "My Store"}. All rights reserved.`,
+          footer_text: `© ${new Date().getFullYear()} ${store.name || "Store"}, Powered by Saloree`,
         });
       if (settingsErr) throw settingsErr;
     },
@@ -409,8 +523,12 @@ function SellerThemes() {
       setAddingId(null);
       setPreviewTheme(null);
     },
-    onError: (err) => {
-      toast.error("Failed to add theme: " + err.message);
+    onError: (err: Error) => {
+      if (err.message === "__ALREADY_INSTALLED__") {
+        toast.info("Theme already installed.");
+      } else {
+        toast.error("Failed to add theme: " + err.message);
+      }
       setAddingId(null);
     },
   });
@@ -746,53 +864,224 @@ function SellerThemes() {
       </section>
 
       {/* 3. DISCOVER THEMES */}
-      <section className="space-y-4">
-        <div>
-          <h3 className="font-bold text-lg text-foreground">Discover themes</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Explore free templates from the Saloree Theme Store.</p>
+      <section className="space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5">
+          <div>
+            <h3 className="font-bold text-xl text-foreground">Discover themes</h3>
+            <p className="text-sm text-muted-foreground mt-0.5">Explore template designs from the Saloree Theme Store.</p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Search Input */}
+            <div className="relative w-full sm:w-60">
+              <Input
+                type="text"
+                placeholder="Search themes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 pr-8"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground text-xs"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {BUILTIN_THEMES.map((theme) => {
-            const isInstalled = installations.some((i) => i.theme_id === theme.id);
+        {/* Filter Buttons */}
+        <div className="flex flex-wrap gap-1.5 pb-2">
+          {[
+            { id: "all", label: "All Themes" },
+            { id: "free", label: "Free" },
+            { id: "premium", label: "Premium" },
+            { id: "Fashion", label: "Fashion" },
+            { id: "Electronics", label: "Electronics" },
+            { id: "Luxury", label: "Luxury" },
+            { id: "Marketplace", label: "Marketplace" },
+          ].map((btn) => (
+            <Button
+              key={btn.id}
+              variant={activeFilter === btn.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setActiveFilter(btn.id)}
+              className="text-xs h-8 px-4 rounded-full cursor-pointer"
+            >
+              {btn.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* Themes Grid */}
+        {(() => {
+          const filteredThemes = BUILTIN_THEMES.filter((theme) => {
+            // Search filter
+            if (searchQuery.trim()) {
+              const q = searchQuery.toLowerCase();
+              if (
+                !theme.name.toLowerCase().includes(q) &&
+                !theme.description.toLowerCase().includes(q) &&
+                !theme.category.toLowerCase().includes(q)
+              ) {
+                return false;
+              }
+            }
+
+            // Category/Price filters
+            if (activeFilter === "free") return theme.isFree;
+            if (activeFilter === "premium") return !theme.isFree;
+            if (activeFilter !== "all") {
+              return theme.category.toLowerCase() === activeFilter.toLowerCase();
+            }
+
+            return true;
+          });
+
+          if (filteredThemes.length === 0) {
             return (
-              <div key={theme.id} className="bg-card rounded-xl border overflow-hidden hover:shadow-lg transition flex flex-col justify-between group">
-                <div className="relative h-32" style={{ background: theme.gradient }}>
-                  <span className="absolute top-2 left-2 text-[9px] font-bold tracking-widest uppercase px-2 py-0.5 rounded bg-black/35 text-white">
-                    {theme.category}
-                  </span>
-                  <span className="absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded bg-white text-primary">
-                    Free
-                  </span>
-                </div>
-                <div className="p-4 flex-1 flex flex-col justify-between gap-3">
-                  <div className="space-y-1">
-                    <h4 className="font-bold text-sm text-foreground">{theme.name}</h4>
-                    <p className="text-xs text-muted-foreground leading-normal line-clamp-2">
-                      {theme.description}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 text-xs h-8 cursor-pointer" onClick={() => setPreviewTheme(theme)}>
-                      Preview
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="flex-1 text-xs h-8 cursor-pointer"
-                      disabled={addingId === theme.id}
-                      onClick={() => {
-                        setAddingId(theme.id);
-                        addThemeMutation.mutate(theme);
-                      }}
-                    >
-                      {addingId === theme.id ? "Adding…" : "Add"}
-                    </Button>
-                  </div>
-                </div>
+              <div className="text-center py-16 border rounded-2xl bg-muted/10 text-muted-foreground">
+                No themes match your search or filter criteria.
               </div>
             );
-          })}
-        </div>
+          }
+
+          return (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {filteredThemes.map((theme) => {
+                const isInstalled = installations.some((i) => i.theme_id === theme.id);
+                return (
+                  <div
+                    key={theme.id}
+                    className="bg-card rounded-2xl border overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col justify-between group shadow-sm"
+                  >
+                    {/* Theme Card Header Image with Hover overlay */}
+                    <div className="relative aspect-video overflow-hidden border-b bg-muted/20">
+                      <img
+                        src={theme.previewImage}
+                        alt={`${theme.name} Preview`}
+                        className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                      />
+                      
+                      {/* Popular / Premium / Free Badge overlays */}
+                      <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
+                        <span className="text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-slate-900/90 text-white shadow-sm">
+                          {theme.category}
+                        </span>
+                        {theme.isPopular && (
+                          <span className="text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-amber-500 text-slate-950 shadow-sm">
+                            ★ Most Popular
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="absolute top-3 right-3 z-10">
+                        {theme.isFree ? (
+                          <span className="text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-green-500 text-white shadow-sm">
+                            Free
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-indigo-600 text-white shadow-sm">
+                            ✦ Premium
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Hover Overlay Button */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="text-xs h-9 px-4 rounded-full font-bold shadow-md cursor-pointer"
+                          onClick={() => setPreviewTheme(theme)}
+                        >
+                          Preview Theme
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Content Section */}
+                    <div className="p-5 flex-1 flex flex-col justify-between gap-5">
+                      <div className="space-y-3">
+                        <div className="flex items-baseline justify-between gap-2">
+                          <h4 className="font-bold text-base text-foreground">{theme.name}</h4>
+                          <span className="font-extrabold text-base text-slate-800 shrink-0">
+                            {theme.isFree ? "Free" : `$${theme.price.toFixed(2)}`}
+                          </span>
+                        </div>
+                        
+                        <p className="text-xs text-muted-foreground leading-normal line-clamp-2">
+                          {theme.description}
+                        </p>
+
+                        <p className="text-[11px] font-semibold text-indigo-600/95 italic bg-indigo-500/5 p-2 rounded-lg border border-indigo-500/10">
+                          {theme.benefit}
+                        </p>
+
+                        {/* Features checklist */}
+                        <div className="pt-2">
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80 mb-1.5">Includes</p>
+                          <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-slate-600">
+                            {theme.features.map((feat) => (
+                              <div key={feat} className="flex items-center gap-1">
+                                <span className="text-green-500 font-bold">✓</span>
+                                <span className="truncate">{feat}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Buy / Add button */}
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 text-xs h-9 cursor-pointer font-bold"
+                          onClick={() => setPreviewTheme(theme)}
+                        >
+                          Preview
+                        </Button>
+                        {installedThemeIds.has(theme.id) ? (
+                          <Button
+                            size="sm"
+                            className="flex-1 text-xs h-9 font-bold bg-green-600 hover:bg-green-600 text-white cursor-not-allowed opacity-80"
+                            disabled
+                          >
+                            ✓ Installed
+                          </Button>
+                        ) : theme.isFree ? (
+                          <Button
+                            size="sm"
+                            className="flex-1 text-xs h-9 cursor-pointer font-bold"
+                            disabled={addingId === theme.id}
+                            onClick={() => {
+                              setAddingId(theme.id);
+                              addThemeMutation.mutate(theme);
+                            }}
+                          >
+                            {addingId === theme.id ? "Adding…" : "Add theme"}
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            className="flex-1 text-xs h-9 cursor-pointer font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
+                            onClick={() => setBuyModalTheme(theme)}
+                          >
+                            Buy theme
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })()}
       </section>
 
       {/* Rename Dialog */}
@@ -834,8 +1123,41 @@ function SellerThemes() {
         open={!!previewTheme}
         onClose={() => setPreviewTheme(null)}
         adding={previewTheme ? addingId === previewTheme.id : false}
-        onAdd={() => previewTheme && (setAddingId(previewTheme.id), addThemeMutation.mutate(previewTheme))}
+        onAdd={() => {
+          if (!previewTheme) return;
+          if (previewTheme.isFree) {
+            setAddingId(previewTheme.id);
+            addThemeMutation.mutate(previewTheme);
+          } else {
+            setPreviewTheme(null);
+            setBuyModalTheme(previewTheme);
+          }
+        }}
+        isInstalled={installedThemeIds.has(previewTheme?.id || "")}
       />
+
+      {/* Paid Theme / Coming Soon Dialog */}
+      <Dialog open={!!buyModalTheme} onOpenChange={(v) => !v && setBuyModalTheme(null)}>
+        <DialogContent className="sm:max-w-md text-center py-6">
+          <DialogHeader>
+            <div className="mx-auto w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xl mb-3">
+              ✦
+            </div>
+            <DialogTitle className="text-lg font-bold text-center">Theme purchases are coming soon</DialogTitle>
+            <DialogDescription className="text-sm text-center">
+              This premium theme costs <strong className="text-slate-800">${buyModalTheme?.price.toFixed(2)}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2 text-xs text-muted-foreground bg-slate-50 border rounded-lg p-3 my-2">
+            Payment integration is currently disabled during development. Premium theme installations will be unlocked once checkout options go live.
+          </div>
+          <DialogFooter className="sm:justify-center">
+            <Button variant="default" onClick={() => setBuyModalTheme(null)} className="h-9 px-6 font-bold cursor-pointer">
+              Got it
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
