@@ -1,4 +1,5 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useLocation } from "@tanstack/react-router";
+
 import {
   Search,
   ShoppingCart,
@@ -93,6 +94,27 @@ export function Header() {
       setDrawerOpen(false);
     }
   };
+
+  const location = useLocation();
+  const isAuthPage = ["/login", "/register", "/auth/callback"].includes(location.pathname);
+
+  if (isAuthPage) {
+    return (
+      <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur-md py-3.5 shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6">
+          <Link to="/" className="flex items-center">
+            <Logo imgClassName="h-9 w-auto object-contain" />
+          </Link>
+          <Link
+            to="/"
+            className="text-sm font-medium text-muted-foreground hover:text-[#E11D48] transition-colors duration-200"
+          >
+            {t("home", language) || "Back to Home"}
+          </Link>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">

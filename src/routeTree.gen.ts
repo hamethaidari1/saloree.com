@@ -37,6 +37,7 @@ import { Route as SellerAnalyticsRouteImport } from './routes/seller.analytics'
 import { Route as SaloreeControlContentRouteImport } from './routes/saloree-control.content'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as CategoriesSlugRouteImport } from './routes/categories.$slug'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminStoresRouteImport } from './routes/admin.stores'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
@@ -184,6 +185,11 @@ const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
   path: '/categories/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/stores': typeof AdminStoresRoute
   '/admin/users': typeof AdminUsersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/saloree-control/content': typeof SaloreeControlContentRoute
@@ -266,6 +273,7 @@ export interface FileRoutesByTo {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/stores': typeof AdminStoresRoute
   '/admin/users': typeof AdminUsersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/saloree-control/content': typeof SaloreeControlContentRoute
@@ -303,6 +311,7 @@ export interface FileRoutesById {
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/stores': typeof AdminStoresRoute
   '/admin/users': typeof AdminUsersRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/categories/$slug': typeof CategoriesSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/saloree-control/content': typeof SaloreeControlContentRoute
@@ -341,6 +350,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/stores'
     | '/admin/users'
+    | '/auth/callback'
     | '/categories/$slug'
     | '/products/$slug'
     | '/saloree-control/content'
@@ -375,6 +385,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/stores'
     | '/admin/users'
+    | '/auth/callback'
     | '/categories/$slug'
     | '/products/$slug'
     | '/saloree-control/content'
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/stores'
     | '/admin/users'
+    | '/auth/callback'
     | '/categories/$slug'
     | '/products/$slug'
     | '/saloree-control/content'
@@ -442,6 +454,7 @@ export interface RootRouteChildren {
   RegisterRoute: typeof RegisterRoute
   SaloreeControlRoute: typeof SaloreeControlRouteWithChildren
   SellerRoute: typeof SellerRouteWithChildren
+  AuthCallbackRoute: typeof AuthCallbackRoute
   CategoriesSlugRoute: typeof CategoriesSlugRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
   StoresSlugRoute: typeof StoresSlugRoute
@@ -645,6 +658,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/users': {
       id: '/admin/users'
       path: '/users'
@@ -770,6 +790,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegisterRoute: RegisterRoute,
   SaloreeControlRoute: SaloreeControlRouteWithChildren,
   SellerRoute: SellerRouteWithChildren,
+  AuthCallbackRoute: AuthCallbackRoute,
   CategoriesSlugRoute: CategoriesSlugRoute,
   ProductsSlugRoute: ProductsSlugRoute,
   StoresSlugRoute: StoresSlugRoute,

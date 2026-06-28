@@ -1,4 +1,5 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
+
 import { Logo } from "@/components/Logo";
 import { useLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
@@ -32,6 +33,24 @@ export function Footer() {
 
   // Group footer links by category
   const categories = Array.from(new Set(footerLinks.map((l) => l.category)));
+
+  const location = useLocation();
+  const isAuthPage = ["/login", "/register", "/auth/callback"].includes(location.pathname);
+
+  if (isAuthPage) {
+    return (
+      <footer className="w-full border-t bg-background py-6 mt-auto">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row text-xs text-muted-foreground">
+          <p>© {new Date().getFullYear()} Saloree. All rights reserved.</p>
+          <div className="flex gap-4">
+            <Link to="/" className="hover:underline">Privacy Policy</Link>
+            <Link to="/" className="hover:underline">Terms of Service</Link>
+            <Link to="/" className="hover:underline">Contact Support</Link>
+          </div>
+        </div>
+      </footer>
+    );
+  }
 
   return (
     <footer className="mt-16 border-t bg-secondary text-secondary-foreground">
