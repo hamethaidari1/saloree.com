@@ -311,82 +311,79 @@ function Index() {
         <HeroSlider />
       </section>
 
-      {/* Wrapper to hide Category Cards and Service Cards on mobile/tablet, showing only on desktop/large screens */}
-      <div className="hidden lg:block space-y-12">
-        {/* Premium Curated Category Cards Section */}
-        {showCategories && (
-          <section className="space-y-6">
-            <div className="flex items-end justify-between border-b pb-3">
-              <div>
-                <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
-                  {categoriesTitle || "Shop by Category"}
-                </h2>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Explore our curated collections of top premium categories.
+      {/* Premium Curated Category Cards Section */}
+      {showCategories && (
+        <section className="space-y-6">
+          <div className="flex items-end justify-between border-b pb-3">
+            <div>
+              <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
+                {categoriesTitle || "Shop by Category"}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Explore our curated collections of top premium categories.
+              </p>
+            </div>
+            <Link
+              to="/marketplace"
+              className="text-sm font-semibold text-primary hover:underline"
+            >
+              View all
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
+            {categoryCards.map((category) => (
+              <Link
+                key={category.title}
+                to={category.link as any}
+                params={category.params as any}
+                className="group flex flex-col rounded-2xl bg-white border border-gray-100 p-3 shadow-soft hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5 overflow-hidden text-center cursor-pointer"
+              >
+                <div className="relative w-full aspect-square rounded-xl bg-gray-50 overflow-hidden mb-3">
+                  <img
+                    src={category.image}
+                    alt={category.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <span className="text-xs sm:text-sm font-bold text-gray-800 group-hover:text-primary transition-colors truncate">
+                  {category.title}
+                </span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-semibold">
+                  {category.count}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Five Premium Service Feature Cards */}
+      <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+        {featureCards.map((feature) => {
+          const Icon = feature.icon;
+          return (
+            <div
+              key={feature.title}
+              className="flex items-center gap-4 rounded-2xl bg-white border border-gray-100 p-5 shadow-soft hover:shadow-md transition-all duration-300 hover:-translate-y-1 group"
+            >
+              <div
+                className={`grid h-12 w-12 place-items-center rounded-xl shrink-0 ${feature.iconBg} ${feature.iconColor} group-hover:scale-105 transition-transform duration-200`}
+              >
+                <Icon className="size-6" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs sm:text-sm font-bold text-gray-800 truncate">
+                  {feature.title}
+                </h4>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 leading-snug">
+                  {feature.description}
                 </p>
               </div>
-              <Link
-                to="/marketplace"
-                className="text-sm font-semibold text-primary hover:underline"
-              >
-                View all
-              </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
-              {categoryCards.map((category) => (
-                <Link
-                  key={category.title}
-                  to={category.link as any}
-                  params={category.params as any}
-                  className="group flex flex-col rounded-2xl bg-white border border-gray-100 p-3 shadow-soft hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5 overflow-hidden text-center cursor-pointer"
-                >
-                  <div className="relative w-full aspect-square rounded-xl bg-gray-50 overflow-hidden mb-3">
-                    <img
-                      src={category.image}
-                      alt={category.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
-                  <span className="text-xs sm:text-sm font-bold text-gray-800 group-hover:text-primary transition-colors truncate">
-                    {category.title}
-                  </span>
-                  <span className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-semibold">
-                    {category.count}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Five Premium Service Feature Cards */}
-        <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
-          {featureCards.map((feature) => {
-            const Icon = feature.icon;
-            return (
-              <div
-                key={feature.title}
-                className="flex items-center gap-4 rounded-2xl bg-white border border-gray-100 p-5 shadow-soft hover:shadow-md transition-all duration-300 hover:-translate-y-1 group"
-              >
-                <div
-                  className={`grid h-12 w-12 place-items-center rounded-xl shrink-0 ${feature.iconBg} ${feature.iconColor} group-hover:scale-105 transition-transform duration-200`}
-                >
-                  <Icon className="size-6" />
-                </div>
-                <div className="min-w-0">
-                  <h4 className="text-xs sm:text-sm font-bold text-gray-800 truncate">
-                    {feature.title}
-                  </h4>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 leading-snug">
-                    {feature.description}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </section>
-      </div>
+          );
+        })}
+      </section>
 
       {/* How It Works Section */}
       {sections?.show_how_it_works && (
