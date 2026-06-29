@@ -148,27 +148,25 @@ export function Header() {
   return (
     <header className="w-full border-b border-gray-100 bg-white sticky top-0 z-50">
       {/* 1. Top Announcement Bar */}
-      <div className="bg-[#0F172A] text-white py-2 px-4 shadow-sm">
-        <div className="max-w-7xl mx-auto flex flex-col gap-1.5 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-          {/* Announcement items — single scrollable row on mobile */}
-          <div className="flex items-center justify-center gap-4 lg:gap-6 overflow-x-auto scrollbar-none text-[11px] lg:text-xs text-gray-300 whitespace-nowrap">
-            <div className="flex items-center gap-1 shrink-0">
-              <Truck className="size-3 lg:size-3.5 text-[#FF3B3B]" />
+      <div className="bg-[#0F172A] text-white text-xs py-2 px-4 shadow-sm">
+        <div className="max-w-7xl mx-auto flex flex-col gap-2 sm:flex-row items-center justify-between">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-gray-300">
+            <div className="flex items-center gap-1.5">
+              <Truck className="size-3.5 text-[#FF3B3B]" />
               <span>Free Shipping Over $50</span>
             </div>
-            <span className="text-gray-600 shrink-0">|</span>
-            <div className="flex items-center gap-1 shrink-0">
-              <ShieldCheck className="size-3 lg:size-3.5 text-[#FF3B3B]" />
-              <span>30-Day Money-Back Guarantee</span>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="size-3.5 text-[#FF3B3B]" />
+              <span>30-Day Money Back Guarantee</span>
             </div>
-            <span className="text-gray-600 shrink-0">|</span>
-            <div className="flex items-center gap-1 shrink-0">
-              <HelpCircle className="size-3 lg:size-3.5 text-[#FF3B3B]" />
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <div className="flex items-center gap-1.5">
+              <HelpCircle className="size-3.5 text-[#FF3B3B]" />
               <span>24/7 Customer Support</span>
             </div>
           </div>
-          {/* Locale selector — own centered row on mobile, inline on desktop */}
-          <div className="flex items-center justify-center lg:justify-end">
+          <div className="flex items-center gap-2">
             <LocaleSelector variant="desktop" />
           </div>
         </div>
