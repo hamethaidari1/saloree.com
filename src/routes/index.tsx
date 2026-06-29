@@ -311,6 +311,8 @@ function Index() {
         <HeroSlider />
       </section>
 
+      {/* Desktop-only: Category Cards + Service Feature Cards */}
+      <div className="hidden lg:block space-y-12">
       {/* Premium Curated Category Cards Section */}
       {showCategories && (
         <section className="space-y-6">
@@ -384,6 +386,7 @@ function Index() {
           );
         })}
       </section>
+      </div>
 
       {/* How It Works Section */}
       {sections?.show_how_it_works && (
