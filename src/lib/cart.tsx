@@ -58,6 +58,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      setReady(true);
+      return;
+    }
     try {
       const raw = localStorage.getItem(KEY);
       if (raw) {

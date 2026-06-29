@@ -1,5 +1,4 @@
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
-
 import {
   Search,
   ShoppingCart,
@@ -8,11 +7,26 @@ import {
   User as UserIcon,
   Menu,
   LogOut,
+  ChevronDown,
+  Heart,
   ChevronRight,
   Home,
   LayoutGrid,
   X,
   Globe,
+  Tag,
+  Flame,
+  Sparkles,
+  Laptop,
+  Shirt,
+  Sofa,
+  Dumbbell,
+  Gamepad2,
+  BookOpen,
+  HelpCircle,
+  ShieldCheck,
+  Truck,
+  Car,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { useState } from "react";
@@ -55,6 +69,7 @@ export function Header() {
   const { language } = useLocale();
   const navigate = useNavigate();
   const [q, setQ] = useState("");
+  const [category, setCategory] = useState("all");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -74,7 +89,15 @@ export function Header() {
 
   const onSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate({ to: "/marketplace", search: { q } as never });
+    if (category !== "all") {
+      navigate({
+        to: "/categories/$slug",
+        params: { slug: category },
+        search: { q } as never,
+      });
+    } else {
+      navigate({ to: "/marketplace", search: { q } as never });
+    }
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -113,7 +136,7 @@ export function Header() {
           </Link>
           <Link
             to="/"
-            className="text-sm font-medium text-muted-foreground hover:text-[#E11D48] transition-colors duration-200"
+            className="text-sm font-medium text-muted-foreground hover:text-[#FF3B3B] transition-colors duration-200"
           >
             {t("home", language) || "Back to Home"}
           </Link>
@@ -123,207 +146,252 @@ export function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background">
-      <div className="mx-auto flex max-w-7xl items-center px-4 py-1 md:py-1.5 lg:gap-6 lg:py-2">
-        {/* ── Mobile/Tablet Row ── (hidden on desktop) */}
-        <div className="flex flex-1 items-center gap-1.5 lg:hidden">
-          {/* 1. Hamburger – far left */}
+    <header className="w-full border-b border-gray-100 bg-white sticky top-0 z-50">
+      {/* 1. Top Announcement Bar */}
+      <div className="bg-[#0F172A] text-white text-xs py-2 px-4 shadow-sm">
+        <div className="max-w-7xl mx-auto flex flex-col gap-2 sm:flex-row items-center justify-between">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-gray-300">
+            <div className="flex items-center gap-1.5">
+              <Truck className="size-3.5 text-[#FF3B3B]" />
+              <span>Free Shipping Over $50</span>
+            </div>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="size-3.5 text-[#FF3B3B]" />
+              <span>30-Day Money Back Guarantee</span>
+            </div>
+            <span className="hidden sm:inline text-gray-600">|</span>
+            <div className="flex items-center gap-1.5">
+              <HelpCircle className="size-3.5 text-[#FF3B3B]" />
+              <span>24/7 Customer Support</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <LocaleSelector variant="desktop" />
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Main Premium Header */}
+      <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between gap-6">
+        {/* Logo and Mobile Menu toggle */}
+        <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
-            className="h-11 w-11 shrink-0"
+            className="lg:hidden h-10 w-10 shrink-0 hover:bg-gray-50 rounded-full"
             aria-label="Open menu"
             onClick={() => setDrawerOpen(true)}
           >
             <Menu className="size-5" />
           </Button>
+          <Logo imgClassName="h-10 w-auto object-contain" />
+        </div>
 
-          {/* 2. Logo – next to hamburger */}
-          <Logo imgClassName="h-[52px] w-auto object-contain md:h-[60px]" />
+        {/* Center: Premium Search Bar with Category Dropdown */}
+        <div className="hidden lg:flex flex-1 max-w-2xl justify-center">
+          <form
+            onSubmit={onSearch}
+            className="relative flex w-full items-center bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-100/50 hover:border-gray-300 focus-within:bg-white focus-within:border-[#FF3B3B] focus-within:ring-4 focus-within:ring-[#FF3B3B]/10 overflow-hidden transition-all duration-200"
+          >
+            <div className="flex items-center pl-4 pr-2 text-gray-400 shrink-0">
+              <Search className="size-4" />
+            </div>
+            <input
+              type="text"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search for products, brands and more..."
+              className="h-11 w-full bg-transparent pr-4 text-sm outline-none text-gray-800 placeholder-gray-400"
+            />
+            {/* Category Select Inside Search */}
+            <div className="relative shrink-0 flex items-center h-11 border-l border-gray-200">
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="h-full bg-transparent pr-8 pl-4 text-xs font-semibold text-gray-500 hover:text-gray-800 outline-none cursor-pointer appearance-none"
+              >
+                <option value="all">All Categories</option>
+                {categories?.map((cat) => (
+                  <option key={cat.id} value={cat.slug}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="size-3 absolute right-3 pointer-events-none text-gray-400" />
+            </div>
+            <button
+              type="submit"
+              aria-label="Search"
+              className="bg-[#FF3B3B] hover:bg-[#E03030] text-white font-semibold text-sm px-6 h-11 transition-all duration-200 active:scale-[0.98] shrink-0"
+            >
+              Search
+            </button>
+          </form>
+        </div>
 
-          {/* 3. Spacer pushes everything after it to the right */}
-          <div className="flex-1" />
+        {/* Right side options: Wishlist, Cart, Login, Premium Sign Up */}
+        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          <Link
+            to="/seller"
+            className="hidden xl:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
+          >
+            <Store className="size-4" />
+            <span>Sell on Saloree</span>
+          </Link>
 
-          {/* 4. Auth buttons / user dropdown */}
+          <Link
+            to={"/wishlist" as any}
+            className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
+          >
+            <Heart className="size-4" />
+            <span>Wishlist</span>
+          </Link>
+
+          <Link
+            to="/cart"
+            className="relative flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
+          >
+            <ShoppingCart className="size-4" />
+            <span className="hidden md:inline">Cart</span>
+            {count > 0 && (
+              <span className="absolute -top-0.5 right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#FF3B3B] px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+                {count}
+              </span>
+            )}
+          </Link>
+
+          <span className="hidden sm:inline w-[1px] h-5 bg-gray-200" />
+
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-10 gap-1 px-2">
-                  <UserIcon className="size-4 text-primary" />
-                  <span className="max-w-[72px] truncate text-xs font-semibold">
-                    {user.email?.split("@")[0]}
+                <Button
+                  variant="ghost"
+                  className="gap-2 h-10 px-3 hover:bg-gray-50 rounded-full border border-gray-100"
+                >
+                  <UserIcon className="size-4 text-gray-500" />
+                  <span className="max-w-[90px] truncate text-xs font-semibold text-gray-700">
+                    Hi, {user.email?.split("@")[0]}
                   </span>
+                  <ChevronDown className="size-3 text-gray-400" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuItem asChild>
-                  <Link to="/orders">{t("my_orders", language)}</Link>
+              <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl mt-2 p-1.5">
+                <DropdownMenuItem className="flex flex-col items-start gap-1 py-2 px-3">
+                  <span className="text-xs text-gray-400 font-medium">Logged in as</span>
+                  <span className="text-sm font-semibold text-gray-800 truncate w-full">
+                    {user.email}
+                  </span>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/seller">{t("seller_dashboard", language)}</Link>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                  <Link to="/orders">
+                    <Package className="mr-2 size-4 text-gray-400" /> {t("my_orders", language)}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                  <Link to="/seller">
+                    <Store className="mr-2 size-4 text-gray-400" /> {t("seller_dashboard", language)}
+                  </Link>
                 </DropdownMenuItem>
                 {roles.includes("admin") && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin">{t("admin_dashboard", language)}</Link>
+                  <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
+                    <Link to="/admin">
+                      <UserIcon className="mr-2 size-4 text-gray-400" /> {t("admin_dashboard", language)}
+                    </Link>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-destructive">
+                <DropdownMenuItem
+                  onClick={signOut}
+                  className="text-destructive rounded-lg cursor-pointer focus:bg-destructive/5"
+                >
                   <LogOut className="mr-2 size-4" /> {t("sign_out", language)}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-2">
               <Button
                 asChild
                 variant="ghost"
-                size="sm"
-                className="h-10 px-2.5 text-xs font-semibold"
+                className="h-10 px-4 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] hover:bg-transparent rounded-full"
               >
-                <Link to="/login" className="flex items-center gap-1">
-                  <UserIcon className="size-4" />
-                  {t("login", language)}
-                </Link>
+                <Link to="/login">Login</Link>
               </Button>
-              <Button asChild size="sm" className="h-10 px-2.5 text-xs font-semibold">
-                <Link to="/register">{t("sign_up", language)}</Link>
-              </Button>
-            </div>
-          )}
-
-          {/* 5. Cart – far right */}
-          <Button
-            asChild
-            variant="ghost"
-            size="icon"
-            className="relative h-11 w-11 shrink-0"
-            aria-label="Cart"
-          >
-            <Link to="/cart">
-              <ShoppingCart className="size-5" />
-              {count > 0 && (
-                <span className="absolute right-1 top-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-0.5 text-[9px] font-bold text-primary-foreground">
-                  {count}
-                </span>
-              )}
-            </Link>
-          </Button>
-        </div>
-
-        {/* ── Desktop Row ── (hidden below lg) */}
-        <div className="hidden flex-1 items-center gap-6 lg:flex">
-          <Logo imgClassName="h-20 w-auto object-contain" />
-
-          {/* Center: Desktop search */}
-          <form onSubmit={onSearch} className="flex-1 max-w-2xl">
-            <div className="relative">
-              <input
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder={t("search_placeholder", language)}
-                className="h-10 w-full rounded-md border border-input bg-background pl-4 pr-12 text-sm outline-none focus:ring-2 focus:ring-ring"
-              />
-              <button
-                type="submit"
-                aria-label="Search"
-                className="absolute right-1 top-1 grid h-8 w-10 place-items-center rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
+              <Button
+                asChild
+                className="h-10 px-5 text-sm font-bold text-white bg-[#FF3B3B] hover:bg-[#E03030] rounded-full shadow-md shadow-red-500/10 hover:shadow-red-500/20 active:scale-[0.98] transition-all"
               >
-                <Search className="size-4" />
-              </button>
-            </div>
-          </form>
-
-          {/* Desktop: Nav links */}
-          <nav className="flex items-center gap-1">
-            <LocaleSelector variant="desktop" />
-            <Link
-              to="/seller"
-              className="flex items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium hover:bg-accent"
-            >
-              <Store className="size-4" /> {t("sell_on_saloree", language)}
-            </Link>
-            {user && (
-              <Link
-                to="/orders"
-                className="flex items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium hover:bg-accent"
-              >
-                <Package className="size-4" /> {t("orders", language)}
-              </Link>
-            )}
-            <Link
-              to="/cart"
-              className="relative flex items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium hover:bg-accent"
-            >
-              <ShoppingCart className="size-4" /> {t("cart", language)}
-              {count > 0 && (
-                <span className="absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-                  {count}
-                </span>
-              )}
-            </Link>
-          </nav>
-
-          {/* Desktop: User account */}
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <UserIcon className="size-4" />
-                  <span className="max-w-[120px] truncate">Hi, {user.email?.split("@")[0]}</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem asChild>
-                  <Link to="/orders">{t("my_orders", language)}</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/seller">{t("seller_dashboard", language)}</Link>
-                </DropdownMenuItem>
-                {roles.includes("admin") && (
-                  <DropdownMenuItem asChild>
-                    <Link to="/admin">{t("admin_dashboard", language)}</Link>
-                  </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut} className="text-destructive">
-                  <LogOut className="mr-2 size-4" /> {t("sign_out", language)}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <div className="flex gap-2">
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/login">{t("login", language)}</Link>
-              </Button>
-              <Button asChild size="sm">
-                <Link to="/register">{t("sign_up", language)}</Link>
+                <Link to="/register">Sign Up</Link>
               </Button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Mobile/Tablet Search Bar (Below Header, sticky) */}
-      <form onSubmit={onSearch} className="border-t px-4 py-2 lg:hidden bg-background">
-        <div className="relative">
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder={t("search_placeholder", language)}
-            className="h-10 w-full rounded-md border border-input bg-background pl-4 pr-12 text-sm outline-none focus:ring-2 focus:ring-ring"
-          />
-          <button
-            type="submit"
-            aria-label="Search"
-            className="absolute right-1 top-1 grid h-8 w-10 place-items-center rounded-md bg-primary text-primary-foreground"
-          >
-            <Search className="size-4" />
-          </button>
-        </div>
-      </form>
+      {/* 3. Second Navigation (Horizontal navigation bar with icons) */}
+      <nav className="border-t border-gray-100 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          <div className="flex h-12 items-center gap-6 overflow-x-auto scrollbar-none py-1.5 w-full">
+            {/* All Categories dropdown button */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 text-sm font-bold text-gray-800 hover:text-[#FF3B3B] transition-colors py-2 px-3 bg-gray-50 hover:bg-gray-100/80 rounded-lg whitespace-nowrap cursor-pointer">
+                  <LayoutGrid className="size-4 text-[#FF3B3B]" />
+                  <span>All Categories</span>
+                  <ChevronDown className="size-3.5 text-gray-400" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56 rounded-xl shadow-xl mt-1 p-1">
+                {(categories ?? []).map((cat) => {
+                  const Icon = getCategoryIcon(cat.icon);
+                  return (
+                    <DropdownMenuItem key={cat.id} asChild className="rounded-lg py-2 cursor-pointer">
+                      <Link to="/categories/$slug" params={{ slug: cat.slug }}>
+                        <Icon className="mr-2 size-4 text-gray-400" />
+                        <span>{cat.name}</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
 
-      {/* Slide Navigation Drawer Overlay */}
+            {/* Custom styled category/deal links with underline hover effects */}
+            {[
+              { label: "Deals", to: "/marketplace", icon: Tag, search: { filter: "deals" } },
+              { label: "Best Sellers", to: "/marketplace", icon: Flame, search: { filter: "best-sellers" } },
+              { label: "New Arrivals", to: "/marketplace", icon: Sparkles, search: { filter: "new-arrivals" } },
+              { label: "Electronics", to: "/categories/$slug", params: { slug: "electronics" }, icon: Laptop },
+              { label: "Fashion", to: "/categories/$slug", params: { slug: "fashion" }, icon: Shirt },
+              { label: "Home & Living", to: "/categories/$slug", params: { slug: "home-living" }, icon: Sofa },
+              { label: "Beauty", to: "/categories/$slug", params: { slug: "beauty" }, icon: Sparkles },
+              { label: "Sports", to: "/categories/$slug", params: { slug: "sports" }, icon: Dumbbell },
+              { label: "Toys & Games", to: "/categories/$slug", params: { slug: "toys-games" }, icon: Gamepad2 },
+              { label: "Books", to: "/categories/$slug", params: { slug: "books" }, icon: BookOpen },
+            ].map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  params={link.params as any}
+                  search={link.search as any}
+                  className="group relative flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-gray-900 transition-colors py-1.5 whitespace-nowrap"
+                >
+                  <Icon className="size-3.5 text-gray-400 group-hover:text-[#FF3B3B] transition-colors" />
+                  <span>{link.label}</span>
+                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FF3B3B] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Drawer Overlay */}
       {drawerOpen && (
         <div
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity duration-300 lg:hidden"
@@ -331,68 +399,86 @@ export function Header() {
         />
       )}
 
-      {/* Left Slide Navigation Drawer */}
+      {/* Mobile Drawer */}
       <div
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className={`fixed inset-y-0 left-0 z-50 flex h-full w-[85%] max-w-[420px] flex-col bg-background shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-full w-[85%] max-w-[360px] flex-col bg-background shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
           drawerOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Drawer Header */}
-        <div className="bg-primary px-5 py-6 text-primary-foreground shadow-md relative flex flex-col gap-4">
+        <div className="bg-[#0F172A] px-5 py-6 text-white relative flex flex-col gap-4">
           <button
             onClick={() => setDrawerOpen(false)}
-            className="absolute right-4 top-4 text-primary-foreground/80 hover:text-white transition-colors"
+            className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors"
             aria-label="Close menu"
           >
             <X className="size-6" />
           </button>
 
           <div className="flex items-center gap-3 mt-2">
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-white/20 text-white font-bold border border-white/10 text-xl shadow-inner">
-              {user ? user.email?.charAt(0).toUpperCase() : <UserIcon className="size-6" />}
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-white/10 text-white font-bold border border-white/10 text-xl shadow-inner">
+              {user ? user.email?.charAt(0).toUpperCase() : <UserIcon className="size-5" />}
             </div>
             <div>
-              <p className="text-sm font-semibold opacity-90">
-                {user ? `Hello, ${user.email?.split("@")[0]}` : t("hello_sign_in", language)}
+              <p className="text-sm font-semibold">
+                {user ? `Hello, ${user.email?.split("@")[0]}` : "Hello, Sign In"}
               </p>
               {!user && (
                 <Link
                   to="/login"
                   onClick={() => setDrawerOpen(false)}
-                  className="text-xs font-bold underline hover:text-white transition-colors"
+                  className="text-xs font-bold text-[#FF3B3B] underline hover:text-[#E03030] transition-colors"
                 >
-                  {t("sign_in_account", language)}
+                  Sign In to Your Account
                 </Link>
               )}
             </div>
           </div>
         </div>
 
-        {/* Drawer Scrollable Content */}
+        {/* Drawer Content */}
         <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+          {/* Mobile Search inside Drawer */}
+          <form onSubmit={onSearch} className="relative">
+            <input
+              type="text"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search products..."
+              className="h-10 w-full rounded-full border border-gray-200 pl-4 pr-12 text-sm outline-none focus:border-[#FF3B3B] bg-gray-50 focus:bg-white"
+            />
+            <button
+              type="submit"
+              aria-label="Search"
+              className="absolute right-1 top-1 grid h-8 w-10 place-items-center rounded-full bg-[#FF3B3B] text-white"
+            >
+              <Search className="size-4" />
+            </button>
+          </form>
+
           {/* Settings Section: Language & Currency */}
           <div className="px-2">
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">
-              {t("language", language)} & {t("currency", language)}
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">
+              Settings & Language
             </h3>
             <LocaleSelector variant="mobile" />
           </div>
 
           {/* Main Menu */}
           <div>
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5 px-2">
-              {t("main_menu", language)}
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5 px-2">
+              Main Menu
             </h3>
             <nav className="space-y-1">
               {[
-                { to: "/", label: t("home", language), icon: Home },
-                { to: "/marketplace", label: t("marketplace", language), icon: LayoutGrid },
-                { to: "/orders", label: t("orders", language), icon: Package, authRequired: true },
-                { to: "/cart", label: t("cart", language), icon: ShoppingCart, countBadge: count },
-                { to: "/seller", label: t("become_a_seller", language), icon: Store },
+                { to: "/", label: "Home", icon: Home },
+                { to: "/marketplace", label: "Shop Marketplace", icon: LayoutGrid },
+                { to: "/orders", label: "My Orders", icon: Package, authRequired: true },
+                { to: "/cart", label: "Shopping Cart", icon: ShoppingCart, countBadge: count },
+                { to: "/seller", label: "Become a Seller", icon: Store },
               ].map((item) => {
                 if (item.authRequired && !user) return null;
                 const Icon = item.icon;
@@ -401,19 +487,19 @@ export function Header() {
                     key={item.label}
                     to={item.to}
                     onClick={() => setDrawerOpen(false)}
-                    className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-primary/5 hover:text-primary transition-all active:scale-[0.98]"
+                    className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className="size-4 text-muted-foreground" />
+                      <Icon className="size-4 text-gray-400" />
                       <span>{item.label}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       {item.countBadge !== undefined && item.countBadge > 0 && (
-                        <span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">
+                        <span className="rounded-full bg-[#FF3B3B] px-2 py-0.5 text-xs font-bold text-white">
                           {item.countBadge}
                         </span>
                       )}
-                      <ChevronRight className="size-4 text-muted-foreground/60" />
+                      <ChevronRight className="size-4 text-gray-400" />
                     </div>
                   </Link>
                 );
@@ -423,8 +509,8 @@ export function Header() {
 
           {/* Shop by Category */}
           <div>
-            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5 px-2">
-              {t("shop_by_category", language)}
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5 px-2">
+              Shop by Category
             </h3>
             <nav className="space-y-1">
               {(categories ?? []).map((cat) => {
@@ -435,13 +521,13 @@ export function Header() {
                     to="/categories/$slug"
                     params={{ slug: cat.slug }}
                     onClick={() => setDrawerOpen(false)}
-                    className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-primary/5 hover:text-primary transition-all active:scale-[0.98]"
+                    className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className="size-4 text-muted-foreground" />
+                      <Icon className="size-4 text-gray-400" />
                       <span>{cat.name}</span>
                     </div>
-                    <ChevronRight className="size-4 text-muted-foreground/60" />
+                    <ChevronRight className="size-4 text-gray-400" />
                   </Link>
                 );
               })}
@@ -450,16 +536,16 @@ export function Header() {
 
           {/* Sign Out (for logged in users) */}
           {user && (
-            <div className="border-t pt-4">
+            <div className="border-t border-gray-100 pt-4">
               <button
                 onClick={() => {
                   setDrawerOpen(false);
                   signOut();
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-destructive hover:bg-destructive/5 transition-all"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-destructive hover:bg-destructive/5 transition-all"
               >
                 <LogOut className="size-4" />
-                <span>{t("sign_out", language)}</span>
+                <span>Sign Out</span>
               </button>
             </div>
           )}

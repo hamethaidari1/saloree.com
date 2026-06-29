@@ -1,10 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion, useReducedMotion } from "framer-motion";
-import { ShieldCheck, Truck, Tag, Headphones, ArrowRight, Check, Store, Globe, Package } from "lucide-react";
+import {
+  ShieldCheck,
+  Truck,
+  Tag,
+  Headphones,
+  ArrowRight,
+  Check,
+  Store,
+  Globe,
+  Package,
+  Sparkles,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { NewHeader } from "@/components/NewHeader";
 import { HeroSlider } from "@/components/HeroSlider";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { useLocale } from "@/lib/locale";
@@ -14,7 +24,6 @@ import { useHomepageSections } from "@/hooks/useHomepageSections";
 import { usePromoBanners } from "@/hooks/usePromoBanners";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Logo } from "@/components/Logo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -186,11 +195,6 @@ function Index() {
     );
   }
 
-  const heroTitle = settings?.hero_title || t("hero_title", language);
-  const heroSubtitle = settings?.hero_subtitle || t("hero_subtitle", language);
-  const heroButtonText = settings?.hero_button_text || t("hero_cta", language);
-  const heroButtonLink = settings?.hero_button_link || "/marketplace";
-
   const showCategories = sections?.show_categories ?? true;
   const showNewArrivals = sections?.show_new_arrivals ?? true;
   const showFeatured = sections?.show_featured ?? true;
@@ -201,146 +205,213 @@ function Index() {
 
   const activeBanners = promoBanners.filter((b) => b.is_enabled);
 
+  // Curated category items matching requirement: Electronics, Fashion, Home & Living, Beauty, Sports, Books, Gaming, Automotive
+  const categoryCards = [
+    {
+      title: "Electronics",
+      count: "12,340+ Items",
+      link: "/categories/$slug",
+      params: { slug: "electronics" },
+      image: "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&w=300&q=80",
+    },
+    {
+      title: "Fashion",
+      count: "18,250+ Items",
+      link: "/categories/$slug",
+      params: { slug: "fashion" },
+      image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=300&q=80",
+    },
+    {
+      title: "Home & Living",
+      count: "9,120+ Items",
+      link: "/categories/$slug",
+      params: { slug: "home-living" },
+      image: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=300&q=80",
+    },
+    {
+      title: "Beauty",
+      count: "6,780+ Items",
+      link: "/categories/$slug",
+      params: { slug: "beauty" },
+      image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=300&q=80",
+    },
+    {
+      title: "Sports",
+      count: "7,540+ Items",
+      link: "/categories/$slug",
+      params: { slug: "sports" },
+      image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=300&q=80",
+    },
+    {
+      title: "Books",
+      count: "3,110+ Items",
+      link: "/categories/$slug",
+      params: { slug: "books" },
+      image: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=300&q=80",
+    },
+    {
+      title: "Gaming",
+      count: "5,420+ Items",
+      link: "/categories/$slug",
+      params: { slug: "gaming" },
+      image: "https://images.unsplash.com/photo-1612287230202-1bf1d85d1bdf?auto=format&fit=crop&w=300&q=80",
+    },
+    {
+      title: "Automotive",
+      count: "4,950+ Items",
+      link: "/categories/$slug",
+      params: { slug: "automotive" },
+      image: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=300&q=80",
+    },
+  ];
+
+  // 5 Feature Cards matching: Secure Payments, Fast Worldwide Shipping, Easy Returns, 24/7 Customer Support, Trusted by Millions
+  const featureCards = [
+    {
+      icon: ShieldCheck,
+      title: "Secure Payments",
+      description: "100% protection for payments",
+      iconBg: "bg-emerald-50",
+      iconColor: "text-emerald-500",
+    },
+    {
+      icon: Truck,
+      title: "Worldwide Shipping",
+      description: "Free shipping over $50",
+      iconBg: "bg-blue-50",
+      iconColor: "text-blue-500",
+    },
+    {
+      icon: Tag,
+      title: "Easy Returns",
+      description: "30-day hassle-free refund",
+      iconBg: "bg-amber-50",
+      iconColor: "text-amber-500",
+    },
+    {
+      icon: Headphones,
+      title: "24/7 Support",
+      description: "We're here to help anytime",
+      iconBg: "bg-purple-50",
+      iconColor: "text-purple-500",
+    },
+    {
+      icon: Sparkles,
+      title: "Trusted by Millions",
+      description: "Join our happy shoppers",
+      iconBg: "bg-rose-50",
+      iconColor: "text-rose-500",
+    },
+  ];
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
-      {/* Hero + sidebar */}
-      <section className="grid gap-4 lg:grid-cols-[260px_1fr]">
-        <aside className="hidden rounded-lg border bg-card p-2 lg:block">
-          <ul className="text-sm">
-            {(categories ?? []).slice(0, 8).map((c) => (
-              <li key={c.id}>
-                <Link
-                  to="/categories/$slug"
-                  params={{ slug: c.slug }}
-                  className="flex items-center justify-between rounded-md px-3 py-2.5 hover:bg-accent"
-                >
-                  <span className="font-medium">{c.name}</span>
-                  <ArrowRight className="size-4 text-muted-foreground" />
-                </Link>
-              </li>
-            ))}
-            <li className="mt-1 border-t pt-2">
-              <Link
-                to="/marketplace"
-                className="flex items-center justify-between rounded-md px-3 py-2.5 font-semibold text-primary hover:bg-primary-soft"
-              >
-                View all categories <ArrowRight className="size-4" />
-              </Link>
-            </li>
-          </ul>
-        </aside>
-
-        <div className="relative overflow-hidden rounded-[28px] border border-rose-100/80 bg-[linear-gradient(135deg,_rgba(255,245,247,0.98),_rgba(254,242,242,0.96)_40%,_rgba(255,228,230,0.92)_100%)] shadow-[0_28px_90px_rgba(244,63,94,0.12)]">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,255,255,0.95),_rgba(255,255,255,0)_36%),radial-gradient(circle_at_bottom_right,_rgba(251,113,133,0.12),_rgba(251,113,133,0)_28%)]" />
-          <div className="relative grid items-center gap-8 p-6 sm:p-10 lg:grid-cols-[minmax(0,45%)_minmax(0,55%)] lg:gap-10 lg:p-12">
-            <div className="max-w-xl lg:max-w-none">
-              <motion.p
-                className="text-sm font-semibold uppercase tracking-[0.32em] text-primary"
-                initial={shouldReduceMotion ? false : { opacity: 0, x: -24 }}
-                animate={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
-                transition={{ duration: 0.55, ease: "easeOut" }}
-              >
-                NEW GENERATION MARKETPLACE
-              </motion.p>
-              <motion.h1
-                className="mt-3 text-3xl font-extrabold leading-tight text-secondary sm:text-4xl lg:text-5xl"
-                initial={shouldReduceMotion ? false : { opacity: 0, x: -36 }}
-                animate={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
-                transition={{ duration: 0.7, ease: "easeOut", delay: 0.08 }}
-              >
-                Shop Smarter.
-                <br />
-                Sell Better.
-              </motion.h1>
-              <motion.p
-                className="mt-4 max-w-md text-sm text-muted-foreground sm:text-base"
-                initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
-                animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut", delay: 0.18 }}
-              >
-                Launch your store, discover millions of products and grow globally with Saloree
-                Marketplace.
-              </motion.p>
-              <motion.div
-                className="mt-6 flex flex-col gap-4 sm:flex-row"
-                initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
-                animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut", delay: 0.28 }}
-              >
-                <Button asChild size="lg" className="rounded-full px-6 shadow-lg">
-                  <Link to="/marketplace">Start Shopping</Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="rounded-full px-6">
-                  <Link to="/seller">Become Seller</Link>
-                </Button>
-              </motion.div>
-              <motion.div
-                className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground"
-                initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
-                animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: "easeOut", delay: 0.38 }}
-              >
-                <span className="flex items-center gap-1">
-                  <Check className="size-4 text-green-500" /> Secure Payment
-                </span>
-                <span className="flex items-center gap-1">
-                  <Check className="size-4 text-green-500" /> Fast Delivery
-                </span>
-                <span className="flex items-center gap-1">
-                  <Check className="size-4 text-green-500" /> Global Sellers
-                </span>
-              </motion.div>
-            </div>
-
-            <HeroSlider />
-          </div>
-        </div>
+    <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 lg:px-8 space-y-12">
+      {/* Premium Full-Width Hero Slider Section */}
+      <section className="w-full">
+        <HeroSlider />
       </section>
 
+      {/* Premium Curated Category Cards Section */}
+      {showCategories && (
+        <section className="space-y-6">
+          <div className="flex items-end justify-between border-b pb-3">
+            <div>
+              <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
+                {categoriesTitle || "Shop by Category"}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Explore our curated collections of top premium categories.
+              </p>
+            </div>
+            <Link
+              to="/marketplace"
+              className="text-sm font-semibold text-primary hover:underline"
+            >
+              View all
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
+            {categoryCards.map((category) => (
+              <Link
+                key={category.title}
+                to={category.link as any}
+                params={category.params as any}
+                className="group flex flex-col rounded-2xl bg-white border border-gray-100 p-3 shadow-soft hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5 overflow-hidden text-center cursor-pointer"
+              >
+                <div className="relative w-full aspect-square rounded-xl bg-gray-50 overflow-hidden mb-3">
+                  <img
+                    src={category.image}
+                    alt={category.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <span className="text-xs sm:text-sm font-bold text-gray-800 group-hover:text-primary transition-colors truncate">
+                  {category.title}
+                </span>
+                <span className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-semibold">
+                  {category.count}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Five Premium Service Feature Cards */}
+      <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+        {featureCards.map((feature) => {
+          const Icon = feature.icon;
+          return (
+            <div
+              key={feature.title}
+              className="flex items-center gap-4 rounded-2xl bg-white border border-gray-100 p-5 shadow-soft hover:shadow-md transition-all duration-300 hover:-translate-y-1 group"
+            >
+              <div
+                className={`grid h-12 w-12 place-items-center rounded-xl shrink-0 ${feature.iconBg} ${feature.iconColor} group-hover:scale-105 transition-transform duration-200`}
+              >
+                <Icon className="size-6" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs sm:text-sm font-bold text-gray-800 truncate">
+                  {feature.title}
+                </h4>
+                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 leading-snug">
+                  {feature.description}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </section>
+
+      {/* How It Works Section */}
       {sections?.show_how_it_works && (
-        <section className="mt-10">
-          <h2 className="text-xl font-bold sm:text-2xl text-center">{sections?.how_it_works_title || "How It Works"}</h2>
+        <section className="py-6 border-y border-gray-100">
+          <h2 className="text-xl font-bold sm:text-2xl text-center">
+            {sections?.how_it_works_title || "How It Works"}
+          </h2>
           <div className="mt-8 flex flex-col items-center space-y-8 md:flex-row md:justify-around md:space-y-0">
             {[
               { step: 1, title: "Create Store", description: "Sign up and set up your shop." },
               { step: 2, title: "Upload Products", description: "Add your items with ease." },
-              { step: 3, title: "Start Selling", description: "Reach customers and grow." }
+              { step: 3, title: "Start Selling", description: "Reach customers and grow." },
             ].map((item) => (
-              <div key={item.step} className="text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-white shadow-lg">
+              <div key={item.step} className="text-center max-w-xs">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-xl font-extrabold text-white shadow-lg shadow-red-500/10">
                   {item.step}
                 </div>
-                <h3 className="mt-4 text-lg font-semibold">{item.title}</h3>
-                <p className="text-muted-foreground">{item.description}</p>
+                <h3 className="mt-4 text-base font-bold">{item.title}</h3>
+                <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Feature Strip */}
-      <section className="mt-6 grid gap-3 rounded-lg border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { Icon: ShieldCheck, title: "Secure Shopping", subtitle: "Your data is always protected" },
-          { Icon: Truck, title: "Fast Delivery", subtitle: "Get your order at your door" },
-          { Icon: Tag, title: "Best Prices", subtitle: "Enjoy amazing discounts" },
-          { Icon: Headphones, title: "24/7 Support", subtitle: "We're here to help you" },
-        ].map((feature) => (
-          <div key={feature.title} className="flex items-center gap-3 rounded-md p-2">
-            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
-              <feature.Icon className="size-5" />
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold">{feature.title}</p>
-              <p className="truncate text-xs text-muted-foreground">{feature.subtitle}</p>
-            </div>
-          </div>
-        ))}
-      </section>
-
       {/* Promo Banners */}
       {activeBanners.length > 0 && (
-        <section className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {activeBanners.map((banner) => (
             <div
               key={banner.id}
@@ -361,7 +432,9 @@ function Index() {
                     size="sm"
                     className="rounded-full bg-white text-black hover:bg-white/90"
                   >
-                    <Link to={banner.button_link as any}>{banner.button_text || "Shop Now"}</Link>
+                    <Link to={banner.button_link as any}>
+                      {banner.button_text || "Shop Now"}
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -371,68 +444,93 @@ function Index() {
       )}
 
       {/* 1. New Arrivals */}
-      <section className="mt-12">
-        <div className="flex items-end justify-between border-b pb-3 mb-6">
-          <div>
-            <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">{newArrivalsTitle}</h2>
-            <p className="text-xs text-muted-foreground mt-1">Explore our latest products and additions.</p>
+      {showNewArrivals && (
+        <section>
+          <div className="flex items-end justify-between border-b pb-3 mb-6">
+            <div>
+              <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
+                {newArrivalsTitle}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Explore our latest products and additions.
+              </p>
+            </div>
+            <Link
+              to="/marketplace"
+              className="text-sm font-semibold text-primary hover:underline"
+            >
+              View all
+            </Link>
           </div>
-          <Link to="/marketplace" className="text-sm font-semibold text-primary hover:underline">
-            View all
-          </Link>
-        </div>
-        {loadingNewArrivals ? (
-          <ProductGridSkeleton />
-        ) : newArrivals.length === 0 ? (
-          <ProductGridEmptyState />
-        ) : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {newArrivals.map((p) => (
-              <ProductCard key={`new-${p.id}`} p={p} />
-            ))}
-          </div>
-        )}
-      </section>
+          {loadingNewArrivals ? (
+            <ProductGridSkeleton />
+          ) : newArrivals.length === 0 ? (
+            <ProductGridEmptyState />
+          ) : (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {newArrivals.map((p) => (
+                <ProductCard key={`new-${p.id}`} p={p} />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* 2. Featured Products */}
-      <section className="mt-12">
-        <div className="flex items-end justify-between border-b pb-3 mb-6">
-          <div>
-            <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">{featuredTitle}</h2>
-            <p className="text-xs text-muted-foreground mt-1">Handpicked premium products chosen for you.</p>
+      {showFeatured && (
+        <section>
+          <div className="flex items-end justify-between border-b pb-3 mb-6">
+            <div>
+              <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
+                {featuredTitle}
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Handpicked premium products chosen for you.
+              </p>
+            </div>
+            <Link
+              to="/marketplace"
+              className="text-sm font-semibold text-primary hover:underline"
+            >
+              View all
+            </Link>
           </div>
-          <Link to="/marketplace" className="text-sm font-semibold text-primary hover:underline">
-            View all
-          </Link>
-        </div>
-        {loadingFeatured ? (
-          <ProductGridSkeleton />
-        ) : featuredProducts.length === 0 ? (
-          <ProductGridEmptyState />
-        ) : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {featuredProducts.map((p) => (
-              <ProductCard key={`featured-${p.id}`} p={p} />
-            ))}
-          </div>
-        )}
-      </section>
+          {loadingFeatured ? (
+            <ProductGridSkeleton />
+          ) : featuredProducts.length === 0 ? (
+            <ProductGridEmptyState />
+          ) : (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+              {featuredProducts.map((p) => (
+                <ProductCard key={`featured-${p.id}`} p={p} />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* 3. Trending Products */}
-      <section className="mt-12">
+      <section>
         <div className="flex items-end justify-between border-b pb-3 mb-6">
           <div>
-            <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">{sections?.trending_products_title || "Trending Products"}</h2>
-            <p className="text-xs text-muted-foreground mt-1">See what is popular in our community right now.</p>
+            <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
+              {sections?.trending_products_title || "Trending Products"}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              See what is popular in our community right now.
+            </p>
           </div>
-          <Link to="/marketplace" className="text-sm font-semibold text-primary hover:underline">
+          <Link
+            to="/marketplace"
+            className="text-sm font-semibold text-primary hover:underline"
+          >
             View all
           </Link>
         </div>
         {loadingTrending ? (
           <ProductGridSkeleton />
         ) : trendingProducts.length === 0 ? (
-          <ProductGridEmptyState />
+            <ProductGridEmptyState />
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {trendingProducts.map((p) => (
@@ -443,20 +541,27 @@ function Index() {
       </section>
 
       {/* 4. Best Sellers */}
-      <section className="mt-12">
+      <section>
         <div className="flex items-end justify-between border-b pb-3 mb-6">
           <div>
-            <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">{sections?.top_sellers_title || "Best Sellers"}</h2>
-            <p className="text-xs text-muted-foreground mt-1">Our top-rated products with verified purchases.</p>
+            <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
+              {sections?.top_sellers_title || "Best Sellers"}
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Our top-rated products with verified purchases.
+            </p>
           </div>
-          <Link to="/marketplace" className="text-sm font-semibold text-primary hover:underline">
+          <Link
+            to="/marketplace"
+            className="text-sm font-semibold text-primary hover:underline"
+          >
             View all
           </Link>
         </div>
         {loadingBestSellers ? (
           <ProductGridSkeleton />
         ) : bestSellers.length === 0 ? (
-          <ProductGridEmptyState />
+            <ProductGridEmptyState />
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {bestSellers.map((p) => (
@@ -466,30 +571,36 @@ function Index() {
         )}
       </section>
 
+      {/* Flash Sale Section */}
       {sections?.flash_sale_enabled && (
-        <section className="mt-10">
-          <h2 className="text-xl font-bold sm:text-2xl">{sections?.flash_sale_title || "Flash Sale"}</h2>
-          <div className="mt-4 rounded-lg border bg-gradient-to-r from-purple-500 to-pink-500 p-6 text-white shadow-card">
-            <p className="text-sm uppercase tracking-wide">Limited Time Offer</p>
-            <h3 className="mt-2 text-3xl font-bold">Up to 50% Off!</h3>
-            <div className="mt-4 flex items-center space-x-4">
-              <div className="text-lg font-semibold">Ends in: 00h 00m 00s</div>
-              <div className="h-2 w-32 rounded-full bg-white/30">
+        <section>
+          <h2 className="text-xl font-bold sm:text-2xl">
+            {sections?.flash_sale_title || "Flash Sale"}
+          </h2>
+          <div className="mt-4 rounded-2xl border bg-gradient-to-r from-purple-500 to-pink-500 p-6 text-white shadow-card">
+            <p className="text-sm uppercase tracking-wide font-semibold">Limited Time Offer</p>
+            <h3 className="mt-2 text-3xl font-extrabold">Up to 50% Off!</h3>
+            <div className="mt-4 flex flex-wrap items-center gap-4">
+              <div className="text-base font-bold">Ends in: 00h 00m 00s</div>
+              <div className="h-2 w-32 rounded-full bg-white/30 overflow-hidden">
                 <div className="h-full w-1/2 rounded-full bg-white" />
               </div>
-              <p className="text-sm">Only 50 left!</p>
+              <p className="text-xs">Only 50 left!</p>
             </div>
-            <Button className="mt-6 rounded-full bg-white text-primary hover:bg-gray-100">
+            <Button className="mt-6 rounded-full bg-white text-primary hover:bg-gray-100 font-bold px-6">
               Shop Flash Sale
             </Button>
           </div>
         </section>
       )}
 
+      {/* Statistics Section */}
       {sections?.show_statistics && (
-        <section className="mt-10">
-          <h2 className="text-xl font-bold sm:text-2xl text-center">{sections?.statistics_title || "Our Global Reach"}</h2>
-          <div className="grid grid-cols-2 gap-6 rounded-lg bg-gradient-to-r from-primary to-red-400 p-8 text-white shadow-card md:grid-cols-4">
+        <section>
+          <h2 className="text-xl font-bold sm:text-2xl text-center mb-6">
+            {sections?.statistics_title || "Our Global Reach"}
+          </h2>
+          <div className="grid grid-cols-2 gap-6 rounded-2xl bg-gradient-to-r from-primary to-red-400 p-8 text-white shadow-card md:grid-cols-4">
             {[
               { value: "1M+", label: "Products" },
               { value: "120K+", label: "Customers" },
@@ -497,65 +608,41 @@ function Index() {
               { value: "150+", label: "Countries" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
-                <p className="text-3xl font-bold">{stat.value}</p>
-                <p className="text-sm uppercase tracking-wide">{stat.label}</p>
+                <p className="text-3xl font-extrabold">{stat.value}</p>
+                <p className="text-xs uppercase tracking-wider font-semibold mt-1 opacity-90">
+                  {stat.label}
+                </p>
               </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* Popular Categories */}
-      {sections?.show_categories && (
-        <section className="mt-10">
-          <div className="flex items-end justify-between">
-            <h2 className="text-xl font-bold sm:text-2xl">{sections?.categories_title || "Popular Categories"}</h2>
-            <Link to="/marketplace" className="text-sm font-semibold text-primary hover:underline">
-              View all
-            </Link>
-          </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
-            {(categories ?? []).map((category) => (
-              <Link
-                key={category.id}
-                to="/categories/$slug"
-                params={{ slug: category.slug }}
-                className="flex flex-col items-center gap-2 rounded-lg border bg-card p-4 text-center shadow-card transition hover:border-primary hover:shadow-md"
-              >
-                <div className="grid h-14 w-14 place-items-center rounded-full bg-primary-soft text-xl font-bold text-primary">
-                  {category.icon || category.name.charAt(0)}
-                </div>
-                <span className="text-sm font-medium">{category.name}</span>
-                {/* <span className="text-xs text-muted-foreground">{category.count} Products</span> */}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
+      {/* Top Sellers (Stores) Section */}
       {sections?.show_top_sellers && (
-        <section className="mt-10">
-          <h2 className="text-xl font-bold sm:text-2xl">{sections?.top_sellers_title || "Top Sellers"}</h2>
-          <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Placeholder for Top Sellers */}
+        <section>
+          <h2 className="text-xl font-bold sm:text-2xl mb-6">
+            {sections?.top_sellers_title || "Top Sellers"}
+          </h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {[
               { name: "Fashion Hub", rating: 4.9, followers: "10K", products: "500+" },
               { name: "Tech World", rating: 4.8, followers: "8K", products: "300+" },
-              { name: "Home Decor", rating: 4.7, followers: "12K", products: "700+" }
+              { name: "Home Decor", rating: 4.7, followers: "12K", products: "700+" },
             ].map((seller) => (
               <div
                 key={seller.name}
-                className="flex items-center gap-4 rounded-lg border bg-card p-4 shadow-card"
+                className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-card p-4 shadow-soft"
               >
-                <Avatar className="h-16 w-16">
+                <Avatar className="h-14 w-14">
                   <AvatarFallback className="bg-secondary text-white text-lg font-bold">
                     {seller.name.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <p className="text-lg font-semibold">{seller.name}</p>
-                  <p className="text-sm text-muted-foreground">Rating: {seller.rating}</p>
-                  <Button variant="outline" size="sm" className="mt-2">
+                  <p className="text-base font-bold">{seller.name}</p>
+                  <p className="text-xs text-muted-foreground">Rating: {seller.rating}</p>
+                  <Button variant="outline" size="sm" className="mt-2 rounded-full text-xs font-semibold px-4">
                     Visit Store
                   </Button>
                 </div>
@@ -565,27 +652,32 @@ function Index() {
         </section>
       )}
 
+      {/* Featured Brands Section */}
       {sections?.show_featured_brands && (
-        <section className="mt-10">
-          <h2 className="text-xl font-bold sm:text-2xl">{sections?.featured_brands_title || "Featured Brands"}</h2>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-            {/* Placeholder for Featured Brands */}
+        <section>
+          <h2 className="text-xl font-bold sm:text-2xl mb-6">
+            {sections?.featured_brands_title || "Featured Brands"}
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
             {["Nike", "Apple", "Samsung", "Sony", "Adidas", "Zara"].map((brand) => (
               <div
                 key={brand}
-                className="flex items-center justify-center rounded-lg border bg-card p-4 shadow-card transition hover:border-primary hover:shadow-md"
+                className="flex items-center justify-center rounded-xl border border-gray-100 bg-card p-4 shadow-soft transition duration-300 hover:border-primary hover:shadow-md cursor-pointer"
               >
-                <span className="text-lg font-semibold">{brand}</span>
+                <span className="text-base font-bold text-gray-700">{brand}</span>
               </div>
             ))}
           </div>
         </section>
       )}
 
+      {/* Why Saloree Section */}
       {sections?.show_why_saloree && (
-        <section className="mt-10">
-          <h2 className="text-xl font-bold sm:text-2xl text-center">{sections?.why_saloree_title || "Why Saloree?"}</h2>
-          <p className="text-center text-muted-foreground mb-8">
+        <section className="py-6">
+          <h2 className="text-xl font-bold sm:text-2xl text-center">
+            {sections?.why_saloree_title || "Why Saloree?"}
+          </h2>
+          <p className="text-center text-xs text-muted-foreground mt-1 mb-8">
             The ultimate platform for sellers and buyers.
           </p>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -610,11 +702,13 @@ function Index() {
               return (
                 <div
                   key={item.title}
-                  className="rounded-lg border bg-card p-6 text-center shadow-card"
+                  className="rounded-2xl border border-gray-100 bg-card p-6 text-center shadow-soft hover:shadow-md transition duration-300"
                 >
                   <Icon className="mx-auto mb-4 h-12 w-12 text-primary" />
-                  <h3 className="text-lg font-semibold">{item.title}</h3>
-                  <p className="mt-2 text-muted-foreground">{item.description}</p>
+                  <h3 className="text-base font-bold">{item.title}</h3>
+                  <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                    {item.description}
+                  </p>
                 </div>
               );
             })}
@@ -622,11 +716,13 @@ function Index() {
         </section>
       )}
 
+      {/* Customer Reviews Section */}
       {sections?.show_customer_reviews && (
-        <section className="mt-10">
-          <h2 className="text-xl font-bold sm:text-2xl text-center">{sections?.customer_reviews_title || "What Our Customers Say"}</h2>
-          <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* Placeholder for Customer Reviews */}
+        <section>
+          <h2 className="text-xl font-bold sm:text-2xl text-center mb-6">
+            {sections?.customer_reviews_title || "What Our Customers Say"}
+          </h2>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[
               {
                 name: "Alice Smith",
@@ -644,83 +740,99 @@ function Index() {
                 rating: 5,
               },
             ].map((review) => (
-              <div key={review.name} className="rounded-lg border bg-card p-6 shadow-card">
+              <div
+                key={review.name}
+                className="rounded-2xl border border-gray-100 bg-card p-6 shadow-soft"
+              >
                 <div className="flex items-center mb-4">
-                  <Avatar className="h-12 w-12 mr-4">
-                    <AvatarFallback className="bg-accent text-accent-foreground">
+                  <Avatar className="h-10 w-10 mr-4">
+                    <AvatarFallback className="bg-accent text-accent-foreground font-bold">
                       {review.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-semibold">{review.name}</p>
-                    <div className="flex text-yellow-500">
+                    <p className="text-sm font-bold">{review.name}</p>
+                    <div className="flex text-yellow-500 text-xs mt-0.5">
                       {"★".repeat(review.rating)}
                       {"☆".repeat(5 - review.rating)}
                     </div>
                   </div>
                 </div>
-                <p className="text-muted-foreground">"{review.review}"</p>
+                <p className="text-xs text-muted-foreground italic leading-relaxed">
+                  "{review.review}"
+                </p>
               </div>
             ))}
           </div>
         </section>
       )}
+
+      {/* Mobile App Download Section */}
       {sections?.show_mobile_app && (
-        <section className="mt-10">
-          <div className="flex flex-col items-center justify-center rounded-lg border bg-card p-8 shadow-card md:flex-row md:space-x-8">
-            <div className="text-center md:text-left">
-              <h2 className="text-2xl font-bold">{sections?.mobile_app_title || "Download Our Mobile App"}</h2>
-              <p className="mt-2 text-muted-foreground">
-                Shop on the go, anytime, anywhere.
+        <section>
+          <div className="flex flex-col items-center justify-between rounded-2xl border border-gray-100 bg-card p-8 shadow-soft md:flex-row md:space-x-8">
+            <div className="text-center md:text-left space-y-2">
+              <h2 className="text-xl font-extrabold sm:text-2xl">
+                {sections?.mobile_app_title || "Download Our Mobile App"}
+              </h2>
+              <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
+                Shop on the go, anytime, anywhere. Receive notifications on orders and discounts.
               </p>
-              <div className="mt-6 flex justify-center space-x-4 md:justify-start">
-                <Button>App Store</Button>
-                <Button variant="outline">Google Play</Button>
+              <div className="mt-4 flex justify-center space-x-4 md:justify-start">
+                <Button className="rounded-full font-bold px-6 text-xs h-10 shadow-sm">
+                  App Store
+                </Button>
+                <Button variant="outline" className="rounded-full font-bold px-6 text-xs h-10 shadow-sm">
+                  Google Play
+                </Button>
               </div>
             </div>
-            <div className="mt-8 md:mt-0">
-              {/* Placeholder for phone mockup image */}
-              <div className="h-48 w-32 rounded-lg bg-gray-200 flex items-center justify-center text-gray-500">
+            <div className="mt-8 md:mt-0 relative shrink-0">
+              <div className="h-44 w-28 rounded-2xl bg-gray-100 flex items-center justify-center text-xs text-gray-400 font-semibold border-2 border-gray-200 shadow-inner">
                 Phone Mockup
               </div>
             </div>
           </div>
         </section>
       )}
+
+      {/* Newsletter Section */}
       {sections?.show_newsletter && (
-        <section className="mt-10">
-          <div className="rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 p-8 text-white shadow-card text-center">
-            <h2 className="text-3xl font-bold">{sections?.newsletter_title || "Stay Updated!"}</h2>
-            <p className="mt-2 text-lg">Subscribe to our newsletter for the latest deals.</p>
-            <div className="mt-6 flex justify-center">
+        <section>
+          <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white shadow-lg text-center space-y-4">
+            <h2 className="text-2xl font-extrabold">
+              {sections?.newsletter_title || "Stay Updated!"}
+            </h2>
+            <p className="text-sm text-blue-100 max-w-md mx-auto">
+              Subscribe to our newsletter for the latest deals, updates, and sellers.
+            </p>
+            <div className="flex flex-col sm:flex-row justify-center items-center gap-3 pt-2 max-w-md mx-auto">
               <Input
                 type="email"
                 placeholder="Your email address"
-                className="w-full max-w-sm rounded-l-md border-none bg-white/20 px-4 py-2 text-white placeholder-gray-200 focus:ring-0"
+                className="w-full rounded-full border-none bg-white/10 px-4 py-2 text-white placeholder-blue-200 focus:ring-2 focus:ring-white"
               />
-              <Button className="rounded-r-md bg-white text-blue-600 hover:bg-gray-100">
+              <Button className="w-full sm:w-auto rounded-full bg-white text-blue-700 hover:bg-gray-100 font-bold px-6 shrink-0 shadow-sm">
                 Subscribe
               </Button>
             </div>
           </div>
         </section>
       )}
+
+      {/* Double rendering footer bypass conditional - original check */}
       {sections?.show_footer && (
-        <footer className="mt-10 bg-secondary text-white py-10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <Logo linked={false} imgClassName="h-10 w-auto mb-4" />
-              <p className="text-sm text-gray-400">Build. Sell. Grow.</p>
-              <div className="flex space-x-4 mt-4">
-                {/* Social Icons Placeholder */}
-                <span className="text-gray-400">FB</span>
-                <span className="text-gray-400">TW</span>
-                <span className="text-gray-400">IG</span>
-              </div>
+        <footer className="mt-10 bg-secondary text-white py-10 rounded-2xl overflow-hidden px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="space-y-4">
+              <span className="text-lg font-bold tracking-tight">saloree</span>
+              <p className="text-xs text-gray-400">Build. Sell. Grow.</p>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-4">Marketplace</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-300 mb-4">
+                Marketplace
+              </h3>
+              <ul className="space-y-2 text-xs text-gray-400">
                 <li>Shop All</li>
                 <li>Categories</li>
                 <li>Brands</li>
@@ -728,8 +840,10 @@ function Index() {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-300 mb-4">
+                Support
+              </h3>
+              <ul className="space-y-2 text-xs text-gray-400">
                 <li>Help Center</li>
                 <li>Shipping</li>
                 <li>Returns</li>
@@ -737,8 +851,10 @@ function Index() {
               </ul>
             </div>
             <div>
-              <h3 className="text-lg font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
+              <h3 className="text-xs font-extrabold uppercase tracking-wider text-gray-300 mb-4">
+                Company
+              </h3>
+              <ul className="space-y-2 text-xs text-gray-400">
                 <li>About Us</li>
                 <li>Careers</li>
                 <li>Terms of Service</li>
@@ -746,7 +862,7 @@ function Index() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-500">
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-xs text-gray-500">
             © 2026 Saloree. All rights reserved.
           </div>
         </footer>
