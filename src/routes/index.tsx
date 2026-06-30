@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { FlashDeals } from "@/components/FlashDeals";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ShieldCheck,
@@ -310,6 +311,12 @@ function Index() {
       <section className="w-full">
         <HeroSlider />
       </section>
+      <FlashDeals
+        products={featuredProducts}
+        isLoading={loadingFeatured}
+      />
+
+
 
       {/* Premium Curated Category Cards Section */}
       {showCategories && (
