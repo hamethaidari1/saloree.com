@@ -15,17 +15,18 @@ import {
 
 export type ProductCardData = {
   id: string;
-  slug: string;
+  slug?: string | null;
   store_id: string;
   title: string;
   price: number;
   featured_image: string | null;
   description?: string | null;
-  categories?: { name: string; slug: string } | null;
-  stores?: { name: string; slug: string; logo_url?: string | null } | null;
+  categories?: { name: string; slug?: string | null } | null;
+  stores?: { name: string; slug?: string | null; logo_url?: string | null } | null;
 };
 
 export function ProductCard({ p }: { p: ProductCardData }) {
+  if (!p) return null;
   const cart = useCart();
   const { formatPrice, language } = useLocale();
   const [quickViewOpen, setQuickViewOpen] = useState(false);

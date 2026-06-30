@@ -81,7 +81,7 @@ function Index() {
         console.error("[new-arrivals] Supabase error:", error);
         throw error;
       }
-      return (data ?? []) as ProductCardData[];
+      return (data ?? []).filter((p): p is ProductCardData => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined) as ProductCardData[];
     },
   });
 
@@ -104,7 +104,7 @@ function Index() {
         throw error;
       }
 
-      if (data && data.length > 0) return data as ProductCardData[];
+      if (data && data.length > 0) return data.filter((p): p is ProductCardData => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined) as ProductCardData[];
 
       // Fallback
       const { data: fallback } = await supabase
@@ -115,7 +115,7 @@ function Index() {
         .eq("status", "active")
         .order("title", { ascending: true })
         .limit(8);
-      return (fallback ?? []) as ProductCardData[];
+      return (fallback ?? []).filter((p): p is ProductCardData => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined) as ProductCardData[];
     },
   });
 
@@ -136,7 +136,7 @@ function Index() {
         console.error("[trending-products] Supabase error:", error);
         throw error;
       }
-      return (data ?? []) as ProductCardData[];
+      return (data ?? []).filter((p): p is ProductCardData => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined) as ProductCardData[];
     },
   });
 
@@ -157,7 +157,7 @@ function Index() {
         console.error("[best-sellers] Supabase error:", error);
         throw error;
       }
-      return (data ?? []) as ProductCardData[];
+      return (data ?? []).filter((p): p is ProductCardData => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined) as ProductCardData[];
     },
   });
 
