@@ -82,9 +82,9 @@ export function LocaleSelector({ variant = "desktop" }: { variant?: "desktop" | 
       type="button"
       onClick={() => setOpen((o) => !o)}
       aria-label="Language & Currency"
-      className={`flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
+      className={`flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground ${
         open ? "bg-accent text-accent-foreground" : ""
-      } ${variant === "mobile" ? "w-full justify-between" : ""}`}
+      } ${variant === "mobile" ? "w-full justify-center" : ""}`}
     >
       <span className="flex items-center gap-1.5">
         <span className="text-base leading-none">{langMeta.flag}</span>

@@ -4,7 +4,7 @@ import { u as require_react } from "../_libs/@floating-ui/react-dom+[...].mjs";
 import { c as require_jsx_runtime } from "../_libs/@radix-ui/react-arrow+[...].mjs";
 import { n as useQuery } from "../_libs/tanstack__react-query.mjs";
 import { _ as useNavigate, g as Link } from "../_libs/@tanstack/react-router+[...].mjs";
-import { At as CircleCheck, C as ShoppingCart, Ft as ChevronLeft, H as Minus, K as Maximize2, N as Plus, Pt as ChevronRight, U as MessageSquare, Z as Lock, _ as Star, at as Info, j as RotateCcw, l as Truck, lt as Heart, qt as ArrowRight, r as X, y as Sparkles } from "../_libs/lucide-react.mjs";
+import { C as ShoppingCart, H as Minus, K as Maximize2, Kt as ArrowRight, N as Plus, Nt as ChevronRight, Pt as ChevronLeft, U as MessageSquare, Z as Lock, _ as Star, at as Info, ct as Heart, j as RotateCcw, kt as CircleCheck, l as Truck, r as X, y as Sparkles } from "../_libs/lucide-react.mjs";
 import { t as Button } from "./button-Cr1ZI0g1.mjs";
 import { n as toast } from "../_libs/sonner.mjs";
 import { n as useCart } from "./cart-DwCUaj-A.mjs";

@@ -29,7 +29,9 @@ import {
   Car,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -74,6 +76,30 @@ export function Header() {
 
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const scrollDirection = useScrollDirection();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDrawerOpen(false);
+    };
+
+    if (drawerOpen) {
+      document.body.style.overflow = "hidden";
+      window.addEventListener("keydown", handleEscape);
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, [drawerOpen]);
 
   const { data: categories } = useQuery({
     queryKey: ["categories"],
@@ -146,27 +172,31 @@ export function Header() {
   }
 
   return (
-    <header className="w-full border-b border-gray-100 bg-white sticky top-0 z-50">
+    <header
+      className={`w-full border-b border-gray-100 bg-white sticky top-0 z-50 transition-transform duration-300 ${
+        scrollDirection === "down" ? "-translate-y-full" : "translate-y-0"
+      }`}
+    >
       {/* 1. Top Announcement Bar */}
       <div className="bg-[#0F172A] text-white text-xs py-2 px-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex flex-col gap-2 sm:flex-row items-center justify-between">
-          <div className="flex flex-wrap items-center justify-center gap-6 text-gray-300">
-            <div className="flex items-center gap-1.5">
-              <Truck className="size-3.5 text-[#FF3B3B]" />
+          <div className="flex flex-nowrap whitespace-nowrap items-center justify-center gap-3 text-gray-300 overflow-x-auto scrollbar-hide text-[11px] sm:text-xs">
+            <div className="flex items-center gap-1">
+              <Truck className="size-3 text-[#FF3B3B] sm:size-3.5" />
               <span>Free Shipping Over $50</span>
             </div>
             <span className="hidden sm:inline text-gray-600">|</span>
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="size-3.5 text-[#FF3B3B]" />
+            <div className="flex items-center gap-1">
+              <ShieldCheck className="size-3 text-[#FF3B3B] sm:size-3.5" />
               <span>30-Day Money Back Guarantee</span>
             </div>
             <span className="hidden sm:inline text-gray-600">|</span>
-            <div className="flex items-center gap-1.5">
-              <HelpCircle className="size-3.5 text-[#FF3B3B]" />
+            <div className="flex items-center gap-1">
+              <HelpCircle className="size-3 text-[#FF3B3B] sm:size-3.5" />
               <span>24/7 Customer Support</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
             <LocaleSelector variant="desktop" />
           </div>
         </div>
@@ -391,166 +421,185 @@ export function Header() {
         </div>
       </nav>
 
-      {/* Mobile Drawer Overlay */}
-      {drawerOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity duration-300 lg:hidden"
-          onClick={() => setDrawerOpen(false)}
-        />
-      )}
-
-      {/* Mobile Drawer */}
-      <div
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className={`fixed inset-y-0 left-0 z-50 flex h-full w-[85%] max-w-[360px] flex-col bg-background shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
-          drawerOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        {/* Drawer Header */}
-        <div className="bg-[#0F172A] px-5 py-6 text-white relative flex flex-col gap-4">
-          <button
-            onClick={() => setDrawerOpen(false)}
-            className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors"
-            aria-label="Close menu"
-          >
-            <X className="size-6" />
-          </button>
-
-          <div className="flex items-center gap-3 mt-2">
-            <div className="grid h-12 w-12 place-items-center rounded-full bg-white/10 text-white font-bold border border-white/10 text-xl shadow-inner">
-              {user ? user.email?.charAt(0).toUpperCase() : <UserIcon className="size-5" />}
-            </div>
-            <div>
-              <p className="text-sm font-semibold">
-                {user ? `Hello, ${user.email?.split("@")[0]}` : "Hello, Sign In"}
-              </p>
-              {!user && (
-                <Link
-                  to="/login"
-                  onClick={() => setDrawerOpen(false)}
-                  className="text-xs font-bold text-[#FF3B3B] underline hover:text-[#E03030] transition-colors"
-                >
-                  Sign In to Your Account
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Drawer Content */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
-          {/* Mobile Search inside Drawer */}
-          <form onSubmit={onSearch} className="relative">
-            <input
-              type="text"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search products..."
-              className="h-10 w-full rounded-full border border-gray-200 pl-4 pr-12 text-sm outline-none focus:border-[#FF3B3B] bg-gray-50 focus:bg-white"
+      {/* Mobile Drawer via Portal to escape stacking context */}
+      {mounted &&
+        createPortal(
+          <>
+            {/* Mobile Drawer Overlay */}
+            <div
+              className={`fixed inset-0 z-[9998] bg-black/60 backdrop-blur-xs transition-opacity duration-300 lg:hidden ${
+                drawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+              }`}
+              onClick={() => setDrawerOpen(false)}
+              aria-hidden="true"
             />
-            <button
-              type="submit"
-              aria-label="Search"
-              className="absolute right-1 top-1 grid h-8 w-10 place-items-center rounded-full bg-[#FF3B3B] text-white"
+
+            {/* Mobile Drawer */}
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Main Menu"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              className={`fixed inset-y-0 left-0 z-[9999] flex h-[100vh] w-[85vw] max-w-[380px] flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out lg:hidden ${
+                drawerOpen ? "translate-x-0" : "-translate-x-full"
+              }`}
             >
-              <Search className="size-4" />
-            </button>
-          </form>
+              {/* Drawer Header */}
+              <div className="bg-[#0F172A] px-5 py-6 text-white relative flex flex-col gap-4 shrink-0">
+                <button
+                  onClick={() => setDrawerOpen(false)}
+                  className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors"
+                  aria-label="Close menu"
+                >
+                  <X className="size-6" />
+                </button>
 
-          {/* Settings Section: Language & Currency */}
-          <div className="px-2">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5">
-              Settings & Language
-            </h3>
-            <LocaleSelector variant="mobile" />
-          </div>
+                <div className="flex items-center gap-3 mt-2">
+                  <div className="grid h-12 w-12 place-items-center rounded-full bg-white/10 text-white font-bold border border-white/10 text-xl shadow-inner">
+                    {user ? user.email?.charAt(0).toUpperCase() : <UserIcon className="size-5" />}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">
+                      {user ? `Hello, ${user.email?.split("@")[0]}` : "Hello, Sign In"}
+                    </p>
+                    {!user && (
+                      <Link
+                        to="/login"
+                        onClick={() => setDrawerOpen(false)}
+                        className="text-xs font-bold text-[#FF3B3B] underline hover:text-[#E03030] transition-colors"
+                      >
+                        Sign In to Your Account
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
 
-          {/* Main Menu */}
-          <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5 px-2">
-              Main Menu
-            </h3>
-            <nav className="space-y-1">
-              {[
-                { to: "/", label: "Home", icon: Home },
-                { to: "/marketplace", label: "Shop Marketplace", icon: LayoutGrid },
-                { to: "/orders", label: "My Orders", icon: Package, authRequired: true },
-                { to: "/cart", label: "Shopping Cart", icon: ShoppingCart, countBadge: count },
-                { to: "/seller", label: "Become a Seller", icon: Store },
-              ].map((item) => {
-                if (item.authRequired && !user) return null;
-                const Icon = item.icon;
-                return (
+              {/* Drawer Content */}
+              <div className="flex-1 overflow-y-auto bg-white">
+                {/* Mobile Search inside Drawer */}
+                <div className="p-4 border-b border-gray-100">
+                  <form onSubmit={onSearch} className="relative">
+                    <input
+                      type="text"
+                      value={q}
+                      onChange={(e) => setQ(e.target.value)}
+                      placeholder="Search products..."
+                      className="h-11 w-full rounded-full border border-gray-200 pl-4 pr-12 text-sm outline-none focus:border-[#FF3B3B] bg-gray-50 focus:bg-white transition-all"
+                    />
+                    <button
+                      type="submit"
+                      aria-label="Search"
+                      className="absolute right-1 top-1 bottom-1 w-10 flex items-center justify-center rounded-full bg-[#FF3B3B] text-white hover:bg-[#E03030] transition-colors"
+                    >
+                      <Search className="size-4" />
+                    </button>
+                  </form>
+                </div>
+
+                {/* Main Menu Items */}
+                <nav className="px-3 py-2">
+                  {[
+                    { label: "All Categories", to: "/marketplace", icon: LayoutGrid },
+                    { label: "Deals", to: "/marketplace", search: { filter: "deals" }, icon: Tag },
+                    { label: "Best Sellers", to: "/marketplace", search: { filter: "best-sellers" }, icon: Flame },
+                    { label: "New Arrivals", to: "/marketplace", search: { filter: "new-arrivals" }, icon: Sparkles },
+                    { label: "Electronics", to: "/categories/$slug", params: { slug: "electronics" }, icon: Laptop },
+                    { label: "Fashion", to: "/categories/$slug", params: { slug: "fashion" }, icon: Shirt },
+                    { label: "Home & Living", to: "/categories/$slug", params: { slug: "home-living" }, icon: Sofa },
+                    { label: "Beauty", to: "/categories/$slug", params: { slug: "beauty" }, icon: Sparkles },
+                    { label: "Sports", to: "/categories/$slug", params: { slug: "sports" }, icon: Dumbbell },
+                    { label: "Books", to: "/categories/$slug", params: { slug: "books" }, icon: BookOpen },
+                    { label: "Gaming", to: "/categories/$slug", params: { slug: "gaming" }, icon: Gamepad2 },
+                    { label: "Automotive", to: "/categories/$slug", params: { slug: "automotive" }, icon: Car },
+                    { label: "Toys & Kids", to: "/categories/$slug", params: { slug: "toys-kids" }, icon: HelpCircle },
+                  ].map((item, index) => {
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.label}
+                        to={item.to}
+                        params={item.params as any}
+                        search={item.search as any}
+                        onClick={() => setDrawerOpen(false)}
+                        className={`flex items-center justify-between px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all ${
+                          index !== 0 ? "border-t border-gray-50" : ""
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className="size-4 text-gray-400" />
+                          <span>{item.label}</span>
+                        </div>
+                        <ChevronRight className="size-4 text-gray-300" />
+                      </Link>
+                    );
+                  })}
+                </nav>
+
+                {/* Additional Links */}
+                <div className="border-t border-gray-100 px-3 py-2">
                   <Link
-                    key={item.label}
-                    to={item.to}
+                    to="/orders"
                     onClick={() => setDrawerOpen(false)}
-                    className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
+                    className="flex items-center gap-3 px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
+                  >
+                    <Package className="size-4 text-gray-400" />
+                    <span>My Orders</span>
+                  </Link>
+                  <Link
+                    to="/cart"
+                    onClick={() => setDrawerOpen(false)}
+                    className="flex items-center justify-between px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
                   >
                     <div className="flex items-center gap-3">
-                      <Icon className="size-4 text-gray-400" />
-                      <span>{item.label}</span>
+                      <ShoppingCart className="size-4 text-gray-400" />
+                      <span>Shopping Cart</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      {item.countBadge !== undefined && item.countBadge > 0 && (
-                        <span className="rounded-full bg-[#FF3B3B] px-2 py-0.5 text-xs font-bold text-white">
-                          {item.countBadge}
-                        </span>
-                      )}
-                      <ChevronRight className="size-4 text-gray-400" />
-                    </div>
+                    {count > 0 && (
+                      <span className="rounded-full bg-[#FF3B3B] px-2 py-0.5 text-xs font-bold text-white">
+                        {count}
+                      </span>
+                    )}
                   </Link>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* Shop by Category */}
-          <div>
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2.5 px-2">
-              Shop by Category
-            </h3>
-            <nav className="space-y-1">
-              {(categories ?? []).map((cat) => {
-                const Icon = getCategoryIcon(cat.icon);
-                return (
                   <Link
-                    key={cat.id}
-                    to="/categories/$slug"
-                    params={{ slug: cat.slug }}
+                    to="/seller"
                     onClick={() => setDrawerOpen(false)}
-                    className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
+                    className="flex items-center gap-3 px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
                   >
-                    <div className="flex items-center gap-3">
-                      <Icon className="size-4 text-gray-400" />
-                      <span>{cat.name}</span>
-                    </div>
-                    <ChevronRight className="size-4 text-gray-400" />
+                    <Store className="size-4 text-gray-400" />
+                    <span>Become a Seller</span>
                   </Link>
-                );
-              })}
-            </nav>
-          </div>
+                  
+                  {user && (
+                    <button
+                      onClick={() => {
+                        setDrawerOpen(false);
+                        signOut();
+                      }}
+                      className="flex w-full items-center gap-3 px-3 py-3 text-sm font-semibold text-destructive hover:bg-destructive/5 transition-all"
+                    >
+                      <LogOut className="size-4" />
+                      <span>Sign Out</span>
+                    </button>
+                  )}
+                </div>
 
-          {/* Sign Out (for logged in users) */}
-          {user && (
-            <div className="border-t border-gray-100 pt-4">
-              <button
-                onClick={() => {
-                  setDrawerOpen(false);
-                  signOut();
-                }}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-destructive hover:bg-destructive/5 transition-all"
-              >
-                <LogOut className="size-4" />
-                <span>Sign Out</span>
-              </button>
+                {/* Settings Section: Language & Currency */}
+                <div className="mt-auto border-t border-gray-100 bg-gray-50 p-5">
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 text-center">
+                    Language / Currency
+                  </h3>
+                  <div className="flex justify-center">
+                    <LocaleSelector variant="mobile" />
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-      </div>
+          </>,
+          document.body
+        )}
     </header>
   );
 }

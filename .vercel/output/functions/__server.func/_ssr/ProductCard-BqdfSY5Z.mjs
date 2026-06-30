@@ -2,7 +2,7 @@ import { o as __toESM } from "../_runtime.mjs";
 import { u as require_react } from "../_libs/@floating-ui/react-dom+[...].mjs";
 import { c as require_jsx_runtime } from "../_libs/@radix-ui/react-arrow+[...].mjs";
 import { g as Link } from "../_libs/@tanstack/react-router+[...].mjs";
-import { C as ShoppingCart, _ as Star, _t as Eye } from "../_libs/lucide-react.mjs";
+import { C as ShoppingCart, _ as Star, gt as Eye } from "../_libs/lucide-react.mjs";
 import { t as Button } from "./button-Cr1ZI0g1.mjs";
 import { n as toast } from "../_libs/sonner.mjs";
 import { n as useCart } from "./cart-DwCUaj-A.mjs";
