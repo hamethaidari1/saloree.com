@@ -73,6 +73,7 @@ export function Header() {
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("all");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -178,25 +179,25 @@ export function Header() {
       }`}
     >
       {/* 1. Top Announcement Bar */}
-      <div className="bg-[#0F172A] text-white text-xs py-2 px-4 shadow-sm">
-        <div className="max-w-7xl mx-auto flex flex-col gap-2 sm:flex-row items-center justify-between">
-          <div className="flex flex-nowrap whitespace-nowrap items-center justify-center gap-3 text-gray-300 overflow-x-auto scrollbar-hide text-[11px] sm:text-xs">
-            <div className="flex items-center gap-1">
-              <Truck className="size-3 text-[#FF3B3B] sm:size-3.5" />
+      <div className="bg-[#0F172A] text-white text-xs py-2 px-4 shadow-sm select-none">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex flex-nowrap whitespace-nowrap items-center justify-start sm:justify-center gap-3 text-gray-300 overflow-x-auto scrollbar-none w-full sm:w-auto text-[10px] sm:text-xs py-0.5">
+            <div className="flex items-center gap-1 shrink-0">
+              <Truck className="size-3.5 text-[#FF3B3B]" />
               <span>Free Shipping Over $50</span>
             </div>
-            <span className="hidden sm:inline text-gray-600">|</span>
-            <div className="flex items-center gap-1">
-              <ShieldCheck className="size-3 text-[#FF3B3B] sm:size-3.5" />
+            <span className="text-gray-600 shrink-0">|</span>
+            <div className="flex items-center gap-1 shrink-0">
+              <ShieldCheck className="size-3.5 text-[#FF3B3B]" />
               <span>30-Day Money Back Guarantee</span>
             </div>
-            <span className="hidden sm:inline text-gray-600">|</span>
-            <div className="flex items-center gap-1">
-              <HelpCircle className="size-3 text-[#FF3B3B] sm:size-3.5" />
+            <span className="text-gray-600 shrink-0">|</span>
+            <div className="flex items-center gap-1 shrink-0">
+              <HelpCircle className="size-3.5 text-[#FF3B3B]" />
               <span>24/7 Customer Support</span>
             </div>
           </div>
-          <div className="flex items-center justify-center sm:justify-end gap-2 w-full sm:w-auto">
+          <div className="hidden sm:flex items-center justify-end gap-2 shrink-0">
             <LocaleSelector variant="desktop" />
           </div>
         </div>
@@ -291,6 +292,15 @@ export function Header() {
             )}
           </Link>
 
+          {/* Mobile search toggle icon */}
+          <button
+            onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+            className="lg:hidden p-2 text-gray-600 hover:text-[#FF3B3B] transition-colors rounded-full hover:bg-gray-50 cursor-pointer shrink-0"
+            aria-label="Toggle search"
+          >
+            <Search className="size-4.5" />
+          </button>
+
           <span className="hidden sm:inline w-[1px] h-5 bg-gray-200" />
 
           {user ? (
@@ -298,13 +308,13 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="gap-2 h-10 px-3 hover:bg-gray-50 rounded-full border border-gray-100"
+                  className="gap-2 h-10 px-2 lg:px-3 hover:bg-gray-50 rounded-full border border-gray-100/50 md:border-gray-100 cursor-pointer"
                 >
                   <UserIcon className="size-4 text-gray-500" />
-                  <span className="max-w-[90px] truncate text-xs font-semibold text-gray-700">
+                  <span className="max-w-[90px] truncate text-xs font-semibold text-gray-700 hidden sm:inline">
                     Hi, {user.email?.split("@")[0]}
                   </span>
-                  <ChevronDown className="size-3 text-gray-400" />
+                  <ChevronDown className="size-3 text-gray-400 hidden sm:inline" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl mt-2 p-1.5">
@@ -343,23 +353,58 @@ export function Header() {
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2">
-              <Button
-                asChild
-                variant="ghost"
-                className="h-10 px-4 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] hover:bg-transparent rounded-full"
+              {/* Desktop-only Login and Sign Up buttons */}
+              <div className="hidden lg:flex items-center gap-2">
+                <Button
+                  asChild
+                  variant="ghost"
+                  className="h-10 px-4 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] hover:bg-transparent rounded-full cursor-pointer"
+                >
+                  <Link to="/login">Login</Link>
+                </Button>
+                <Button
+                  asChild
+                  className="h-10 px-5 text-sm font-bold text-white bg-[#FF3B3B] hover:bg-[#E03030] rounded-full shadow-md shadow-red-500/10 hover:shadow-red-500/20 active:scale-[0.98] transition-all cursor-pointer"
+                >
+                  <Link to="/register">Sign Up</Link>
+                </Button>
+              </div>
+              {/* Mobile-only compact Login icon */}
+              <Link
+                to="/login"
+                className="lg:hidden p-2 text-gray-600 hover:text-[#FF3B3B] hover:bg-gray-50 rounded-full cursor-pointer transition-colors shrink-0"
+                aria-label="Login"
               >
-                <Link to="/login">Login</Link>
-              </Button>
-              <Button
-                asChild
-                className="h-10 px-5 text-sm font-bold text-white bg-[#FF3B3B] hover:bg-[#E03030] rounded-full shadow-md shadow-red-500/10 hover:shadow-red-500/20 active:scale-[0.98] transition-all"
-              >
-                <Link to="/register">Sign Up</Link>
-              </Button>
+                <UserIcon className="size-5" />
+              </Link>
             </div>
           )}
         </div>
       </div>
+
+      {/* 2.5 Collapsible Mobile Search Row */}
+      {isMobileSearchOpen && (
+        <div className="lg:hidden border-t border-gray-100 bg-white px-4 py-2.5 animate-in slide-in-from-top-1 duration-200">
+          <form onSubmit={onSearch} className="relative flex w-full items-center bg-gray-50 border border-gray-200 rounded-full overflow-hidden">
+            <div className="flex items-center pl-4 pr-2 text-gray-400 shrink-0">
+              <Search className="size-4" />
+            </div>
+            <input
+              type="text"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search products, brands and more..."
+              className="h-10 w-full bg-transparent pr-4 text-xs outline-none text-gray-800 placeholder-gray-400"
+            />
+            <button
+              type="submit"
+              className="bg-[#FF3B3B] hover:bg-[#E03030] text-white font-bold text-xs px-4 h-10 transition-colors shrink-0 cursor-pointer"
+            >
+              Search
+            </button>
+          </form>
+        </div>
+      )}
 
       {/* 3. Second Navigation (Horizontal navigation bar with icons) */}
       <nav className="border-t border-gray-100 bg-white">

@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link } from "@tanstack/react-router";
-import { ShoppingCart, Star, Eye } from "lucide-react";
+import { ShoppingCart, Star, Eye, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
@@ -30,6 +30,7 @@ export function ProductCard({ p }: { p: ProductCardData }) {
   const cart = useCart();
   const { formatPrice, language } = useLocale();
   const [quickViewOpen, setQuickViewOpen] = useState(false);
+  const [wishlisted, setWishlisted] = useState(false);
 
   const productSlug = p.slug || p.id;
   const productTitle = p.title || "Untitled product";
@@ -47,6 +48,20 @@ export function ProductCard({ p }: { p: ProductCardData }) {
     return (4.0 + (sum % 11) * 0.1).toFixed(1);
   }, [p.id]);
 
+  // Generate a deterministic discount percentage (10% to 40%)
+  const discountPercent = useMemo(() => {
+    let code = 0;
+    for (let i = 0; i < p.id.length; i++) {
+      code += p.id.charCodeAt(i);
+    }
+    return 10 + (code % 4) * 10;
+  }, [p.id]);
+
+  // Compute original price
+  const originalPrice = useMemo(() => {
+    return Number(p.price) * (1 + discountPercent / 100);
+  }, [p.price, discountPercent]);
+
   const handleAddToCart = () => {
     cart.add({
       product_id: p.id,
@@ -62,9 +77,31 @@ export function ProductCard({ p }: { p: ProductCardData }) {
 
   return (
     <>
-      <div className="group flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-soft hover:shadow-md transition-all duration-300">
+      <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-soft hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1.5 transition-all duration-300 ease-out relative">
         {/* Product Image Section */}
-        <div className="relative aspect-square w-full overflow-hidden bg-muted">
+        <div className="relative aspect-square w-full overflow-hidden bg-gray-50 border-b border-gray-100">
+          {/* Discount Badge Overlay */}
+          <div className="absolute left-3 top-3 z-10 rounded-full bg-[#FF3B3B] px-2.5 py-0.5 text-[10px] font-extrabold text-white shadow-sm">
+            -{discountPercent}%
+          </div>
+
+          {/* Wishlist Button Overlay */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setWishlisted(!wishlisted);
+              toast.success(
+                !wishlisted ? "Added to wishlist" : "Removed from wishlist"
+              );
+            }}
+            className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 hover:bg-white text-gray-600 hover:text-red-500 shadow-sm backdrop-blur-sm transition-all duration-200 focus:outline-none cursor-pointer"
+            title={wishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+          >
+            <Heart className={`size-4 ${wishlisted ? "fill-red-500 text-red-500" : "text-gray-600"}`} />
+          </button>
+
           <Link to="/products/$slug" params={{ slug: productSlug }} className="block h-full w-full">
             {productImage ? (
               <img
@@ -74,20 +111,20 @@ export function ProductCard({ p }: { p: ProductCardData }) {
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             ) : (
-              <div className="grid h-full place-items-center text-xs text-muted-foreground">
+              <div className="grid h-full place-items-center text-xs text-muted-foreground bg-muted/30">
                 No image
               </div>
             )}
           </Link>
           
           {/* Quick View Hover overlay */}
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none group-hover:pointer-events-auto">
+          <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none group-hover:pointer-events-auto">
             <Button
               type="button"
               onClick={() => setQuickViewOpen(true)}
-              className="bg-white/90 text-black hover:bg-white backdrop-blur-md rounded-full shadow-lg gap-2 text-xs font-semibold px-4 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300"
+              className="bg-white/95 text-black hover:bg-white backdrop-blur-md rounded-full shadow-md gap-2 text-xs font-semibold px-4 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300"
             >
-              <Eye className="size-4" /> Quick View
+              <Eye className="size-3.5" /> Quick View
             </Button>
           </div>
         </div>
@@ -115,7 +152,12 @@ export function ProductCard({ p }: { p: ProductCardData }) {
 
           {/* Price & Rating */}
           <div className="mt-auto flex items-center justify-between pt-2">
-            <span className="text-base font-bold text-secondary">{formatPrice(Number(p.price))}</span>
+            <div className="flex flex-col">
+              <span className="text-[10px] text-muted-foreground line-through font-semibold leading-none mb-1">
+                {formatPrice(originalPrice)}
+              </span>
+              <span className="text-base font-bold text-secondary leading-none">{formatPrice(Number(p.price))}</span>
+            </div>
             <span className="flex items-center gap-1 text-xs font-medium text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">
               <Star className="size-3 fill-amber-500 text-amber-500" /> {rating}
             </span>

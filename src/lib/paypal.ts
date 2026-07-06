@@ -117,7 +117,7 @@ export const capturePayPalOrderFn = createServerFn({ method: "POST" })
     const { data: existingOrder } = await supabase
       .from("orders")
       .select("id")
-      .eq("paypal_order_id", orderId)
+      .eq("paypal_order_id" as any, orderId)
       .limit(1)
       .single();
 

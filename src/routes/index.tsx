@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { FlashDeals } from "@/components/FlashDeals";
@@ -8,11 +9,11 @@ import {
   Tag,
   Headphones,
   ArrowRight,
-  Check,
   Store,
   Globe,
   Package,
   Sparkles,
+  Star,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ import { useHomepageSections } from "@/hooks/useHomepageSections";
 import { usePromoBanners } from "@/hooks/usePromoBanners";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -47,12 +49,13 @@ export const Route = createFileRoute("/")({
 function Index() {
   const shouldReduceMotion = useReducedMotion();
   const { language } = useLocale();
+  const [newsletterEmail, setNewsletterEmail] = useState("");
 
   const { data: settings } = useSiteSettings();
   const { data: sections } = useHomepageSections();
   const { data: promoBanners = [] } = usePromoBanners();
 
-  const { data: categories } = useQuery({
+  const { data: categories = [] } = useQuery({
     queryKey: ["categories"],
     queryFn: async () => {
       const { data, error } = await supabase.from("categories").select("*").order("name");
@@ -81,7 +84,19 @@ function Index() {
         console.error("[new-arrivals] Supabase error:", error);
         throw error;
       }
-      return (data ?? []).filter((p): p is ProductCardData => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined) as ProductCardData[];
+      return (data ?? [])
+        .filter((p) => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined)
+        .map((p) => ({
+          id: p.id,
+          slug: p.slug,
+          store_id: p.store_id,
+          title: p.title,
+          price: Number(p.price),
+          featured_image: p.featured_image,
+          description: p.description,
+          categories: p.categories,
+          stores: p.stores,
+        })) as ProductCardData[];
     },
   });
 
@@ -104,7 +119,21 @@ function Index() {
         throw error;
       }
 
-      if (data && data.length > 0) return data.filter((p): p is ProductCardData => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined) as ProductCardData[];
+      if (data && data.length > 0) {
+        return data
+          .filter((p) => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined)
+          .map((p) => ({
+            id: p.id,
+            slug: p.slug,
+            store_id: p.store_id,
+            title: p.title,
+            price: Number(p.price),
+            featured_image: p.featured_image,
+            description: p.description,
+            categories: p.categories,
+            stores: p.stores,
+          })) as ProductCardData[];
+      }
 
       // Fallback
       const { data: fallback } = await supabase
@@ -115,7 +144,20 @@ function Index() {
         .eq("status", "active")
         .order("title", { ascending: true })
         .limit(8);
-      return (fallback ?? []).filter((p): p is ProductCardData => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined) as ProductCardData[];
+
+      return (fallback ?? [])
+        .filter((p) => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined)
+        .map((p) => ({
+          id: p.id,
+          slug: p.slug,
+          store_id: p.store_id,
+          title: p.title,
+          price: Number(p.price),
+          featured_image: p.featured_image,
+          description: p.description,
+          categories: p.categories,
+          stores: p.stores,
+        })) as ProductCardData[];
     },
   });
 
@@ -136,7 +178,19 @@ function Index() {
         console.error("[trending-products] Supabase error:", error);
         throw error;
       }
-      return (data ?? []).filter((p): p is ProductCardData => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined) as ProductCardData[];
+      return (data ?? [])
+        .filter((p) => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined)
+        .map((p) => ({
+          id: p.id,
+          slug: p.slug,
+          store_id: p.store_id,
+          title: p.title,
+          price: Number(p.price),
+          featured_image: p.featured_image,
+          description: p.description,
+          categories: p.categories,
+          stores: p.stores,
+        })) as ProductCardData[];
     },
   });
 
@@ -157,9 +211,58 @@ function Index() {
         console.error("[best-sellers] Supabase error:", error);
         throw error;
       }
-      return (data ?? []).filter((p): p is ProductCardData => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined) as ProductCardData[];
+      return (data ?? [])
+        .filter((p) => p !== null && p !== undefined && p.slug !== null && p.slug !== undefined)
+        .map((p) => ({
+          id: p.id,
+          slug: p.slug,
+          store_id: p.store_id,
+          title: p.title,
+          price: Number(p.price),
+          featured_image: p.featured_image,
+          description: p.description,
+          categories: p.categories,
+          stores: p.stores,
+        })) as ProductCardData[];
     },
   });
+
+  // 5. Featured Stores query
+  const { data: featuredStores = [], isLoading: loadingStores } = useQuery({
+    queryKey: ["stores", "home", "featured"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("stores")
+        .select("id, name, slug, logo_url, description")
+        .eq("status", "active")
+        .limit(6);
+
+      if (error) {
+        console.error("[featured-stores] Supabase error:", error);
+        throw error;
+      }
+      return (data ?? []).map((store, index) => ({
+        id: store.id,
+        name: store.name,
+        slug: store.slug,
+        logo_url: store.logo_url,
+        description: store.description,
+        rating: (4.6 + (index % 5) * 0.1).toFixed(1),
+        followers: `${10 + (index % 10)}K`,
+        products: `${120 + (index % 5) * 45}+`,
+      }));
+    },
+  });
+
+  const handleNewsletterSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail.trim()) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+    toast.success("Thank you for subscribing! You will receive our latest deals soon.");
+    setNewsletterEmail("");
+  };
 
   function ProductGridSkeleton() {
     return (
@@ -206,7 +309,6 @@ function Index() {
 
   const activeBanners = promoBanners.filter((b) => b.is_enabled);
 
-  // Curated category items matching requirement: Electronics, Fashion, Home & Living, Beauty, Sports, Books, Gaming, Automotive
   const categoryCards = [
     {
       title: "Electronics",
@@ -266,7 +368,6 @@ function Index() {
     },
   ];
 
-  // 5 Feature Cards matching: Secure Payments, Fast Worldwide Shipping, Easy Returns, 24/7 Customer Support, Trusted by Millions
   const featureCards = [
     {
       icon: ShieldCheck,
@@ -277,7 +378,7 @@ function Index() {
     },
     {
       icon: Truck,
-      title: "Worldwide Shipping",
+      title: "Fast Shipping",
       description: "Free shipping over $50",
       iconBg: "bg-blue-50",
       iconColor: "text-blue-500",
@@ -298,33 +399,78 @@ function Index() {
     },
     {
       icon: Sparkles,
-      title: "Trusted by Millions",
+      title: "Trusted Sellers",
       description: "Join our happy shoppers",
       iconBg: "bg-rose-50",
       iconColor: "text-rose-500",
     },
   ];
 
+  const fallbackStores = [
+    { id: "1", name: "Fashion Hub", slug: "fashion-hub", logo_url: null, rating: "4.9", followers: "10K", products: "500+" },
+    { id: "2", name: "Tech World", slug: "tech-world", logo_url: null, rating: "4.8", followers: "8K", products: "300+" },
+    { id: "3", name: "Home Decor", slug: "home-decor", logo_url: null, rating: "4.7", followers: "12K", products: "700+" },
+  ];
+
+  const storesToDisplay = featuredStores.length > 0 ? featuredStores : fallbackStores;
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 lg:px-8 space-y-12">
-      {/* Premium Full-Width Hero Slider Section */}
+    <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 lg:px-8 space-y-16">
+      {/* 1. Hero Section */}
       <section className="w-full">
         <HeroSlider />
       </section>
+
+      {/* 2. Trust Section (Why Shop With Saloree) */}
+      <section className="space-y-6">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
+            Why Shop With Saloree?
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            We provide a secure, fast, and delightful shopping experience with certified merchants globally.
+          </p>
+        </div>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+          {featureCards.map((feature) => {
+            const Icon = feature.icon;
+            return (
+              <div
+                key={feature.title}
+                className="flex flex-col items-center text-center gap-3 rounded-2xl bg-white border border-gray-100 p-6 shadow-soft hover:shadow-md hover:-translate-y-1 transition-all duration-300 group"
+              >
+                <div
+                  className={`grid h-12 w-12 place-items-center rounded-2xl shrink-0 ${feature.iconBg} ${feature.iconColor} group-hover:scale-110 transition-all duration-300`}
+                >
+                  <Icon className="size-6" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-gray-800">
+                    {feature.title}
+                  </h4>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 3. Flash Deals Section */}
       <FlashDeals
         products={featuredProducts}
         isLoading={loadingFeatured}
       />
 
-
-
-      {/* Premium Curated Category Cards Section */}
+      {/* 4. Popular Categories Section */}
       {showCategories && (
         <section className="space-y-6">
           <div className="flex items-end justify-between border-b pb-3">
             <div>
               <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
-                {categoriesTitle || "Shop by Category"}
+                {categoriesTitle || "Popular Categories"}
               </h2>
               <p className="text-xs text-muted-foreground mt-1">
                 Explore our curated collections of top premium categories.
@@ -338,12 +484,14 @@ function Index() {
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
-            {categoryCards.map((category) => (
+            {categoryCards.map((category, index) => (
               <Link
                 key={category.title}
                 to={category.link as any}
                 params={category.params as any}
-                className="group flex flex-col rounded-2xl bg-white border border-gray-100 p-3 shadow-soft hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5 overflow-hidden text-center cursor-pointer"
+                className={`group flex flex-col rounded-2xl bg-white border border-gray-100 p-3 shadow-soft hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5 overflow-hidden text-center cursor-pointer ${
+                  index >= 4 ? "hidden sm:flex" : "flex"
+                }`}
               >
                 <div className="relative w-full aspect-square rounded-xl bg-gray-50 overflow-hidden mb-3">
                   <img
@@ -365,94 +513,9 @@ function Index() {
         </section>
       )}
 
-      {/* Five Premium Service Feature Cards */}
-      <section className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
-        {featureCards.map((feature) => {
-          const Icon = feature.icon;
-          return (
-            <div
-              key={feature.title}
-              className="flex items-center gap-4 rounded-2xl bg-white border border-gray-100 p-5 shadow-soft hover:shadow-md transition-all duration-300 hover:-translate-y-1 group"
-            >
-              <div
-                className={`grid h-12 w-12 place-items-center rounded-xl shrink-0 ${feature.iconBg} ${feature.iconColor} group-hover:scale-105 transition-transform duration-200`}
-              >
-                <Icon className="size-6" />
-              </div>
-              <div className="min-w-0">
-                <h4 className="text-xs sm:text-sm font-bold text-gray-800 truncate">
-                  {feature.title}
-                </h4>
-                <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 leading-snug">
-                  {feature.description}
-                </p>
-              </div>
-            </div>
-          );
-        })}
-      </section>
-
-      {/* How It Works Section */}
-      {sections?.show_how_it_works && (
-        <section className="py-6 border-y border-gray-100">
-          <h2 className="text-xl font-bold sm:text-2xl text-center">
-            {sections?.how_it_works_title || "How It Works"}
-          </h2>
-          <div className="mt-8 flex flex-col items-center space-y-8 md:flex-row md:justify-around md:space-y-0">
-            {[
-              { step: 1, title: "Create Store", description: "Sign up and set up your shop." },
-              { step: 2, title: "Upload Products", description: "Add your items with ease." },
-              { step: 3, title: "Start Selling", description: "Reach customers and grow." },
-            ].map((item) => (
-              <div key={item.step} className="text-center max-w-xs">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-xl font-extrabold text-white shadow-lg shadow-red-500/10">
-                  {item.step}
-                </div>
-                <h3 className="mt-4 text-base font-bold">{item.title}</h3>
-                <p className="text-xs text-muted-foreground mt-1">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Promo Banners */}
-      {activeBanners.length > 0 && (
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {activeBanners.map((banner) => (
-            <div
-              key={banner.id}
-              className="relative overflow-hidden rounded-2xl border bg-card shadow-soft hover:shadow-md transition-all duration-300 group h-48"
-            >
-              <img
-                src={banner.image_url}
-                alt={banner.banner_text}
-                className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-6">
-                <p className="text-base font-bold text-white leading-snug drop-shadow-md">
-                  {banner.banner_text}
-                </p>
-                <div className="mt-3">
-                  <Button
-                    asChild
-                    size="sm"
-                    className="rounded-full bg-white text-black hover:bg-white/90"
-                  >
-                    <Link to={banner.button_link as any}>
-                      {banner.button_text || "Shop Now"}
-                    </Link>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </section>
-      )}
-
-      {/* 1. New Arrivals */}
+      {/* 5. New Arrivals Section */}
       {showNewArrivals && (
-        <section>
+        <section className="space-y-6">
           <div className="flex items-end justify-between border-b pb-3 mb-6">
             <div>
               <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
@@ -483,72 +546,8 @@ function Index() {
         </section>
       )}
 
-      {/* 2. Featured Products */}
-      {showFeatured && (
-        <section>
-          <div className="flex items-end justify-between border-b pb-3 mb-6">
-            <div>
-              <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
-                {featuredTitle}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Handpicked premium products chosen for you.
-              </p>
-            </div>
-            <Link
-              to="/marketplace"
-              className="text-sm font-semibold text-primary hover:underline"
-            >
-              View all
-            </Link>
-          </div>
-          {loadingFeatured ? (
-            <ProductGridSkeleton />
-          ) : featuredProducts.length === 0 ? (
-            <ProductGridEmptyState />
-          ) : (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-              {featuredProducts.map((p) => (
-                <ProductCard key={`featured-${p.id}`} p={p} />
-              ))}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* 3. Trending Products */}
-      <section>
-        <div className="flex items-end justify-between border-b pb-3 mb-6">
-          <div>
-            <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
-              {sections?.trending_products_title || "Trending Products"}
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              See what is popular in our community right now.
-            </p>
-          </div>
-          <Link
-            to="/marketplace"
-            className="text-sm font-semibold text-primary hover:underline"
-          >
-            View all
-          </Link>
-        </div>
-        {loadingTrending ? (
-          <ProductGridSkeleton />
-        ) : trendingProducts.length === 0 ? (
-            <ProductGridEmptyState />
-        ) : (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {trendingProducts.map((p) => (
-              <ProductCard key={`trending-${p.id}`} p={p} />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* 4. Best Sellers */}
-      <section>
+      {/* 6. Best Sellers Section */}
+      <section className="space-y-6">
         <div className="flex items-end justify-between border-b pb-3 mb-6">
           <div>
             <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
@@ -568,7 +567,7 @@ function Index() {
         {loadingBestSellers ? (
           <ProductGridSkeleton />
         ) : bestSellers.length === 0 ? (
-            <ProductGridEmptyState />
+          <ProductGridEmptyState />
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {bestSellers.map((p) => (
@@ -578,155 +577,165 @@ function Index() {
         )}
       </section>
 
-      {/* Flash Sale Section */}
-      {sections?.flash_sale_enabled && (
-        <section>
-          <h2 className="text-xl font-bold sm:text-2xl">
-            {sections?.flash_sale_title || "Flash Sale"}
-          </h2>
-          <div className="mt-4 rounded-2xl border bg-gradient-to-r from-purple-500 to-pink-500 p-6 text-white shadow-card">
-            <p className="text-sm uppercase tracking-wide font-semibold">Limited Time Offer</p>
-            <h3 className="mt-2 text-3xl font-extrabold">Up to 50% Off!</h3>
-            <div className="mt-4 flex flex-wrap items-center gap-4">
-              <div className="text-base font-bold">Ends in: 00h 00m 00s</div>
-              <div className="h-2 w-32 rounded-full bg-white/30 overflow-hidden">
-                <div className="h-full w-1/2 rounded-full bg-white" />
-              </div>
-              <p className="text-xs">Only 50 left!</p>
-            </div>
-            <Button className="mt-6 rounded-full bg-white text-primary hover:bg-gray-100 font-bold px-6">
-              Shop Flash Sale
-            </Button>
+      {/* 7. Featured Stores Section */}
+      <section className="space-y-6">
+        <div className="flex items-end justify-between border-b pb-3 mb-6">
+          <div>
+            <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
+              Featured Stores
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Shop directly from trusted local and global brands.
+            </p>
           </div>
-        </section>
-      )}
-
-      {/* Statistics Section */}
-      {sections?.show_statistics && (
-        <section>
-          <h2 className="text-xl font-bold sm:text-2xl text-center mb-6">
-            {sections?.statistics_title || "Our Global Reach"}
-          </h2>
-          <div className="grid grid-cols-2 gap-6 rounded-2xl bg-gradient-to-r from-primary to-red-400 p-8 text-white shadow-card md:grid-cols-4">
-            {[
-              { value: "1M+", label: "Products" },
-              { value: "120K+", label: "Customers" },
-              { value: "25K+", label: "Stores" },
-              { value: "150+", label: "Countries" },
-            ].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-3xl font-extrabold">{stat.value}</p>
-                <p className="text-xs uppercase tracking-wider font-semibold mt-1 opacity-90">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Top Sellers (Stores) Section */}
-      {sections?.show_top_sellers && (
-        <section>
-          <h2 className="text-xl font-bold sm:text-2xl mb-6">
-            {sections?.top_sellers_title || "Top Sellers"}
-          </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              { name: "Fashion Hub", rating: 4.9, followers: "10K", products: "500+" },
-              { name: "Tech World", rating: 4.8, followers: "8K", products: "300+" },
-              { name: "Home Decor", rating: 4.7, followers: "12K", products: "700+" },
-            ].map((seller) => (
-              <div
-                key={seller.name}
-                className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-card p-4 shadow-soft"
-              >
-                <Avatar className="h-14 w-14">
-                  <AvatarFallback className="bg-secondary text-white text-lg font-bold">
-                    {seller.name.charAt(0)}
+          <Link
+            to="/marketplace"
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            View all
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {storesToDisplay.map((store) => (
+            <div
+              key={store.id}
+              className="flex items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-soft hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group"
+            >
+              <div className="flex items-center gap-4 min-w-0">
+                <Avatar className="h-14 w-14 border border-gray-100 group-hover:scale-105 transition-transform shrink-0">
+                  <AvatarFallback className="bg-gradient-to-tr from-purple-500 to-indigo-600 text-white text-lg font-extrabold shadow-inner">
+                    {store.name.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <p className="text-base font-bold">{seller.name}</p>
-                  <p className="text-xs text-muted-foreground">Rating: {seller.rating}</p>
-                  <Button variant="outline" size="sm" className="mt-2 rounded-full text-xs font-semibold px-4">
-                    Visit Store
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-base font-extrabold text-gray-800 truncate group-hover:text-primary transition-colors">
+                      {store.name}
+                    </p>
+                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-500" title="Verified Store">
+                      ✓
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-xs text-muted-foreground">{store.products} Products</p>
+                    <span className="text-gray-300 text-[10px]">•</span>
+                    <p className="text-xs text-amber-500 flex items-center gap-0.5">
+                      <Star className="size-3 fill-amber-500 text-amber-500" /> {store.rating}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <Button asChild variant="outline" size="sm" className="rounded-full text-xs font-semibold px-4 border-gray-200 hover:bg-slate-50 shrink-0 cursor-pointer">
+                <Link to="/stores/$slug" params={{ slug: store.slug }}>
+                  Visit Store
+                </Link>
+              </Button>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 8. Become a Seller CTA Section */}
+      <section className="relative overflow-hidden rounded-[24px] bg-gradient-to-r from-gray-900 via-indigo-950 to-slate-900 text-white p-8 md:p-12 shadow-2xl">
+        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:30px_30px]" />
+        <div className="absolute -right-10 -bottom-10 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
+        
+        <div className="relative z-10 grid md:grid-cols-12 gap-6 items-center">
+          <div className="md:col-span-8 space-y-4 text-left">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-300">
+              <Store className="size-3.5" /> Start Your Business
+            </span>
+            <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
+              Start selling your products on Saloree
+            </h2>
+            <p className="text-xs md:text-sm text-gray-300 leading-relaxed max-w-xl">
+              Create your online store in minutes, list unlimited products, and access a global network of millions of buyers. Enjoy secure payments and dedicated merchant support.
+            </p>
+          </div>
+          <div className="md:col-span-4 md:text-right flex flex-col sm:flex-row md:flex-col lg:flex-row gap-3">
+            <Button asChild size="lg" className="rounded-full bg-white text-indigo-950 hover:bg-gray-100 font-extrabold shadow-lg w-full md:w-auto border-none">
+              <Link to="/register">
+                Register as Seller
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="rounded-full border-white/20 hover:bg-white/10 font-bold w-full md:w-auto">
+              <Link to="/marketplace">
+                Learn More
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* 9. Recommended / Trending Products Section */}
+      <section className="space-y-6">
+        <div className="flex items-end justify-between border-b pb-3 mb-6">
+          <div>
+            <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
+              Recommended Products
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Top trending items recommended for you based on popularity.
+            </p>
+          </div>
+          <Link
+            to="/marketplace"
+            className="text-sm font-semibold text-primary hover:underline"
+          >
+            View all
+          </Link>
+        </div>
+        {loadingTrending ? (
+          <ProductGridSkeleton />
+        ) : trendingProducts.length === 0 ? (
+          <ProductGridEmptyState />
+        ) : (
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {trendingProducts.map((p) => (
+              <ProductCard key={`trending-${p.id}`} p={p} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Promo Banners */}
+      {activeBanners.length > 0 && (
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {activeBanners.map((banner) => (
+            <div
+              key={banner.id}
+              className="relative overflow-hidden rounded-2xl border bg-card shadow-soft hover:shadow-md transition-all duration-300 group h-48"
+            >
+              <img
+                src={banner.image_url}
+                alt={banner.banner_text}
+                className="absolute inset-0 h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex flex-col justify-end p-6">
+                <p className="text-base font-bold text-white leading-snug drop-shadow-md">
+                  {banner.banner_text}
+                </p>
+                <div className="mt-3">
+                  <Button
+                    asChild
+                    size="sm"
+                    className="rounded-full bg-white text-black hover:bg-white/90 border-none"
+                  >
+                    <Link to={banner.button_link as any}>
+                      {banner.button_text || "Shop Now"}
+                    </Link>
                   </Button>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Featured Brands Section */}
-      {sections?.show_featured_brands && (
-        <section>
-          <h2 className="text-xl font-bold sm:text-2xl mb-6">
-            {sections?.featured_brands_title || "Featured Brands"}
-          </h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-            {["Nike", "Apple", "Samsung", "Sony", "Adidas", "Zara"].map((brand) => (
-              <div
-                key={brand}
-                className="flex items-center justify-center rounded-xl border border-gray-100 bg-card p-4 shadow-soft transition duration-300 hover:border-primary hover:shadow-md cursor-pointer"
-              >
-                <span className="text-base font-bold text-gray-700">{brand}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Why Saloree Section */}
-      {sections?.show_why_saloree && (
-        <section className="py-6">
-          <h2 className="text-xl font-bold sm:text-2xl text-center">
-            {sections?.why_saloree_title || "Why Saloree?"}
-          </h2>
-          <p className="text-center text-xs text-muted-foreground mt-1 mb-8">
-            The ultimate platform for sellers and buyers.
-          </p>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: "Build Your Store",
-                description: "Create a beautiful online store in minutes.",
-                icon: Store,
-              },
-              {
-                title: "Sell Worldwide",
-                description: "Reach millions of customers across the globe.",
-                icon: Globe,
-              },
-              {
-                title: "Manage Products",
-                description: "Effortlessly add, update, and organize your inventory.",
-                icon: Package,
-              },
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <div
-                  key={item.title}
-                  className="rounded-2xl border border-gray-100 bg-card p-6 text-center shadow-soft hover:shadow-md transition duration-300"
-                >
-                  <Icon className="mx-auto mb-4 h-12 w-12 text-primary" />
-                  <h3 className="text-base font-bold">{item.title}</h3>
-                  <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
+            </div>
+          ))}
         </section>
       )}
 
       {/* Customer Reviews Section */}
       {sections?.show_customer_reviews && (
-        <section>
-          <h2 className="text-xl font-bold sm:text-2xl text-center mb-6">
+        <section className="space-y-6">
+          <h2 className="text-xl font-extrabold sm:text-2xl text-center text-secondary mb-6">
             {sections?.customer_reviews_title || "What Our Customers Say"}
           </h2>
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -749,7 +758,7 @@ function Index() {
             ].map((review) => (
               <div
                 key={review.name}
-                className="rounded-2xl border border-gray-100 bg-card p-6 shadow-soft"
+                className="rounded-2xl border border-gray-100 bg-white p-6 shadow-soft"
               >
                 <div className="flex items-center mb-4">
                   <Avatar className="h-10 w-10 mr-4">
@@ -774,36 +783,7 @@ function Index() {
         </section>
       )}
 
-      {/* Mobile App Download Section */}
-      {sections?.show_mobile_app && (
-        <section>
-          <div className="flex flex-col items-center justify-between rounded-2xl border border-gray-100 bg-card p-8 shadow-soft md:flex-row md:space-x-8">
-            <div className="text-center md:text-left space-y-2">
-              <h2 className="text-xl font-extrabold sm:text-2xl">
-                {sections?.mobile_app_title || "Download Our Mobile App"}
-              </h2>
-              <p className="text-xs text-muted-foreground leading-relaxed max-w-sm">
-                Shop on the go, anytime, anywhere. Receive notifications on orders and discounts.
-              </p>
-              <div className="mt-4 flex justify-center space-x-4 md:justify-start">
-                <Button className="rounded-full font-bold px-6 text-xs h-10 shadow-sm">
-                  App Store
-                </Button>
-                <Button variant="outline" className="rounded-full font-bold px-6 text-xs h-10 shadow-sm">
-                  Google Play
-                </Button>
-              </div>
-            </div>
-            <div className="mt-8 md:mt-0 relative shrink-0">
-              <div className="h-44 w-28 rounded-2xl bg-gray-100 flex items-center justify-center text-xs text-gray-400 font-semibold border-2 border-gray-200 shadow-inner">
-                Phone Mockup
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Newsletter Section */}
+      {/* 10. Newsletter Signup Section */}
       {sections?.show_newsletter && (
         <section>
           <div className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-700 p-8 text-white shadow-lg text-center space-y-4">
@@ -813,21 +793,23 @@ function Index() {
             <p className="text-sm text-blue-100 max-w-md mx-auto">
               Subscribe to our newsletter for the latest deals, updates, and sellers.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center items-center gap-3 pt-2 max-w-md mx-auto">
+            <form onSubmit={handleNewsletterSubscribe} className="flex flex-col sm:flex-row justify-center items-center gap-3 pt-2 max-w-md mx-auto">
               <Input
                 type="email"
                 placeholder="Your email address"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
                 className="w-full rounded-full border-none bg-white/10 px-4 py-2 text-white placeholder-blue-200 focus:ring-2 focus:ring-white"
               />
-              <Button className="w-full sm:w-auto rounded-full bg-white text-blue-700 hover:bg-gray-100 font-bold px-6 shrink-0 shadow-sm">
+              <Button type="submit" className="w-full sm:w-auto rounded-full bg-white text-blue-700 hover:bg-gray-100 font-bold px-6 shrink-0 shadow-sm border-none cursor-pointer">
                 Subscribe
               </Button>
-            </div>
+            </form>
           </div>
         </section>
       )}
 
-      {/* Double rendering footer bypass conditional - original check */}
+      {/* Footer */}
       {sections?.show_footer && (
         <footer className="mt-10 bg-secondary text-white py-10 rounded-2xl overflow-hidden px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">

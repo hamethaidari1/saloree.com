@@ -271,6 +271,7 @@ function StorePage() {
   // UI state
   const [activeTab, setActiveTab] = useState<StoreTab>("home");
   const tabsRef = useRef<HTMLDivElement>(null);
+  const tabsContainerRef = useRef<HTMLDivElement>(null);
 
   // Products tab state
   const [searchQuery, setSearchQuery] = useState("");
@@ -339,7 +340,7 @@ function StorePage() {
         .eq("store_id", store!.id)
         .order("display_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as NavItem[];
+      return (data ?? []) as unknown as NavItem[];
     },
   });
 
@@ -391,6 +392,19 @@ function StorePage() {
       setIsFollowing(getFollowedStores().includes(store.id));
     }
   }, [store?.id]);
+
+  useEffect(() => {
+    if (tabsContainerRef.current) {
+      const activeEl = tabsContainerRef.current.querySelector('[data-active="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }
+  }, [activeTab]);
 
   // ── Theme values (preserve existing logic exactly) ──────────────────────────
 
@@ -592,7 +606,7 @@ function StorePage() {
       >
         {ts?.show_announcement && ts?.announcement_text && (
           <div
-            className="px-4 py-2 text-center text-xs font-semibold transition"
+            className="px-4 py-2 text-center text-xs font-semibold whitespace-nowrap overflow-x-auto scrollbar-none transition"
             style={{
               background: ts.announcement_bg || "#111827",
               color: ts.announcement_text_color || "#ffffff",
@@ -602,34 +616,47 @@ function StorePage() {
           </div>
         )}
         <nav
-          className="sticky top-0 z-50 flex items-center gap-4 px-6 py-3.5 shadow-sm"
+          className="relative sm:sticky sm:top-0 z-40 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-4 sm:px-6 py-3 shadow-sm"
           style={{ background: primaryColor }}
         >
-          <Link
-            to="/stores/$slug"
-            params={{ slug }}
-            className="flex items-center gap-3"
-          >
-            {logoUrl ? (
-              <img
-                src={logoUrl}
-                className="h-8 w-8 rounded-lg object-cover"
-                alt={storeName}
-              />
-            ) : (
-              <div
-                className="h-8 w-8 rounded-lg flex items-center justify-center text-sm font-bold text-white"
-                style={{ background: buttonColor }}
+          <div className="flex items-center justify-between gap-3">
+            <Link
+              to="/stores/$slug"
+              params={{ slug }}
+              className="flex items-center gap-2 sm:gap-3 min-h-[44px]"
+            >
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  className="h-8 w-8 rounded-lg object-cover border border-white/20 shrink-0"
+                  alt={storeName}
+                />
+              ) : (
+                <div
+                  className="h-8 w-8 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0"
+                  style={{ background: buttonColor }}
+                >
+                  {storeInitial}
+                </div>
+              )}
+              <span className="text-white font-bold text-sm sm:text-base truncate max-w-[180px] sm:max-w-xs">
+                {storeName}
+              </span>
+            </Link>
+
+            {/* Mobile dashboard button (only visible on mobile, if owner) */}
+            {isOwnerPreview && (
+              <Link
+                to="/seller"
+                className="sm:hidden inline-flex items-center justify-center min-h-[44px] px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-semibold transition active:scale-95 shrink-0"
               >
-                {storeInitial}
-              </div>
+                Dashboard
+              </Link>
             )}
-            <span className="text-white font-bold text-base">
-              {storeName}
-            </span>
-          </Link>
-          <div className="flex-1" />
-          <div className="hidden sm:flex items-center gap-4 text-xs font-semibold text-white/95 mr-4">
+          </div>
+
+          {/* Dynamic nav items */}
+          <div className="hidden sm:flex items-center gap-4 text-xs font-semibold text-white/95">
             <Link
               to="/stores/$slug"
               params={{ slug }}
@@ -669,10 +696,12 @@ function StorePage() {
               );
             })}
           </div>
+
+          {/* Desktop dashboard button */}
           {isOwnerPreview && (
             <Link
               to="/seller"
-              className="text-xs text-white/80 hover:text-white underline underline-offset-2 mr-2"
+              className="hidden sm:inline-flex items-center justify-center min-h-[44px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-semibold transition active:scale-95"
             >
               Dashboard
             </Link>
@@ -734,7 +763,7 @@ function StorePage() {
   const renderHomeTab = () => (
     <div className="space-y-14">
       {/* Trust Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           {
             icon: <CheckCircle2 className="size-5" />,
@@ -759,16 +788,18 @@ function StorePage() {
         ].map((item) => (
           <div
             key={item.title}
-            className="flex flex-col items-center gap-2 p-4 rounded-2xl border bg-card text-center shadow-soft"
+            className="flex items-center sm:flex-col gap-3 sm:gap-2 p-3 sm:p-4 rounded-xl sm:rounded-2xl border bg-card text-left sm:text-center shadow-soft"
           >
             <div
-              className="p-2.5 rounded-xl text-white"
+              className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl text-white shrink-0"
               style={{ background: primaryColor }}
             >
               {item.icon}
             </div>
-            <p className="text-xs font-bold text-secondary">{item.title}</p>
-            <p className="text-[11px] text-muted-foreground">{item.desc}</p>
+            <div>
+              <p className="text-xs font-bold text-secondary">{item.title}</p>
+              <p className="text-[10px] sm:text-[11px] text-muted-foreground">{item.desc}</p>
+            </div>
           </div>
         ))}
       </div>
@@ -878,7 +909,7 @@ function StorePage() {
       {/* Store Description Preview */}
       {store.description && (
         <section
-          className="rounded-3xl p-8 border"
+          className="rounded-2xl sm:rounded-3xl p-5 sm:p-8 border"
           style={{ background: primaryColor + "08" }}
         >
           <h2 className="text-lg font-extrabold text-secondary mb-3">
@@ -1069,7 +1100,7 @@ function StorePage() {
     <div className="grid lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-6">
         {/* Store Description */}
-        <section className="bg-card rounded-3xl border p-8 shadow-soft space-y-4">
+        <section className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-8 shadow-soft space-y-4">
           <h2 className="text-lg font-extrabold text-secondary">
             About {storeName}
           </h2>
@@ -1085,7 +1116,7 @@ function StorePage() {
         </section>
 
         {/* Business Info */}
-        <section className="bg-card rounded-3xl border p-8 shadow-soft space-y-4">
+        <section className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-8 shadow-soft space-y-4">
           <h2 className="text-lg font-extrabold text-secondary">
             Business Information
           </h2>
@@ -1121,7 +1152,7 @@ function StorePage() {
         </section>
 
         {/* Policies */}
-        <section className="bg-card rounded-3xl border p-8 shadow-soft space-y-5">
+        <section className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-8 shadow-soft space-y-5">
           <h2 className="text-lg font-extrabold text-secondary">
             Store Policies
           </h2>
@@ -1160,7 +1191,7 @@ function StorePage() {
       {/* Sidebar */}
       <div className="space-y-6">
         {/* Store Card */}
-        <div className="bg-card rounded-3xl border p-6 shadow-soft text-center space-y-4">
+        <div className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-6 shadow-soft text-center space-y-4">
           {logoUrl ? (
             <img
               src={logoUrl}
@@ -1187,7 +1218,7 @@ function StorePage() {
           </div>
           <button
             onClick={handleFollow}
-            className="w-full py-2.5 rounded-2xl font-semibold text-sm transition active:scale-[0.98]"
+            className="w-full py-2.5 rounded-xl font-semibold text-sm transition active:scale-[0.98] min-h-[44px] flex items-center justify-center cursor-pointer shadow-sm"
             style={
               isFollowing
                 ? {
@@ -1202,7 +1233,7 @@ function StorePage() {
           </button>
           <button
             onClick={handleShare}
-            className="w-full py-2.5 rounded-2xl font-semibold text-sm border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition flex items-center justify-center gap-2"
+            className="w-full py-2.5 rounded-xl font-semibold text-sm border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition flex items-center justify-center gap-2 min-h-[44px] cursor-pointer shadow-sm"
           >
             <Share2 className="size-4" /> Share Store
           </button>
@@ -1214,7 +1245,7 @@ function StorePage() {
             ts.social_twitter ||
             ts.social_facebook ||
             ts.social_tiktok) && (
-            <div className="bg-card rounded-3xl border p-6 shadow-soft space-y-3">
+            <div className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-6 shadow-soft space-y-3">
               <h3 className="text-sm font-extrabold text-secondary">
                 Follow on Social
               </h3>
@@ -1224,7 +1255,7 @@ function StorePage() {
                     href={ts.social_instagram}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-semibold"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-semibold min-h-[44px] flex justify-center cursor-pointer shadow-xs"
                   >
                     Instagram
                   </a>
@@ -1234,7 +1265,7 @@ function StorePage() {
                     href={ts.social_twitter}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black text-white text-xs font-semibold"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black text-white text-xs font-semibold min-h-[44px] flex justify-center cursor-pointer shadow-xs"
                   >
                     X / Twitter
                   </a>
@@ -1244,7 +1275,7 @@ function StorePage() {
                     href={ts.social_facebook}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-600 text-white text-xs font-semibold"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-600 text-white text-xs font-semibold min-h-[44px] flex justify-center cursor-pointer shadow-xs"
                   >
                     Facebook
                   </a>
@@ -1254,7 +1285,7 @@ function StorePage() {
                     href={ts.social_tiktok}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black text-white text-xs font-semibold"
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black text-white text-xs font-semibold min-h-[44px] flex justify-center cursor-pointer shadow-xs"
                   >
                     TikTok
                   </a>
@@ -1289,7 +1320,7 @@ function StorePage() {
 
         {/* Rating Summary */}
         <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-card rounded-3xl border p-8 shadow-soft flex flex-col items-center justify-center gap-3">
+          <div className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-8 shadow-soft flex flex-col items-center justify-center gap-3">
             <div
               className="text-7xl font-black"
               style={{ color: primaryColor }}
@@ -1301,7 +1332,7 @@ function StorePage() {
               {storeReviews.length} reviews (demo)
             </p>
           </div>
-          <div className="bg-card rounded-3xl border p-8 shadow-soft space-y-3">
+          <div className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-8 shadow-soft space-y-3">
             {ratingCounts.map(({ star, count }) => (
               <div key={star} className="flex items-center gap-3 text-sm">
                 <span className="w-4 text-muted-foreground font-medium text-right">
@@ -1371,7 +1402,7 @@ function StorePage() {
         </div>
 
         {/* Submit Review Form */}
-        <div className="bg-card rounded-3xl border p-8 shadow-soft space-y-5">
+        <div className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-8 shadow-soft space-y-5">
           <h3 className="font-extrabold text-secondary flex items-center gap-2">
             <MessageSquare
               className="size-5"
@@ -1490,7 +1521,7 @@ function StorePage() {
       ].map((card) => (
         <div
           key={card.title}
-          className="bg-card rounded-3xl border p-6 shadow-soft space-y-4"
+          className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-6 shadow-soft space-y-4"
         >
           <div className="flex items-center gap-3">
             <div
@@ -1522,12 +1553,12 @@ function StorePage() {
 
   const renderContactTab = () => (
     <div className="max-w-2xl space-y-6">
-      <div className="bg-card rounded-3xl border p-8 shadow-soft space-y-6">
+      <div className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-8 shadow-soft space-y-6">
         <h2 className="text-lg font-extrabold text-secondary">
           Contact {storeName}
         </h2>
         <div className="space-y-3">
-          <div className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50/50">
+          <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
             <div
               className="p-2.5 rounded-xl text-white shrink-0"
               style={{ background: primaryColor }}
@@ -1546,7 +1577,7 @@ function StorePage() {
               Fast Responder
             </span>
           </div>
-          <div className="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50/50">
+          <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
             <div
               className="p-2.5 rounded-xl text-white shrink-0"
               style={{ background: primaryColor }}
@@ -1565,7 +1596,7 @@ function StorePage() {
         </div>
         <div className="space-y-3">
           <button
-            className="w-full py-3.5 rounded-2xl font-bold text-white transition hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl font-bold text-white transition hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2 min-h-[44px] cursor-pointer shadow-sm"
             style={{ background: primaryColor }}
           >
             <MessageSquare className="size-5" /> Contact Seller
@@ -1577,7 +1608,7 @@ function StorePage() {
         </div>
       </div>
 
-      <div className="bg-card rounded-3xl border p-6 shadow-soft space-y-4">
+      <div className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-6 shadow-soft space-y-4">
         <h3 className="font-extrabold text-secondary text-sm">
           Trust & Safety
         </h3>
@@ -1615,7 +1646,7 @@ function StorePage() {
       {/* Announcement Bar */}
       {ts?.show_announcement && ts?.announcement_text && (
         <div
-          className="px-4 py-2 text-center text-xs font-semibold"
+          className="px-4 py-2 text-center text-xs font-semibold whitespace-nowrap overflow-x-auto scrollbar-none transition"
           style={{
             background: ts.announcement_bg || "#111827",
             color: ts.announcement_text_color || "#ffffff",
@@ -1627,11 +1658,11 @@ function StorePage() {
 
       {/* Draft Store Preview Banner */}
       {isDraft && isOwnerPreview && (
-        <div className="bg-amber-500 text-slate-900 px-4 py-2.5 text-center text-xs font-bold flex items-center justify-center gap-2 border-b border-amber-600 shadow-sm">
-          <span>⚠️ You are previewing your store in draft mode. Visitors cannot see this store until you publish it.</span>
+        <div className="bg-amber-500 text-slate-900 px-4 py-2 sm:py-2.5 text-center text-xs font-bold flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 border-b border-amber-600 shadow-sm shrink-0">
+          <span className="leading-tight">⚠️ You are previewing your store in draft mode. Visitors cannot see this store until you publish it.</span>
           <Link
             to="/seller/store"
-            className="underline hover:text-slate-950 font-extrabold ml-1"
+            className="underline hover:text-slate-950 font-extrabold shrink-0"
           >
             Go to Store Settings to Publish
           </Link>
@@ -1640,36 +1671,48 @@ function StorePage() {
 
       {/* ── Store Navbar (theme-colored) ──────────────────────────────────── */}
       <nav
-        className="sticky top-0 z-50 flex items-center gap-4 px-6 py-3.5 shadow-sm"
+        className="relative sm:sticky sm:top-0 z-40 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 px-4 sm:px-6 py-3 shadow-sm"
         style={{ background: primaryColor, fontFamily }}
       >
-        <Link
-          to="/stores/$slug"
-          params={{ slug }}
-          className="flex items-center gap-3"
-          onClick={() => setActiveTab("home")}
-        >
-          {logoUrl ? (
-            <img
-              src={logoUrl}
-              className="h-8 w-8 rounded-lg object-cover border border-white/20"
-              alt={storeName}
-            />
-          ) : (
-            <div
-              className="h-8 w-8 rounded-lg flex items-center justify-center text-sm font-bold text-white"
-              style={{ background: buttonColor }}
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            to="/stores/$slug"
+            params={{ slug }}
+            className="flex items-center gap-2 sm:gap-3 min-h-[44px]"
+            onClick={() => setActiveTab("home")}
+          >
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                className="h-8 w-8 rounded-lg object-cover border border-white/20 shrink-0"
+                alt={storeName}
+              />
+            ) : (
+              <div
+                className="h-8 w-8 rounded-lg flex items-center justify-center text-sm font-bold text-white shrink-0"
+                style={{ background: buttonColor }}
+              >
+                {storeInitial}
+              </div>
+            )}
+            <span className="text-white font-bold text-sm sm:text-base truncate max-w-[180px] sm:max-w-xs">
+              {storeName}
+            </span>
+          </Link>
+
+          {/* Mobile dashboard button (only visible on mobile, if owner) */}
+          {isOwnerPreview && (
+            <Link
+              to="/seller"
+              className="sm:hidden inline-flex items-center justify-center min-h-[44px] px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-semibold transition active:scale-95 shrink-0"
             >
-              {storeInitial}
-            </div>
+              Dashboard
+            </Link>
           )}
-          <span className="text-white font-bold text-base">{storeName}</span>
-        </Link>
+        </div>
 
-        <div className="flex-1" />
-
-        {/* Dynamic nav items (preserve existing) */}
-        <div className="hidden sm:flex items-center gap-4 text-xs font-semibold text-white/95 mr-4">
+        {/* Dynamic nav items */}
+        <div className="hidden sm:flex items-center gap-4 text-xs font-semibold text-white/95">
           <button
             onClick={() => setActiveTab("home")}
             className={`transition ${activeTab === "home" ? "text-white" : "text-white/70 hover:text-white"}`}
@@ -1709,10 +1752,11 @@ function StorePage() {
           })}
         </div>
 
+        {/* Desktop dashboard button */}
         {isOwnerPreview && (
           <Link
             to="/seller"
-            className="text-xs text-white/80 hover:text-white underline underline-offset-2 mr-2"
+            className="hidden sm:inline-flex items-center justify-center min-h-[44px] px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs text-white font-semibold transition active:scale-95"
           >
             Dashboard
           </Link>
@@ -1721,106 +1765,112 @@ function StorePage() {
 
       {/* Owner preview badge */}
       {isOwnerPreview && (
-        <div className="flex items-center gap-2 px-6 py-2.5 bg-primary/10 border-b border-primary/20 text-xs shrink-0">
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span>Seller Preview Mode — drafts are visible</span>
+        <div className="flex flex-col sm:flex-row items-center gap-2 px-4 sm:px-6 py-2.5 bg-primary/10 border-b border-primary/20 text-xs shrink-0 text-center sm:text-left">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
+            <span>Seller Preview Mode — drafts are visible</span>
+          </div>
           <Link
             to="/seller/theme-customizer"
             search={{ id: activeInstallation?.id }}
-            className="ml-auto text-primary hover:underline font-semibold"
+            className="sm:ml-auto inline-flex items-center justify-center min-h-[44px] px-4 py-1.5 rounded-xl bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition active:scale-95"
           >
             ✏️ Customize Theme
           </Link>
         </div>
       )}
 
-      {/* ── Store Hero (theme-colored) ────────────────────────────────────── */}
       <div
-        className="relative overflow-hidden shrink-0"
+        className="relative overflow-hidden shrink-0 flex items-center"
         style={{
           background: bannerUrl
             ? `url(${bannerUrl}) center/cover no-repeat`
             : `linear-gradient(135deg, ${primaryColor} 0%, ${primaryColor}cc 60%, ${accentColor} 100%)`,
-          minHeight: "280px",
+          minHeight: "220px",
         }}
       >
-        {bannerUrl && <div className="absolute inset-0 bg-black/50" />}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 py-12 flex flex-col sm:flex-row items-end gap-6">
-          {/* Logo */}
-          <div className="shrink-0">
-            {logoUrl ? (
-              <motion.img
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4 }}
-                src={logoUrl}
-                alt={storeName}
-                className="w-24 h-24 rounded-3xl object-cover border-4 border-white/30 shadow-2xl"
-              />
-            ) : (
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ duration: 0.4 }}
-                className="w-24 h-24 rounded-3xl flex items-center justify-center text-4xl font-black text-white border-4 border-white/30 shadow-2xl"
-                style={{ background: buttonColor }}
-              >
-                {storeInitial}
-              </motion.div>
-            )}
-          </div>
-
-          {/* Store Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="flex-1 pb-1"
-          >
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <h1
-                className="text-2xl sm:text-3xl font-extrabold text-white leading-tight"
-                style={{ fontFamily }}
-              >
-                {storeName}
-              </h1>
-              <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full text-white text-xs font-bold">
-                <CheckCircle2 className="size-3.5 fill-white text-white" />{" "}
-                Verified
-              </span>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-white/80 text-xs mt-1">
-              {joinedDate && (
-                <span className="flex items-center gap-1">
-                  <Calendar className="size-3.5" /> Joined {joinedDate}
-                </span>
+        <div className="absolute inset-0 bg-black/45 sm:bg-black/40" />
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 w-full flex-1">
+            {/* Logo */}
+            <div className="shrink-0">
+              {logoUrl ? (
+                <motion.img
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.4 }}
+                  src={logoUrl}
+                  alt={storeName}
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl object-cover border-4 border-white/20 shadow-2xl"
+                />
+              ) : (
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.4 }}
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl flex items-center justify-center text-3xl sm:text-4xl font-black text-white border-4 border-white/20 shadow-2xl"
+                  style={{ background: buttonColor }}
+                >
+                  {storeInitial}
+                </motion.div>
               )}
-              <span className="flex items-center gap-1">
-                <Package2 className="size-3.5" /> {productCount} products
-              </span>
-              <span className="flex items-center gap-1">
-                <Star className="size-3.5 fill-amber-400 text-amber-400" />{" "}
-                4.8
-                <span className="text-white/60 ml-0.5">(Demo)</span>
-              </span>
             </div>
-            {store.description && (
-              <p className="text-white/80 text-xs mt-2 max-w-lg line-clamp-2 leading-relaxed">
-                {store.description}
-              </p>
-            )}
-          </motion.div>
+
+            {/* Store Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+              className="flex-1 text-center sm:text-left space-y-1.5 sm:space-y-1"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-center sm:justify-start gap-2">
+                <h1
+                  className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-white leading-tight break-words max-w-full"
+                  style={{ fontFamily }}
+                >
+                  {storeName}
+                </h1>
+                <div className="flex justify-center sm:justify-start">
+                  <span className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-full text-white text-[10px] sm:text-xs font-bold">
+                    <CheckCircle2 className="size-3.5 fill-white text-[#FF3B3B] sm:text-white" />{" "}
+                    Verified
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1.5 text-white/90 text-xs font-medium">
+                {joinedDate && (
+                  <span className="flex items-center gap-1 shrink-0">
+                    <Calendar className="size-3.5" /> Joined {joinedDate}
+                  </span>
+                )}
+                <span className="flex items-center gap-1 shrink-0">
+                  <Package2 className="size-3.5" /> {productCount} products
+                </span>
+                <span className="flex items-center gap-1 shrink-0">
+                  <Star className="size-3.5 fill-amber-400 text-amber-400" />{" "}
+                  4.8 <span className="text-white/60 ml-0.5">(Demo)</span>
+                </span>
+              </div>
+
+              {store.description && (
+                <p className="text-white/80 text-xs sm:text-sm mt-2 max-w-xl mx-auto sm:mx-0 line-clamp-2 leading-relaxed break-words">
+                  {store.description}
+                </p>
+              )}
+            </motion.div>
+          </div>
 
           {/* Action buttons */}
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className="flex items-center gap-2 shrink-0 self-end pb-1"
+            className="flex items-center justify-center sm:justify-end gap-2.5 w-full sm:w-auto shrink-0 pb-1"
           >
             <button
               onClick={handleFollow}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl font-semibold text-sm transition active:scale-95"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition active:scale-95 shadow-md cursor-pointer"
               style={
                 isFollowing
                   ? {
@@ -1839,7 +1889,7 @@ function StorePage() {
             </button>
             <button
               onClick={handleShare}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl font-semibold text-sm bg-white/15 text-white backdrop-blur-sm border border-white/20 hover:bg-white/25 transition active:scale-95"
+              className="flex-1 sm:flex-initial flex items-center justify-center gap-2 min-h-[44px] px-5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm bg-white/15 text-white backdrop-blur-sm border border-white/20 hover:bg-white/25 transition active:scale-95 shadow-md cursor-pointer"
             >
               <Share2 className="size-4" /> Share
             </button>
@@ -1850,15 +1900,19 @@ function StorePage() {
       {/* ── Sticky Tab Navigation ─────────────────────────────────────────── */}
       <div
         ref={tabsRef}
-        className="sticky top-[57px] z-40 bg-white border-b border-slate-200 shadow-sm"
+        className="relative sm:sticky sm:top-[68px] z-30 bg-white border-b border-slate-200 shadow-sm"
       >
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center overflow-x-auto scrollbar-none">
+          <div
+            ref={tabsContainerRef}
+            className="flex items-center overflow-x-auto scrollbar-none py-1.5 sm:py-0"
+          >
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`relative shrink-0 px-4 py-4 text-xs font-semibold transition-colors whitespace-nowrap border-b-2 border-transparent ${
+                data-active={activeTab === tab.id}
+                className={`relative shrink-0 px-4 py-4 text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap border-b-2 border-transparent min-h-[44px] flex items-center justify-center cursor-pointer ${
                   activeTab === tab.id
                     ? "text-secondary"
                     : "text-muted-foreground hover:text-secondary"

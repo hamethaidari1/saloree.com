@@ -94,6 +94,7 @@ function ProductPage() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxActiveIndex, setLightboxActiveIndex] = useState(0);
   const [lightboxZoom, setLightboxZoom] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   const [reviews, setReviews] = useState<Review[]>(DEFAULT_REVIEWS);
   const [reviewName, setReviewName] = useState("");
@@ -133,8 +134,8 @@ function ProductPage() {
       const { data, error } = await supabase
         .from("products")
         .select("*, stores(name, slug, logo_url), categories(name, slug)")
-        .eq("category_id", product.category_id)
-        .neq("id", product.id)
+        .eq("category_id", product!.category_id!)
+        .neq("id", product!.id)
         .eq("status", "active")
         .limit(8);
 
@@ -153,8 +154,8 @@ function ProductPage() {
       const { data, error } = await supabase
         .from("products")
         .select("*, stores(name, slug, logo_url), categories(name, slug)")
-        .eq("store_id", product.store_id)
-        .neq("id", product.id)
+        .eq("store_id", product!.store_id)
+        .neq("id", product!.id)
         .eq("status", "active")
         .limit(4);
 
@@ -244,7 +245,7 @@ function ProductPage() {
         product_id: product.id,
         slug: product.slug || product.id,
         store_id: product.store_id,
-        store_name: product.stores?.store_name || "Unknown store",
+        store_name: product.stores?.name || "Unknown store",
         title: product.title,
         price: Number(product.price),
         featured_image: product.featured_image,
@@ -260,7 +261,7 @@ function ProductPage() {
         product_id: product.id,
         slug: product.slug || product.id,
         store_id: product.store_id,
-        store_name: product.stores?.store_name || "Unknown store",
+        store_name: product.stores?.name || "Unknown store",
         title: product.title,
         price: Number(product.price),
         featured_image: product.featured_image,
@@ -278,6 +279,23 @@ function ProductPage() {
   const handleOpenLightbox = (index: number) => {
     setLightboxActiveIndex(index);
     setIsLightboxOpen(true);
+  };
+
+  const handleTouchStartGallery = (e: React.TouchEvent) => {
+    setTouchStartX(e.changedTouches[0].clientX);
+  };
+
+  const handleTouchEndGallery = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        setActiveImageIndex((prev) => (prev + 1) % images.length);
+      } else {
+        setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
+      }
+    }
+    setTouchStartX(null);
   };
 
   const handleReviewSubmit = (e: React.FormEvent) => {
@@ -362,7 +380,7 @@ function ProductPage() {
               <tr className="border-b hover:bg-slate-50/50 transition-colors">
                 <td className="p-4 font-semibold text-slate-700 bg-slate-50/20 w-1/3 border-r">Store Name</td>
                 <td className="p-4 text-slate-600">
-                  {product.stores?.store_name || "Unknown store"}
+                  {product.stores?.name || "Unknown store"}
                 </td>
               </tr>
               <tr className="border-b hover:bg-slate-50/50 transition-colors">
@@ -389,7 +407,7 @@ function ProductPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:py-10">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:py-10 pb-24 md:pb-10">
       <nav className="mb-6 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground bg-slate-100/50 p-3 rounded-2xl w-fit">
         <Link to="/" className="hover:text-primary transition-colors">
           {t("home", language)}
@@ -441,6 +459,8 @@ function ProductPage() {
               onMouseEnter={() => setIsZooming(true)}
               onMouseLeave={() => setIsZooming(false)}
               onClick={() => handleOpenLightbox(activeImageIndex)}
+              onTouchStart={handleTouchStartGallery}
+              onTouchEnd={handleTouchEndGallery}
             >
               {images[activeImageIndex] ? (
                 <img
@@ -511,7 +531,7 @@ function ProductPage() {
                       params={{ slug: product.stores.slug }}
                       className="font-bold text-secondary hover:text-primary transition-colors"
                     >
-                      {product.stores.store_name}
+                      {product.stores.name}
                     </Link>
                     <CheckCircle2 className="size-3.5 fill-blue-500 text-white ml-1 shadow-sm rounded-full" />
                   </div>
@@ -570,7 +590,7 @@ function ProductPage() {
                 {stock > 0 && (
                   <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 p-1 shadow-inner shrink-0">
                     <button
-                      className="h-10 w-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white active:scale-95 transition-all shadow-none border-none bg-transparent cursor-pointer"
+                      className="h-11 w-11 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white active:scale-95 transition-all shadow-none border-none bg-transparent cursor-pointer"
                       onClick={() => setQty((q) => Math.max(1, q - 1))}
                       disabled={qty <= 1}
                     >
@@ -578,7 +598,7 @@ function ProductPage() {
                     </button>
                     <span className="w-10 text-center text-sm font-bold text-secondary select-none">{qty}</span>
                     <button
-                      className="h-10 w-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white active:scale-95 transition-all shadow-none border-none bg-transparent cursor-pointer"
+                      className="h-11 w-11 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white active:scale-95 transition-all shadow-none border-none bg-transparent cursor-pointer"
                       onClick={() => setQty((q) => Math.min(stock, q + 1))}
                       disabled={qty >= stock}
                     >
@@ -662,9 +682,9 @@ function ProductPage() {
                 <div>
                   <div className="flex items-center gap-1">
                     <h3 className="font-extrabold text-slate-800 text-sm leading-tight">
-                      {product.stores.store_name}
+                      {product.stores.name}
                     </h3>
-                    <CheckCircle2 className="size-4 fill-blue-500 text-white shadow-sm rounded-full" title="Verified Seller" />
+                    <CheckCircle2 className="size-4 fill-blue-500 text-white shadow-sm rounded-full" aria-label="Verified Seller" />
                   </div>
                   <p className="text-[10px] text-muted-foreground mt-0.5 uppercase font-bold tracking-wider">Verified Seller Partner</p>
                 </div>
@@ -866,7 +886,7 @@ function ProductPage() {
             <div className="h-0.5 bg-slate-100 flex-1 mx-6 hidden sm:block"></div>
             <Link
               to="/marketplace"
-              search={{ category: product.categories?.slug }}
+              search={{ cat: product.categories?.slug }}
               className="text-xs font-bold text-primary hover:underline shrink-0 flex items-center gap-1"
             >
               {t("view_all", language)} <ArrowRight className="size-3.5" />
@@ -883,7 +903,7 @@ function ProductPage() {
       {storeProducts && storeProducts.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-extrabold text-secondary tracking-tight">More from {product.stores?.store_name}</h2>
+            <h2 className="text-xl font-extrabold text-secondary tracking-tight">More from {product.stores?.name}</h2>
             <div className="h-0.5 bg-slate-100 flex-1 mx-6 hidden sm:block"></div>
             {product.stores && (
               <Link
@@ -1013,6 +1033,33 @@ function ProductPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Sticky Bottom Actions on Mobile */}
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-100 p-3 flex items-center justify-between gap-3 shadow-[0_-8px_30px_rgb(0,0,0,0.06)] md:hidden">
+        <div className="flex flex-col min-w-0 pr-2 pl-1">
+          <span className="text-[10px] text-muted-foreground font-semibold leading-none mb-1">Price</span>
+          <span className="text-lg font-black text-secondary truncate">{formatPrice(Number(product.price))}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            size="default"
+            variant="outline"
+            className="rounded-full font-bold h-11 px-4 border-slate-200 text-slate-800 text-xs shrink-0 cursor-pointer"
+            disabled={stock <= 0}
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="size-4" />
+          </Button>
+          <Button
+            size="default"
+            className="rounded-full font-bold h-11 px-6 text-xs bg-[#FF3B3B] hover:bg-[#E03030] text-white shrink-0 cursor-pointer"
+            disabled={stock <= 0}
+            onClick={handleBuyNow}
+          >
+            Buy Now
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

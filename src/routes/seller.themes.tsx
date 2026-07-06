@@ -177,6 +177,7 @@ const BUILTIN_THEMES = [
 
 // ─── Theme Preview Frame ──────────────────────────────────────────────────────
 function FakeStorePreview({
+  themeId,
   primaryColor,
   bgColor,
   accentColor,
@@ -184,6 +185,7 @@ function FakeStorePreview({
   gradient,
   mobile,
 }: {
+  themeId: string;
   primaryColor: string;
   bgColor: string;
   accentColor: string;
@@ -191,50 +193,113 @@ function FakeStorePreview({
   gradient: string;
   mobile?: boolean;
 }) {
-  const isDark = bgColor === "#0a0a0a" || bgColor === "#0f172a" || bgColor === "#0f0a1e";
-  const textColor = isDark ? "#ffffff" : "#111827";
+  const isDark = bgColor === "#0a0a0a" || bgColor === "#0f172a" || bgColor === "#0f0a1e" || themeId === "saloree-luxury" || themeId === "saloree-electronics" || themeId === "saloree-digital";
+  const textColor = isDark ? "#ffffff" : "#1f2937";
+
+  const isFashion = themeId === "saloree-fashion";
+  const isElectronics = themeId === "saloree-electronics";
+  const isBeauty = themeId === "saloree-beauty";
+  const isLuxury = themeId === "saloree-luxury";
+  const isHome = themeId === "saloree-home";
+  const isDigital = themeId === "saloree-digital";
 
   return (
     <div
-      className={`rounded-xl border overflow-hidden shadow-md flex flex-col transition-all duration-300 ${mobile ? "w-[130px] h-[210px] shrink-0" : "flex-1 h-[210px]"}`}
-      style={{ background: bgColor, color: textColor, fontFamily }}
+      className={`rounded-xl border overflow-hidden shadow-sm hover:shadow-md flex flex-col transition-all duration-300 select-none relative ${
+        mobile ? "w-[125px] h-[200px] shrink-0" : "flex-1 h-[200px]"
+      }`}
+      style={{
+        background: isLuxury ? "#0d0d0d" : isElectronics ? "#0b0f19" : isDigital ? "#0a0714" : bgColor,
+        color: textColor,
+        fontFamily: fontFamily,
+        borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.06)",
+      }}
     >
-      {/* Fake Navbar */}
+      {/* Fake Header */}
       <div
-        className="px-2 py-1.5 flex items-center justify-between"
-        style={{ background: primaryColor }}
+        className="px-2 py-1.5 flex items-center justify-between border-b"
+        style={{
+          background: isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)",
+          borderColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.05)",
+        }}
       >
-        <div className="w-10 h-2 bg-white/30 rounded" />
-        <div className="flex gap-1">
-          <div className="w-4 h-2 bg-white/30 rounded" />
-          <div className="w-4 h-2 bg-white/30 rounded" />
+        <div className="flex items-center gap-1">
+          <div className="w-1.5 h-1.5 rounded-full" style={{ background: primaryColor }} />
+          <span className="text-[6px] font-bold tracking-tight" style={{ color: isDark ? "#ffffff" : "#111827" }}>
+            {themeId === "saloree-minimal" ? "Minimal" : isFashion ? "Fashion" : isElectronics ? "Electro" : isBeauty ? "Beauty" : isLuxury ? "Luxury" : isHome ? "Home" : isDigital ? "Digital" : "Classic"}
+          </span>
+        </div>
+        <div className="flex gap-1.5 text-[5px] font-medium opacity-80 scale-90 origin-right">
+          <span>Shop</span>
+          <span>About</span>
         </div>
       </div>
-      {/* Announcement */}
-      <div className="bg-black/10 py-0.5 text-[6px] text-center opacity-85">
-        Free shipping on all orders over $50
-      </div>
-      {/* Hero banner */}
+
+      {/* Announcement Bar */}
+      {isFashion && (
+        <div className="py-0.5 text-[4.5px] text-center uppercase tracking-wider text-white" style={{ background: primaryColor }}>
+          MID-SEASON SALE: 30% OFF
+        </div>
+      )}
+      {isElectronics && (
+        <div className="py-0.5 text-[4.5px] text-center text-cyan-400 bg-cyan-950/40 border-b border-cyan-500/20 font-mono">
+          ⚡ NEXT-GEN TECH IN STOCK
+        </div>
+      )}
+
+      {/* Hero Banner Area */}
       <div
-        className="py-6 px-3 text-center flex flex-col items-center justify-center relative overflow-hidden"
-        style={{ background: gradient }}
+        className="py-4 px-2.5 text-center flex flex-col items-center justify-center relative overflow-hidden"
+        style={{
+          background: gradient,
+          minHeight: "55px",
+        }}
       >
-        <div className="text-[9px] font-bold text-white leading-tight">Spring Collection</div>
-        <div className="text-[6px] text-white/70 mt-0.5 mb-1.5 max-w-[80px]">New arrivals here</div>
-        <div
-          className="px-2 py-0.5 rounded-full text-[5px] font-semibold"
-          style={{ background: bgColor, color: primaryColor }}
-        >
-          Shop Now
+        <div className="absolute inset-0 bg-black/10 opacity-30 mix-blend-overlay" />
+        <div className="relative z-10">
+          <div className="text-[8px] font-extrabold text-white leading-tight uppercase tracking-wider">
+            {isFashion ? "Summer Style" : isElectronics ? "Cyber Tech" : isLuxury ? "Golden Class" : isBeauty ? "Pure Glow" : isDigital ? "Neo Assets" : "New Collection"}
+          </div>
+          <div className="text-[5px] text-white/80 mt-0.5 mb-1.5 max-w-[90px] mx-auto scale-90 leading-tight">
+            {isLuxury ? "Exquisite craft" : "Premium products"}
+          </div>
+          <div
+            className="px-2 py-0.5 rounded-sm text-[4.5px] font-bold shadow-xs inline-block transition transform active:scale-95"
+            style={{ background: "#ffffff", color: isDark ? "#111827" : primaryColor }}
+          >
+            Explore
+          </div>
         </div>
       </div>
-      {/* Product grid */}
-      <div className={`p-2 grid gap-1.5 flex-1 ${mobile ? "grid-cols-2" : "grid-cols-3"}`}>
+
+      {/* Product List/Grid */}
+      <div className={`p-2 grid gap-1.5 flex-1 overflow-hidden ${mobile ? "grid-cols-2" : "grid-cols-3"}`}>
         {[...Array(mobile ? 2 : 3)].map((_, i) => (
-          <div key={i} className="border rounded p-1 flex flex-col gap-1" style={{ borderColor: primaryColor + "20", background: accentColor }}>
-            <div className="h-6 rounded bg-black/5" style={{ background: primaryColor + "15" }} />
-            <div className="h-1 w-2/3 rounded bg-black/10" />
-            <div className="h-1 w-1/3 rounded bg-black/20" />
+          <div
+            key={i}
+            className="rounded p-1 flex flex-col gap-1 border"
+            style={{
+              borderColor: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)",
+              background: isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.015)",
+            }}
+          >
+            <div
+              className="h-8 rounded relative overflow-hidden flex items-center justify-center bg-gray-50"
+              style={{
+                background: isFashion ? "#fce7f3" : isElectronics ? "#1e293b" : isLuxury ? "#1f1a0e" : isBeauty ? "#ffedd5" : isDigital ? "#120924" : accentColor,
+              }}
+            >
+              <div className="text-[5px] font-bold opacity-40">
+                {isFashion ? "👗" : isElectronics ? "💻" : isLuxury ? "⌚" : isBeauty ? "💄" : isHome ? "🛋️" : isDigital ? "🎮" : "📦"}
+              </div>
+            </div>
+            <div className="h-1 w-2/3 rounded bg-black/10" style={{ background: isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)" }} />
+            <div className="flex justify-between items-center mt-0.5">
+              <div className="h-1 w-1/3 rounded bg-black/5" style={{ background: isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.08)" }} />
+              <div className="text-[5.5px] font-black" style={{ color: primaryColor }}>
+                {isLuxury ? "$150" : isFashion ? "$45" : "$29"}
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -668,33 +733,47 @@ function SellerThemes() {
   const draftThemes = installations.filter((i) => !i.is_published);
 
   return (
-    <div className="space-y-10 max-w-6xl mx-auto pb-16">
-      {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">Themes</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Manage and customize the look and feel of your online store.
-        </p>
+    <div className="space-y-10 max-w-6xl mx-auto pb-20">
+      {/* ── Page Header ────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-2 border-b">
+        <div>
+          <div className="flex items-center gap-2.5 mb-1">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-sm">
+              <Palette className="w-4 h-4 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">Theme Store</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Manage, customize, and discover themes for your Saloree store.
+          </p>
+        </div>
+        <a
+          href={`/stores/${store.slug}`}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 px-3.5 py-2 rounded-xl transition shrink-0"
+        >
+          <Globe className="w-3.5 h-3.5" />
+          View Live Store
+        </a>
       </div>
 
-      {/* 1. CURRENT THEME */}
-      <section className="bg-card rounded-xl border p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4">
-          <div>
-            <h3 className="font-bold text-lg text-foreground">Current theme</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">This theme is live on your store.</p>
+      {/* ── 1. CURRENT THEME ───────────────────────────────────────────── */}
+      <section className="bg-card rounded-2xl border shadow-sm overflow-hidden">
+        {/* Section Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4 border-b bg-muted/20">
+          <div className="flex items-center gap-3">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <div>
+              <h3 className="font-bold text-base text-foreground">Current theme</h3>
+              <p className="text-xs text-muted-foreground">This theme is live on your store.</p>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" asChild className="h-9 cursor-pointer">
-              <a href={`/stores/${store.slug}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5">
-                <ExternalLink className="w-3.5 h-3.5" />
-                View store
-              </a>
-            </Button>
             <Button
               size="sm"
               onClick={() => navigate({ to: "/seller/theme-customizer", search: { id: currentTheme?.id } })}
-              className="h-9 gap-1.5 cursor-pointer"
+              className="h-9 gap-1.5 cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
             >
               <Palette className="w-3.5 h-3.5" />
               Customize
@@ -730,56 +809,142 @@ function SellerThemes() {
           </div>
         </div>
 
-        {currentTheme ? (
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="flex-1 w-full flex items-center justify-center gap-4 bg-muted/30 p-4 rounded-xl border border-border">
-              <FakeStorePreview
-                primaryColor={currentTheme.store_theme_settings?.[0]?.primary_color || "#6366f1"}
-                bgColor={currentTheme.store_theme_settings?.[0]?.bg_color || "#ffffff"}
-                accentColor={currentTheme.store_theme_settings?.[0]?.accent_color || "#f1f5f9"}
-                fontFamily={currentTheme.store_theme_settings?.[0]?.font_family || "'Inter', sans-serif"}
-                gradient={BUILTIN_THEMES.find((t) => t.id === currentTheme.theme_id)?.gradient || "linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%)"}
-              />
-              <FakeStorePreview
-                primaryColor={currentTheme.store_theme_settings?.[0]?.primary_color || "#6366f1"}
-                bgColor={currentTheme.store_theme_settings?.[0]?.bg_color || "#ffffff"}
-                accentColor={currentTheme.store_theme_settings?.[0]?.accent_color || "#f1f5f9"}
-                fontFamily={currentTheme.store_theme_settings?.[0]?.font_family || "'Inter', sans-serif"}
-                gradient={BUILTIN_THEMES.find((t) => t.id === currentTheme.theme_id)?.gradient || "linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%)"}
-                mobile
-              />
-            </div>
-            <div className="md:w-72 space-y-3 shrink-0 text-center md:text-left">
-              <div>
-                <h4 className="font-bold text-xl text-foreground">{currentTheme.name}</h4>
-                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-1.5">
-                  <span className="text-[10px] bg-green-500/10 text-green-500 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    Published
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">
-                    Updated {new Date(currentTheme.updated_at).toLocaleDateString()}
-                  </span>
+        {currentTheme ? (() => {
+          const builtinTheme = BUILTIN_THEMES.find((t) => t.id === currentTheme.theme_id);
+          const primaryColor = currentTheme.store_theme_settings?.[0]?.primary_color || "#6366f1";
+          const bgColor = currentTheme.store_theme_settings?.[0]?.bg_color || "#ffffff";
+          const accentColor = currentTheme.store_theme_settings?.[0]?.accent_color || "#f1f5f9";
+          const fontFamily = currentTheme.store_theme_settings?.[0]?.font_family || "'Inter', sans-serif";
+          const gradient = builtinTheme?.gradient || "linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%)";
+
+          return (
+            <div className="p-6 flex flex-col lg:flex-row items-start gap-6">
+              {/* Desktop + Mobile Previews */}
+              <div className="flex-1 w-full">
+                {/* Browser frame wrapper */}
+                <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 shadow-inner">
+                  <div className="flex items-center gap-1.5 mb-3">
+                    <span className="w-2 h-2 rounded-full bg-red-400" />
+                    <span className="w-2 h-2 rounded-full bg-amber-400" />
+                    <span className="w-2 h-2 rounded-full bg-green-400" />
+                    <div className="flex-1 mx-3 h-5 bg-white border border-slate-200 rounded-md flex items-center px-2.5">
+                      <span className="text-[9px] text-slate-400 font-mono truncate">saloree.com/stores/{store.slug}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-stretch gap-3">
+                    {/* Desktop mockup */}
+                    <div className="flex-1">
+                      <FakeStorePreview
+                        themeId={currentTheme.theme_id}
+                        primaryColor={primaryColor}
+                        bgColor={bgColor}
+                        accentColor={accentColor}
+                        fontFamily={fontFamily}
+                        gradient={gradient}
+                      />
+                    </div>
+                    {/* Mobile mockup */}
+                    <div className="shrink-0 flex items-stretch">
+                      <div className="bg-slate-800 rounded-[14px] p-1.5 shadow-md border-2 border-slate-700">
+                        <FakeStorePreview
+                          themeId={currentTheme.theme_id}
+                          primaryColor={primaryColor}
+                          bgColor={bgColor}
+                          accentColor={accentColor}
+                          fontFamily={fontFamily}
+                          gradient={gradient}
+                          mobile
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {BUILTIN_THEMES.find((t) => t.id === currentTheme.theme_id)?.description || ""}
-              </p>
+
+              {/* Theme Info Panel */}
+              <div className="lg:w-64 space-y-4 shrink-0">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="inline-flex items-center gap-1 text-[10px] bg-green-500/10 text-green-600 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-green-500/20">
+                      ● Live
+                    </span>
+                    {builtinTheme && (
+                      <span className="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        {builtinTheme.category}
+                      </span>
+                    )}
+                  </div>
+                  <h4 className="font-bold text-lg text-foreground leading-tight">{currentTheme.name}</h4>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    Updated {new Date(currentTheme.updated_at).toLocaleDateString()}
+                  </p>
+                </div>
+
+                {builtinTheme && (
+                  <p className="text-xs text-muted-foreground leading-relaxed border-l-2 border-indigo-200 pl-3">
+                    {builtinTheme.description}
+                  </p>
+                )}
+
+                {/* Color swatches */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Colors</p>
+                  <div className="flex gap-2">
+                    {[primaryColor, bgColor, accentColor].map((c, i) => (
+                      <div
+                        key={i}
+                        title={c}
+                        className="w-6 h-6 rounded-full border-2 border-white shadow-sm ring-1 ring-black/10"
+                        style={{ background: c }}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  asChild
+                  className="w-full h-9 text-xs font-semibold cursor-pointer"
+                >
+                  <a href={`/stores/${store.slug}`} target="_blank" rel="noreferrer" className="flex items-center gap-1.5">
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    View Live Store
+                  </a>
+                </Button>
+              </div>
             </div>
+          );
+        })() : (
+          <div className="py-14 text-center text-muted-foreground px-6">
+            <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
+              <Palette className="w-6 h-6 text-muted-foreground/50" />
+            </div>
+            <p className="text-sm font-medium">No published theme</p>
+            <p className="text-xs text-muted-foreground mt-1">Add a theme from the library below to get started.</p>
           </div>
-        ) : (
-          <div className="py-10 text-center text-muted-foreground">No published theme. Add one below.</div>
         )}
       </section>
 
-      {/* 2. DRAFT THEMES */}
+      {/* ── 2. THEME LIBRARY ───────────────────────────────────────────── */}
       <section className="space-y-4">
-        <div>
-          <h3 className="font-bold text-lg text-foreground">Theme library</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">Manage draft themes before publishing them live.</p>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <h3 className="font-bold text-lg text-foreground">Theme library</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Manage draft themes before publishing them live.</p>
+          </div>
+          {draftThemes.length > 0 && (
+            <span className="text-xs bg-slate-100 text-slate-600 font-semibold px-2.5 py-1 rounded-full">
+              {draftThemes.length} draft{draftThemes.length !== 1 ? "s" : ""}
+            </span>
+          )}
         </div>
 
         {draftThemes.length === 0 ? (
-          <div className="bg-card rounded-xl border p-8 text-center text-muted-foreground text-sm">
+          <div className="bg-card rounded-2xl border border-dashed p-10 text-center text-muted-foreground text-sm">
+            <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center mx-auto mb-3">
+              <Palette className="w-5 h-5 opacity-40" />
+            </div>
             Your library is empty. Discover and add themes below.
           </div>
         ) : (
@@ -787,14 +952,46 @@ function SellerThemes() {
             {draftThemes.map((draft) => {
               const th = BUILTIN_THEMES.find((t) => t.id === draft.theme_id);
               return (
-                <div key={draft.id} className="bg-card rounded-xl border p-4 flex flex-col justify-between hover:shadow-md transition gap-4">
-                  <div className="space-y-2">
+                <div
+                  key={draft.id}
+                  className="bg-card rounded-2xl border overflow-hidden hover:shadow-md transition-all duration-200 flex flex-col group"
+                >
+                  {/* Mini mockup preview */}
+                  {th && (
+                    <div className="relative bg-slate-50 border-b px-3 pt-3 pb-2">
+                      <div className="flex items-center gap-1 mb-2">
+                        <span className="w-1 h-1 rounded-full bg-red-400" />
+                        <span className="w-1 h-1 rounded-full bg-amber-400" />
+                        <span className="w-1 h-1 rounded-full bg-green-400" />
+                        <div className="flex-1 mx-2 h-3.5 bg-white border border-slate-100 rounded text-[5px] font-mono text-slate-300 flex items-center px-1 truncate">
+                          saloree.com
+                        </div>
+                      </div>
+                      <div className="h-24 overflow-hidden rounded-lg">
+                        <FakeStorePreview
+                          themeId={th.id}
+                          primaryColor={th.primaryColor}
+                          bgColor={th.bgColor}
+                          accentColor={th.accentColor}
+                          fontFamily={th.fontFamily}
+                          gradient={th.gradient}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="p-4 flex flex-col gap-3 flex-1">
                     <div className="flex justify-between items-start gap-2">
-                      <h4 className="font-semibold text-sm leading-tight text-foreground truncate">{draft.name}</h4>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm leading-tight text-foreground truncate">{draft.name}</h4>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          Added {new Date(draft.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 cursor-pointer">
-                            <MoreHorizontal className="w-4 h-4" />
+                          <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0 cursor-pointer">
+                            <MoreHorizontal className="w-3.5 h-3.5" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
@@ -830,31 +1027,28 @@ function SellerThemes() {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      Added {new Date(draft.created_at).toLocaleDateString()}
-                    </p>
-                  </div>
 
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="flex-1 text-xs h-8 cursor-pointer"
-                      onClick={() => navigate({ to: "/seller/theme-customizer", search: { id: draft.id } })}
-                    >
-                      Customize
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="flex-1 text-xs h-8 cursor-pointer"
-                      disabled={publishingId === draft.id}
-                      onClick={() => {
-                        setPublishingId(draft.id);
-                        publishThemeMutation.mutate(draft.id);
-                      }}
-                    >
-                      {publishingId === draft.id ? "Publishing…" : "Publish"}
-                    </Button>
+                    <div className="flex items-center gap-2 mt-auto">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1 text-xs h-9 cursor-pointer font-semibold"
+                        onClick={() => navigate({ to: "/seller/theme-customizer", search: { id: draft.id } })}
+                      >
+                        Customize
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="flex-1 text-xs h-9 cursor-pointer font-semibold bg-indigo-600 hover:bg-indigo-700 text-white"
+                        disabled={publishingId === draft.id}
+                        onClick={() => {
+                          setPublishingId(draft.id);
+                          publishThemeMutation.mutate(draft.id);
+                        }}
+                      >
+                        {publishingId === draft.id ? "Publishing…" : "Publish"}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               );
@@ -863,56 +1057,63 @@ function SellerThemes() {
         )}
       </section>
 
-      {/* 3. DISCOVER THEMES */}
+      {/* ── 3. DISCOVER THEMES ──────────────────────────────────────────── */}
       <section className="space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-5">
+        {/* Section header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h3 className="font-bold text-xl text-foreground">Discover themes</h3>
-            <p className="text-sm text-muted-foreground mt-0.5">Explore template designs from the Saloree Theme Store.</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Explore premium designs from the Saloree Theme Store.
+            </p>
           </div>
-          
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            {/* Search Input */}
-            <div className="relative w-full sm:w-60">
-              <Input
-                type="text"
-                placeholder="Search themes..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 pr-8"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground text-xs"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
+
+          {/* Search */}
+          <div className="relative w-full md:w-60">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <Input
+              type="text"
+              placeholder="Search themes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 pl-8 pr-8 text-sm rounded-xl border-slate-200 focus:border-indigo-300 focus:ring-indigo-100"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-xs font-bold w-4 h-4 flex items-center justify-center rounded"
+              >
+                ✕
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Filter Buttons */}
-        <div className="flex flex-wrap gap-1.5 pb-2">
+        {/* Filter Pills */}
+        <div className="flex flex-wrap gap-2">
           {[
-            { id: "all", label: "All Themes" },
-            { id: "free", label: "Free" },
-            { id: "premium", label: "Premium" },
-            { id: "Fashion", label: "Fashion" },
-            { id: "Electronics", label: "Electronics" },
-            { id: "Luxury", label: "Luxury" },
-            { id: "Marketplace", label: "Marketplace" },
+            { id: "all", label: "All Themes", emoji: "🏪" },
+            { id: "free", label: "Free", emoji: "🎁" },
+            { id: "premium", label: "Premium", emoji: "✦" },
+            { id: "Fashion", label: "Fashion", emoji: "👗" },
+            { id: "Electronics", label: "Electronics", emoji: "💻" },
+            { id: "Luxury", label: "Luxury", emoji: "⌚" },
+            { id: "Marketplace", label: "Marketplace", emoji: "🛍️" },
           ].map((btn) => (
-            <Button
+            <button
               key={btn.id}
-              variant={activeFilter === btn.id ? "default" : "outline"}
-              size="sm"
               onClick={() => setActiveFilter(btn.id)}
-              className="text-xs h-8 px-4 rounded-full cursor-pointer"
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all duration-150 cursor-pointer ${
+                activeFilter === btn.id
+                  ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
+                  : "bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50"
+              }`}
             >
+              <span>{btn.emoji}</span>
               {btn.label}
-            </Button>
+            </button>
           ))}
         </div>
 
@@ -956,50 +1157,66 @@ function SellerThemes() {
                 return (
                   <div
                     key={theme.id}
-                    className="bg-card rounded-2xl border overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col justify-between group shadow-sm"
+                    className="bg-card rounded-2xl border overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col justify-between group shadow-sm hover:-translate-y-1"
                   >
-                    {/* Theme Card Header Image with Hover overlay */}
-                    <div className="relative aspect-video overflow-hidden border-b bg-muted/20">
-                      <img
-                        src={theme.previewImage}
-                        alt={`${theme.name} Preview`}
-                        className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
-                      />
+                    {/* Theme Card Header (Fake Browser Mockup) */}
+                    <div className="relative border-b bg-slate-50/50 p-3.5 group-hover:bg-slate-100/50 transition-colors">
+                      {/* Browser controls bar */}
+                      <div className="flex items-center gap-1.5 mb-2.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-400/80" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400/80" />
+                        <div className="h-4.5 bg-white border border-slate-100 rounded-md flex-1 mx-2 text-[6.5px] text-muted-foreground flex items-center px-2 select-none justify-center truncate font-mono">
+                          saloree.com/themes/{theme.id}
+                        </div>
+                      </div>
                       
-                      {/* Popular / Premium / Free Badge overlays */}
-                      <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-                        <span className="text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-slate-900/90 text-white shadow-sm">
-                          {theme.category}
-                        </span>
-                        {theme.isPopular && (
-                          <span className="text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-amber-500 text-slate-950 shadow-sm">
-                            ★ Most Popular
-                          </span>
-                        )}
-                      </div>
+                      {/* Inner mockup container */}
+                      <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-white border border-slate-100">
+                        <FakeStorePreview
+                          themeId={theme.id}
+                          primaryColor={theme.primaryColor}
+                          bgColor={theme.bgColor}
+                          accentColor={theme.accentColor}
+                          fontFamily={theme.fontFamily}
+                          gradient={theme.gradient}
+                        />
 
-                      <div className="absolute top-3 right-3 z-10">
-                        {theme.isFree ? (
-                          <span className="text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-green-500 text-white shadow-sm">
-                            Free
+                        {/* Popular / Premium / Free Badge overlays */}
+                        <div className="absolute top-2 left-2 flex flex-col gap-1 z-10 scale-90 origin-top-left">
+                          <span className="text-[9px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded-md bg-slate-900/90 text-white shadow-xs">
+                            {theme.category}
                           </span>
-                        ) : (
-                          <span className="text-[10px] font-extrabold tracking-wider uppercase px-2.5 py-1 rounded-full bg-indigo-600 text-white shadow-sm">
-                            ✦ Premium
-                          </span>
-                        )}
-                      </div>
+                          {theme.isPopular && (
+                            <span className="text-[9px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded-md bg-amber-500 text-slate-950 shadow-xs">
+                              ★ Popular
+                            </span>
+                          )}
+                        </div>
 
-                      {/* Hover Overlay Button */}
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="text-xs h-9 px-4 rounded-full font-bold shadow-md cursor-pointer"
-                          onClick={() => setPreviewTheme(theme)}
-                        >
-                          Preview Theme
-                        </Button>
+                        <div className="absolute top-2 right-2 z-10 scale-90 origin-top-right">
+                          {theme.isFree ? (
+                            <span className="text-[9px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded-md bg-green-500 text-white shadow-xs">
+                              Free
+                            </span>
+                          ) : (
+                            <span className="text-[9px] font-extrabold tracking-wider uppercase px-2 py-0.5 rounded-md bg-indigo-600 text-white shadow-xs">
+                              ✦ Premium
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Hover Overlay Button */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2 z-20">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="text-xs h-9 px-4 rounded-full font-bold shadow-md cursor-pointer"
+                            onClick={() => setPreviewTheme(theme)}
+                          >
+                            Preview Theme
+                          </Button>
+                        </div>
                       </div>
                     </div>
 
