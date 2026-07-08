@@ -203,11 +203,7 @@ function Login() {
                   {t("password_label", language) || "Password"}
                 </label>
                 <Link
-                  to="/"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toast.info("Password reset instructions will be sent if this email is registered.");
-                  }}
+                  to="/forgot-password"
                   className="text-xs font-semibold text-[#E11D48] hover:underline"
                 >
                   Forgot password?

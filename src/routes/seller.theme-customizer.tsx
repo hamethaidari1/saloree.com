@@ -638,7 +638,15 @@ function ThemeCustomizer() {
 
         {/* Center: Live Preview frame */}
         <div className="overflow-y-auto p-6 bg-muted/40 flex justify-center items-start min-h-[400px]">
-          <CenterPreview settings={settings} viewMode={viewMode} storeName={store?.name || "Store"} />
+          <CenterPreview
+            settings={{
+              ...settings,
+              logo_url: logoUrl,
+              banner_url: bannerUrl,
+            }}
+            viewMode={viewMode}
+            storeName={store?.name || "Store"}
+          />
         </div>
 
         {/* Right Side: Configuration Editor */}
