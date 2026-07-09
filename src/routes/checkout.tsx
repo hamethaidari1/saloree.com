@@ -289,7 +289,7 @@ function Checkout() {
                     <input
                       required
                       type="email"
-                      placeholder="john@example.com"
+                      placeholder="info@saloree.com"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       onBlur={() => handleBlur("email")}
@@ -531,7 +531,7 @@ function Checkout() {
                                 return orderId;
                               } catch (error) {
                                 console.error("Create order failed", error);
-                                toast.error("Could not initiate PayPal checkout");
+                                toast.error("Could not initiate PayPal checkout. If the problem persists, please contact our support team at info@saloree.com.");
                                 throw error;
                               }
                             }}
@@ -545,11 +545,11 @@ function Checkout() {
                                   toast.success(t("order_success", language));
                                   navigate({ to: "/orders" });
                                 } else {
-                                  toast.error("Payment was not completed successfully.");
+                                  toast.error("Payment was not completed successfully. If the problem persists, please contact our support team at info@saloree.com.");
                                 }
                               } catch (error) {
                                 console.error("Capture order failed", error);
-                                toast.error("Payment capture failed. Please contact support.");
+                                toast.error("Payment capture failed. If the problem persists, please contact our support team at info@saloree.com.");
                               } finally {
                                 setLoading(false);
                               }
@@ -559,7 +559,7 @@ function Checkout() {
                             }}
                             onError={(err) => {
                               console.error("PayPal Error:", err);
-                              toast.error("An error occurred with PayPal.");
+                              toast.error("An error occurred with PayPal. If the problem persists, please contact our support team at info@saloree.com.");
                             }}
                           />
                         </PayPalScriptProvider>

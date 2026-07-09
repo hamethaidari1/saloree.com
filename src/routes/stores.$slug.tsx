@@ -1471,6 +1471,83 @@ function StorePage() {
     );
   };
 
+  const renderContactTab = () => (
+    <div className="max-w-2xl space-y-6">
+      <div className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-8 shadow-soft space-y-6">
+        <h2 className="text-lg font-extrabold text-secondary">
+          Contact {storeName}
+        </h2>
+        <div className="space-y-3">
+          <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+            <div
+              className="p-2.5 rounded-xl text-white shrink-0"
+              style={{ background: primaryColor }}
+            >
+              <Clock className="size-5" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-secondary text-sm">
+                Response Time
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Usually responds within 24 hours
+              </p>
+            </div>
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 shrink-0">
+              Fast Responder
+            </span>
+          </div>
+          <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+            <div
+              className="p-2.5 rounded-xl text-white shrink-0"
+              style={{ background: primaryColor }}
+            >
+              <MessageSquare className="size-5" />
+            </div>
+            <div>
+              <p className="font-semibold text-secondary text-sm">
+                Message the Seller
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Ask about products, custom orders, or policies
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-3">
+          <a
+            href="mailto:info@saloree.com"
+            className="w-full py-3 rounded-xl font-bold text-white transition hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2 min-h-[44px] cursor-pointer shadow-sm"
+            style={{ background: primaryColor }}
+          >
+            <MessageSquare className="size-5" /> Contact Seller
+          </a>
+          <p className="text-[11px] text-center text-muted-foreground">
+            If the problem persists, please contact our support team at info@saloree.com.
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-6 shadow-soft space-y-4">
+        <h3 className="font-extrabold text-secondary text-sm">
+          Trust & Safety
+        </h3>
+        <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+          {[
+            { label: "Verified Seller", badge: "✓" },
+            { label: "Secure Payments", badge: "🔒" },
+            { label: "Buyer Protection", badge: "🛡" },
+            { label: "Easy Returns", badge: "↩" },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center gap-2">
+              <span>{item.badge}</span> {item.label}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   const renderShippingTab = () => (
     <div className="grid md:grid-cols-2 gap-6 max-w-4xl">
       {[
@@ -1548,83 +1625,6 @@ function StorePage() {
           </ul>
         </div>
       ))}
-    </div>
-  );
-
-  const renderContactTab = () => (
-    <div className="max-w-2xl space-y-6">
-      <div className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-8 shadow-soft space-y-6">
-        <h2 className="text-lg font-extrabold text-secondary">
-          Contact {storeName}
-        </h2>
-        <div className="space-y-3">
-          <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
-            <div
-              className="p-2.5 rounded-xl text-white shrink-0"
-              style={{ background: primaryColor }}
-            >
-              <Clock className="size-5" />
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-secondary text-sm">
-                Response Time
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Usually responds within 24 hours
-              </p>
-            </div>
-            <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 shrink-0">
-              Fast Responder
-            </span>
-          </div>
-          <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 bg-slate-50/50">
-            <div
-              className="p-2.5 rounded-xl text-white shrink-0"
-              style={{ background: primaryColor }}
-            >
-              <MessageSquare className="size-5" />
-            </div>
-            <div>
-              <p className="font-semibold text-secondary text-sm">
-                Message the Seller
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Ask about products, custom orders, or policies
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="space-y-3">
-          <button
-            className="w-full py-3 rounded-xl font-bold text-white transition hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2 min-h-[44px] cursor-pointer shadow-sm"
-            style={{ background: primaryColor }}
-          >
-            <MessageSquare className="size-5" /> Contact Seller
-          </button>
-          <p className="text-[11px] text-center text-muted-foreground">
-            Messaging will be available once the seller messaging system is
-            live.
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-card rounded-2xl sm:rounded-3xl border p-5 sm:p-6 shadow-soft space-y-4">
-        <h3 className="font-extrabold text-secondary text-sm">
-          Trust & Safety
-        </h3>
-        <div className="grid grid-cols-2 gap-3 text-xs text-muted-foreground">
-          {[
-            { label: "Verified Seller", badge: "✓" },
-            { label: "Secure Payments", badge: "🔒" },
-            { label: "Buyer Protection", badge: "🛡" },
-            { label: "Easy Returns", badge: "↩" },
-          ].map((item) => (
-            <div key={item.label} className="flex items-center gap-2">
-              <span>{item.badge}</span> {item.label}
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   );
 

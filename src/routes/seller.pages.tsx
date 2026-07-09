@@ -90,7 +90,7 @@ function SellerPages() {
       handleClose();
     },
     onError: (err) => {
-      toast.error("Failed to save page: " + err.message);
+      toast.error("Failed to save page: " + err.message + ". If the problem persists, please contact our support team at info@saloree.com.");
     },
   });
 
@@ -105,7 +105,7 @@ function SellerPages() {
       toast.success("Page deleted.");
     },
     onError: (err) => {
-      toast.error("Failed to delete page: " + err.message);
+      toast.error("Failed to delete page: " + err.message + ". If the problem persists, please contact our support team at info@saloree.com.");
     },
   });
 

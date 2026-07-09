@@ -194,7 +194,7 @@ export function Header() {
             <span className="text-gray-600 shrink-0">|</span>
             <div className="flex items-center gap-1 shrink-0">
               <HelpCircle className="size-3.5 text-[#FF3B3B]" />
-              <span>24/7 Customer Support</span>
+              <a href="mailto:info@saloree.com">24/7 Customer Support</a>
             </div>
           </div>
           <div className="hidden sm:flex items-center justify-end gap-2 shrink-0">

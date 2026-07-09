@@ -32,6 +32,7 @@ function SellerLayout() {
           ],
         },
         { to: "/seller/store", label: "Store Settings" },
+        { to: "mailto:info@saloree.com", label: "Support" },
       ]}
     >
       <Outlet />

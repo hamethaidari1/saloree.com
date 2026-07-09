@@ -133,8 +133,15 @@ function ForgotPassword() {
           </div>
 
           {errorMsg && (
-            <div className="rounded-lg bg-rose-50 border border-rose-100 p-4 text-sm text-rose-600">
-              {errorMsg}
+            <div className="rounded-lg bg-rose-50 border border-rose-100 p-4 text-sm text-rose-600 space-y-1">
+              <p>{errorMsg}</p>
+              <p className="text-xs">
+                If the problem persists,{" "}
+                <a href="mailto:info@saloree.com" className="font-semibold underline">
+                  contact our support team
+                </a>
+                .
+              </p>
             </div>
           )}
 
@@ -156,7 +163,7 @@ function ForgotPassword() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
+                  placeholder="info@saloree.com"
                   className="w-full h-11 pl-10 pr-3.5 rounded-lg border border-slate-200 bg-white text-sm outline-none transition-all focus:border-[#E11D48] focus:ring-2 focus:ring-[#E11D48]/10"
                 />
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 size-4" />
@@ -179,7 +186,7 @@ function ForgotPassword() {
             </Button>
           </form>
 
-          <div className="text-center pt-2">
+          <div className="text-center pt-2 space-y-2">
             <Link
               to="/login"
               className="inline-flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
@@ -187,6 +194,15 @@ function ForgotPassword() {
               <ArrowLeft className="size-3" />
               Back to sign in
             </Link>
+            <p className="text-xs text-slate-400">
+              Need help?{" "}
+              <a
+                href="mailto:info@saloree.com"
+                className="font-semibold text-slate-600 hover:underline hover:text-[#E11D48] transition-colors"
+              >
+                Contact support
+              </a>
+            </p>
           </div>
         </div>
       </div>

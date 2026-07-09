@@ -192,7 +192,7 @@ function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="info@saloree.com"
                 className="w-full h-11 px-3.5 rounded-lg border border-slate-200 bg-white text-sm outline-none transition-all focus:border-[#E11D48] focus:ring-2 focus:ring-[#E11D48]/10"
               />
             </div>
@@ -286,6 +286,16 @@ function Login() {
             <Link to="/register" className="font-semibold text-[#E11D48] hover:underline">
               Create an account
             </Link>
+          </p>
+
+          <p className="text-center text-xs text-slate-400 pt-2">
+            Need help?{" "}
+            <a
+              href="mailto:info@saloree.com"
+              className="font-semibold text-slate-600 hover:underline hover:text-[#E11D48] transition-colors"
+            >
+              Contact support
+            </a>
           </p>
         </div>
       </div>

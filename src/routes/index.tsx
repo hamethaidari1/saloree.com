@@ -257,7 +257,7 @@ function Index() {
   const handleNewsletterSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newsletterEmail.trim()) {
-      toast.error("Please enter a valid email address.");
+      toast.error("Please enter a valid email address. If the problem persists, please contact our support team at info@saloree.com.");
       return;
     }
     toast.success("Thank you for subscribing! You will receive our latest deals soon.");
@@ -836,7 +836,7 @@ function Index() {
                 <li>Help Center</li>
                 <li>Shipping</li>
                 <li>Returns</li>
-                <li>Contact Us</li>
+                <li><a href="mailto:info@saloree.com">Contact Us</a></li>
               </ul>
             </div>
             <div>

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocale } from "@/lib/locale";
@@ -27,6 +28,7 @@ function Orders() {
         .order("created_at", { ascending: false });
       if (error) {
         console.error("[orders-query-failed] Exact Supabase error:", error);
+        toast.error("Failed to load your orders. If the problem persists, please contact our support team at info@saloree.com.");
         throw error;
       }
       return data ?? [];

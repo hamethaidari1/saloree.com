@@ -31,6 +31,12 @@ function NotFoundComponent() {
         >
           Back to Saloree
         </Link>
+        <p className="mt-6 text-xs text-muted-foreground">
+          Need help?{" "}
+          <a href="mailto:info@saloree.com" className="font-semibold underline hover:text-foreground">
+            Contact our support team
+          </a>
+        </p>
       </div>
     </div>
   );
@@ -64,6 +70,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             Go home
           </a>
         </div>
+        <p className="mt-6 text-xs text-muted-foreground">
+          If the problem persists, please contact our support team at{" "}
+          <a href="mailto:info@saloree.com" className="font-semibold underline hover:text-foreground">
+            info@saloree.com
+          </a>
+          .
+        </p>
       </div>
     </div>
   );

@@ -51,7 +51,7 @@ export function Footer() {
           <div className="flex gap-4">
             <Link to="/" className="hover:underline">Privacy Policy</Link>
             <Link to="/" className="hover:underline">Terms of Service</Link>
-            <Link to="/" className="hover:underline">Contact Support</Link>
+            <a href="mailto:info@saloree.com" className="hover:underline">Contact Support</a>
           </div>
         </div>
       </footer>
@@ -168,6 +168,17 @@ export function Footer() {
                 </li>
                 <li>
                   <Link to="/cart">{t("cart", language)}</Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="mb-3 text-sm font-semibold">Support</h4>
+              <ul className="space-y-2 text-sm text-secondary-foreground/70">
+                <li>
+                  <a href="mailto:info@saloree.com" className="hover:underline">Contact Us</a>
+                </li>
+                <li>
+                  <a href="mailto:info@saloree.com" className="hover:underline">Help Center</a>
                 </li>
               </ul>
             </div>

@@ -192,6 +192,13 @@ function ResetPassword() {
                   <p className="mt-1 text-xs text-amber-700">
                     Your password reset session is invalid or has expired. Please request a new password reset link.
                   </p>
+                  <p className="mt-2 text-xs text-amber-700">
+                    If you continue to have trouble,{" "}
+                    <a href="mailto:info@saloree.com" className="font-semibold underline">
+                      contact our support team
+                    </a>
+                    .
+                  </p>
                 </div>
               </div>
               <Link
@@ -209,8 +216,15 @@ function ResetPassword() {
           ) : (
             <>
               {errorMsg && (
-                <div className="rounded-lg bg-rose-50 border border-rose-100 p-4 text-sm text-rose-600">
-                  {errorMsg}
+                <div className="rounded-lg bg-rose-50 border border-rose-100 p-4 text-sm text-rose-600 space-y-1">
+                  <p>{errorMsg}</p>
+                  <p className="text-xs">
+                    If the problem persists,{" "}
+                    <a href="mailto:info@saloree.com" className="font-semibold underline">
+                      contact our support team
+                    </a>
+                    .
+                  </p>
                 </div>
               )}
 
@@ -279,6 +293,15 @@ function ResetPassword() {
                   )}
                 </Button>
               </form>
+              <p className="text-center text-xs text-slate-400 pt-2">
+                Need help?{" "}
+                <a
+                  href="mailto:info@saloree.com"
+                  className="font-semibold text-slate-600 hover:underline hover:text-[#E11D48] transition-colors"
+                >
+                  Contact support
+                </a>
+              </p>
             </>
           )}
         </div>

@@ -93,6 +93,20 @@ function SidebarNav({
         const active =
           pathname === n.to ||
           (n.to !== nav[0].to && n.to && pathname.startsWith(n.to));
+
+        if (n.to && n.to.startsWith("mailto:")) {
+          return (
+            <a
+              key={n.to}
+              href={n.to}
+              onClick={onLinkClick}
+              className={`rounded-md px-3 py-2 hover:bg-accent flex items-center justify-between text-foreground`}
+            >
+              <span>{n.label}</span>
+            </a>
+          );
+        }
+
         return (
           <Link
             key={n.to}

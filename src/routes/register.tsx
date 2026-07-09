@@ -196,8 +196,15 @@ function Register() {
           </div>
 
           {errorMsg && (
-            <div className="rounded-lg bg-rose-50 border border-rose-100 p-4 text-sm text-rose-600">
-              {errorMsg}
+            <div className="rounded-lg bg-rose-50 border border-rose-100 p-4 text-sm text-rose-600 space-y-1">
+              <p>{errorMsg}</p>
+              <p className="text-xs">
+                If the problem persists,{" "}
+                <a href="mailto:info@saloree.com" className="font-semibold underline">
+                  contact our support team
+                </a>
+                .
+              </p>
             </div>
           )}
 
@@ -227,7 +234,7 @@ function Register() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="info@saloree.com"
                 className="w-full h-11 px-3.5 rounded-lg border border-slate-200 bg-white text-sm outline-none transition-all focus:border-[#E11D48] focus:ring-2 focus:ring-[#E11D48]/10"
               />
             </div>
@@ -336,6 +343,16 @@ function Register() {
             <Link to="/login" className="font-semibold text-[#E11D48] hover:underline">
               Sign in
             </Link>
+          </p>
+
+          <p className="text-center text-xs text-slate-400 pt-2">
+            Need help?{" "}
+            <a
+              href="mailto:info@saloree.com"
+              className="font-semibold text-slate-600 hover:underline hover:text-[#E11D48] transition-colors"
+            >
+              Contact support
+            </a>
           </p>
         </div>
       </div>
