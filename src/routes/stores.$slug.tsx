@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useRef, useMemo } from "react";
 import {
@@ -267,11 +267,25 @@ function StorePage() {
   const { slug } = Route.useParams();
   const { page: searchPage } = Route.useSearch();
   const { user, loading: authLoading } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   // UI state
   const [activeTab, setActiveTab] = useState<StoreTab>("home");
   const tabsRef = useRef<HTMLDivElement>(null);
   const tabsContainerRef = useRef<HTMLDivElement>(null);
+
+  const checkAuthAndRedirect = () => {
+    if (!user) {
+      toast.info("Please sign in to continue");
+      navigate({
+        to: "/login",
+        search: { redirect: location.pathname } as any,
+      });
+      return false;
+    }
+    return true;
+  };
 
   // Products tab state
   const [searchQuery, setSearchQuery] = useState("");
@@ -497,6 +511,7 @@ function StorePage() {
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleFollow = () => {
+    if (!checkAuthAndRedirect()) return;
     if (!store?.id) return;
     const nowFollowing = toggleFollowStore(store.id);
     setIsFollowing(nowFollowing);
@@ -521,6 +536,7 @@ function StorePage() {
 
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!checkAuthAndRedirect()) return;
     if (
       !reviewName.trim() ||
       !reviewTitle.trim() ||
@@ -1515,13 +1531,17 @@ function StorePage() {
           </div>
         </div>
         <div className="space-y-3">
-          <a
-            href="mailto:info@saloree.com"
-            className="w-full py-3 rounded-xl font-bold text-white transition hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2 min-h-[44px] cursor-pointer shadow-sm"
+          <button
+            onClick={() => {
+              if (checkAuthAndRedirect()) {
+                window.location.href = "mailto:info@saloree.com";
+              }
+            }}
+            className="w-full py-3 rounded-xl font-bold text-white transition hover:opacity-90 active:scale-[0.98] flex items-center justify-center gap-2 min-h-[44px] cursor-pointer shadow-sm border-none"
             style={{ background: primaryColor }}
           >
             <MessageSquare className="size-5" /> Contact Seller
-          </a>
+          </button>
           <p className="text-[11px] text-center text-muted-foreground">
             If the problem persists, please contact our support team at info@saloree.com.
           </p>

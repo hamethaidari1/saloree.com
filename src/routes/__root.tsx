@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
+import { AuthGuard } from "@/components/AuthGuard";
 import { CartProvider } from "@/lib/cart";
 import { LocaleProvider } from "@/lib/locale";
 import { Header } from "@/components/Header";
@@ -176,17 +177,19 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LocaleProvider>
         <AuthProvider>
-          <CartProvider>
-            <SiteThemeIntegrator />
-            <div className="flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">
-                <Outlet />
-              </main>
-              <Footer />
-            </div>
-            <Toaster richColors position="top-right" />
-          </CartProvider>
+          <AuthGuard>
+            <CartProvider>
+              <SiteThemeIntegrator />
+              <div className="flex min-h-screen flex-col">
+                <Header />
+                <main className="flex-1">
+                  <Outlet />
+                </main>
+                <Footer />
+              </div>
+              <Toaster richColors position="top-right" />
+            </CartProvider>
+          </AuthGuard>
         </AuthProvider>
       </LocaleProvider>
     </QueryClientProvider>

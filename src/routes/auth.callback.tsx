@@ -1,16 +1,22 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 import { z } from "zod";
+import { Loader2, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 
-const callbackSearchSchema = z.object({
-  code: z.string().optional(),
-  error: z.string().optional(),
-  error_code: z.string().optional(),
-  error_description: z.string().optional(),
-}).passthrough();
+import { Logo } from "@/components/Logo";
+import { getPostAuthRedirectPath } from "@/lib/auth";
+import { supabase } from "@/integrations/supabase/client";
+
+const callbackSearchSchema = z
+  .object({
+    code: z.string().optional(),
+    error: z.string().optional(),
+    error_code: z.string().optional(),
+    error_description: z.string().optional(),
+    redirect: z.string().optional(),
+  })
+  .passthrough();
 
 export const Route = createFileRoute("/auth/callback")({
   validateSearch: (search) => callbackSearchSchema.parse(search),
@@ -18,86 +24,82 @@ export const Route = createFileRoute("/auth/callback")({
   component: AuthCallback,
 });
 
+function normalizeAuthError(message: string) {
+  return decodeURIComponent(message.replace(/\+/g, " ")).trim();
+}
+
+function isValidRedirect(path: string | undefined | null): boolean {
+  if (!path) return false;
+  return path.startsWith("/") && !path.startsWith("//");
+}
+
 function AuthCallback() {
   const navigate = useNavigate();
   const searchParams = Route.useSearch();
-  const [errorMsg, setErrorMsg] = useState("");
+  const [statusText, setStatusText] = useState("Please wait while we complete your secure sign in.");
 
   useEffect(() => {
     let active = true;
 
     async function handleCallback() {
-      // 2 & 3. Only run OAuth handling on the client side
       if (typeof window === "undefined") return;
 
       try {
-        console.log("[AuthCallback] URL:", window.location.href);
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get("code") ?? searchParams.code;
+        const rawError =
+          url.searchParams.get("error_description") ??
+          url.searchParams.get("error") ??
+          searchParams.error_description ??
+          searchParams.error;
 
-        // Get parameters from both search and hash fragment (since Supabase can return them in hash)
-        const urlParams = new URLSearchParams(window.location.search);
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-
-        const error = urlParams.get("error") || hashParams.get("error") || searchParams.error;
-        const errorDescription = urlParams.get("error_description") || hashParams.get("error_description") || searchParams.error_description;
-
-        // 4. If URL contains error or error_description, show clean message and redirect to /login
-        if (error || errorDescription) {
-          const fullMsg = errorDescription || error || "Google authentication failed";
-          console.error("Supabase OAuth callback redirect error details:", fullMsg);
-          throw new Error(fullMsg);
+        if (rawError) {
+          throw new Error(normalizeAuthError(rawError));
         }
 
-        const code = urlParams.get("code") || hashParams.get("code") || searchParams.code;
-        
-        // 5. If URL contains code, call exchangeCodeForSession
         if (code) {
-          console.log("[AuthCallback] Code found in URL, exchanging for session...");
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(window.location.href);
-          if (exchangeError) {
-            console.error("Supabase OAuth code exchange error:", exchangeError);
-            throw exchangeError;
-          }
+          setStatusText("Verifying your Google account...");
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) throw exchangeError;
         }
 
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        setStatusText("Setting up your Saloree session...");
+        const {
+          data: { session },
+          error: sessionError,
+        } = await supabase.auth.getSession();
+
         if (sessionError) throw sessionError;
+        if (!session?.user) {
+          throw new Error("We couldn't create your session. Please try signing in again.");
+        }
 
-        if (session?.user) {
-          if (!active) return;
-          
-          console.log("[AuthCallback] Session established for user ID:", session.user.id);
-          
-          // 6. After success: redirect to /seller if user has seller role, otherwise /
-          const { data: roleData, error: roleError } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", session.user.id);
-            
-          if (roleError) {
-            console.error("Error fetching roles during callback:", roleError);
-          }
-          
-          const roles = roleData?.map((r) => r.role) || [];
-          if (roles.includes("seller")) {
-            toast.success("Successfully logged in as Seller!");
-            navigate({ to: "/seller" });
-          } else {
-            toast.success("Welcome back!");
-            navigate({ to: "/" });
-          }
-        } else {
-          console.warn("[AuthCallback] No active session or code found in URL.");
-          navigate({ to: "/" });
+        let redirectTo = url.searchParams.get("redirect") ?? searchParams.redirect;
+        if (!isValidRedirect(redirectTo)) {
+          redirectTo = await getPostAuthRedirectPath(session.user.id);
         }
-      } catch (err: any) {
-        // Log full error message to console
-        console.error("OAuth callback full error message:", err?.message || err);
-        
-        if (active) {
-          setErrorMsg("Google sign-in failed. Please try again.");
-          toast.error("Google sign-in failed. Please try again.");
-          navigate({ to: "/login", search: { error: "Google sign-in failed. Please try again." } });
-        }
+
+        if (!active) return;
+
+        toast.success("Signed in successfully!");
+        navigate({ to: redirectTo as any });
+      } catch (error) {
+        const message =
+          error instanceof Error && error.message
+            ? normalizeAuthError(error.message)
+            : "Google sign-in failed. Please try again.";
+
+        console.error("[auth-callback] OAuth callback failed:", error);
+
+        if (!active) return;
+        setStatusText(message);
+        toast.error(message);
+        navigate({
+          to: "/login",
+          search: {
+            error: message,
+          },
+        });
       }
     }
 
@@ -106,16 +108,34 @@ function AuthCallback() {
     return () => {
       active = false;
     };
-  }, [navigate, searchParams]);
+  }, [navigate, searchParams.code, searchParams.error, searchParams.error_description, searchParams.redirect]);
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center p-6 text-center">
-      <div className="max-w-md space-y-4">
-        <Loader2 className="mx-auto size-10 animate-spin text-[#E11D48]" />
-        <h2 className="text-xl font-semibold text-slate-800">Completing sign in</h2>
-        <p className="text-sm text-slate-500">
-          {errorMsg || "Please wait while we finalize your secure session..."}
-        </p>
+    <div className="relative min-h-[calc(100vh-69px)] overflow-hidden bg-slate-950">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(225,29,72,0.22),transparent_30%),radial-gradient(circle_at_bottom_right,rgba(255,255,255,0.08),transparent_24%)]" />
+
+      <div className="relative mx-auto flex min-h-[calc(100vh-69px)] max-w-7xl items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+        <div className="w-full max-w-lg rounded-[28px] border border-white/70 bg-white/95 p-8 text-center shadow-[0_24px_70px_-28px_rgba(15,23,42,0.65)] backdrop-blur sm:p-10">
+          <div className="flex justify-center">
+            <Logo linked={false} imgClassName="h-12 w-auto object-contain" />
+          </div>
+
+          <div className="mt-8 flex justify-center">
+            <div className="rounded-full bg-rose-50 p-4 text-[#E11D48]">
+              <Loader2 className="size-8 animate-spin" />
+            </div>
+          </div>
+
+          <h1 className="mt-6 text-2xl font-semibold tracking-tight text-slate-950">
+            Completing sign in
+          </h1>
+          <p className="mt-3 text-sm leading-6 text-slate-500">{statusText}</p>
+
+          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600">
+            <ShieldCheck className="size-4 text-[#E11D48]" />
+            Secure authentication powered by Supabase
+          </div>
+        </div>
       </div>
     </div>
   );

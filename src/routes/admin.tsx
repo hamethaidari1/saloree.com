@@ -10,22 +10,9 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminLayout() {
-  const { user, roles, loading } = useAuth();
+  const { roles } = useAuth();
 
   const isSuperAdmin = roles.includes("super_admin") || roles.includes("admin");
-
-  if (loading)
-    return <div className="p-10 text-center text-sm text-muted-foreground">Loading…</div>;
-  if (!user)
-    return (
-      <div className="mx-auto max-w-md p-10 text-center text-sm">
-        Please{" "}
-        <Link to="/login" className="font-semibold text-primary">
-          sign in
-        </Link>
-        .
-      </div>
-    );
 
   if (!isSuperAdmin) {
     return (

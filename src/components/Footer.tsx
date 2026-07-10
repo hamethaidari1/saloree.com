@@ -5,11 +5,13 @@ import { useLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
 import { useSiteSettings, useFooterLinks } from "@/hooks/useSiteSettings";
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Globe } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 export function Footer() {
   const { language, translateCategory } = useLocale();
   const { data: settings } = useSiteSettings();
   const { data: footerLinks = [] } = useFooterLinks();
+  const { user } = useAuth();
 
   const description =
     settings?.footer_description ||
@@ -41,13 +43,19 @@ export function Footer() {
   } catch (e) {
     console.error("[Footer] Router location not ready:", e);
   }
-  const isAuthPage = ["/login", "/register", "/auth/callback"].includes(pathname);
+  const isAuthPage = [
+    "/login",
+    "/register",
+    "/auth/callback",
+    "/forgot-password",
+    "/reset-password",
+  ].includes(pathname);
 
   if (isAuthPage) {
     return (
       <footer className="w-full border-t bg-background py-6 mt-auto">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row text-xs text-muted-foreground">
-          <p>© 2026 Saloree. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Saloree. All rights reserved.</p>
           <div className="flex gap-4">
             <Link to="/" className="hover:underline">Privacy Policy</Link>
             <Link to="/" className="hover:underline">Terms of Service</Link>
@@ -141,15 +149,19 @@ export function Footer() {
                 <li>
                   <Link to="/seller">{t("become_a_seller", language)}</Link>
                 </li>
-                <li>
-                  <Link to="/seller/store">{t("seller_store_settings", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/seller/products">{t("seller_products", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/seller/orders">{t("seller_orders", language)}</Link>
-                </li>
+                {user && (
+                  <>
+                    <li>
+                      <Link to="/seller/store">{t("seller_store_settings", language)}</Link>
+                    </li>
+                    <li>
+                      <Link to="/seller/products">{t("seller_products", language)}</Link>
+                    </li>
+                    <li>
+                      <Link to="/seller/orders">{t("seller_orders", language)}</Link>
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
             <div>
@@ -157,18 +169,25 @@ export function Footer() {
                 {t("language", language)} & {t("currency", language)}
               </h4>
               <ul className="space-y-2 text-sm text-secondary-foreground/70">
-                <li>
-                  <Link to="/login">{t("login", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/register">{t("sign_up", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/orders">{t("orders", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/cart">{t("cart", language)}</Link>
-                </li>
+                {!user ? (
+                  <>
+                    <li>
+                      <Link to="/login">{t("login", language)}</Link>
+                    </li>
+                    <li>
+                      <Link to="/register">{t("sign_up", language)}</Link>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <Link to="/orders">{t("orders", language)}</Link>
+                    </li>
+                    <li>
+                      <Link to="/cart">{t("cart", language)}</Link>
+                    </li>
+                  </>
+                )}
               </ul>
             </div>
             <div>

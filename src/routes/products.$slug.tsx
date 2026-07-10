@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { 
@@ -31,6 +31,7 @@ import { useLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
 import { useWishlist } from "@/lib/wishlist";
 import { ProductCard } from "@/components/ProductCard";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/products/$slug")({
   head: ({ params }) => ({
@@ -82,6 +83,8 @@ const DEFAULT_REVIEWS: Review[] = [
 function ProductPage() {
   const { slug } = Route.useParams();
   const cart = useCart();
+  const { user } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
   const { language, formatPrice, translateCategory } = useLocale();
   const wishlist = useWishlist();
@@ -101,6 +104,18 @@ function ProductPage() {
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewTitle, setReviewTitle] = useState("");
   const [reviewContent, setReviewContent] = useState("");
+
+  const checkAuthAndRedirect = () => {
+    if (!user) {
+      toast.info("Please sign in to continue");
+      navigate({
+        to: "/login",
+        search: { redirect: location.pathname } as any,
+      });
+      return false;
+    }
+    return true;
+  };
 
   const {
     data: product,
@@ -240,6 +255,7 @@ function ProductPage() {
   };
 
   const handleAddToCart = () => {
+    if (!checkAuthAndRedirect()) return;
     cart.add(
       {
         product_id: product.id,
@@ -256,6 +272,7 @@ function ProductPage() {
   };
 
   const handleBuyNow = () => {
+    if (!checkAuthAndRedirect()) return;
     cart.add(
       {
         product_id: product.id,
@@ -272,6 +289,7 @@ function ProductPage() {
   };
 
   const handleWishlistToggle = async () => {
+    if (!checkAuthAndRedirect()) return;
     const isAdded = await wishlist.toggle(product.id);
     toast.success(isAdded ? "Added to wishlist" : "Removed from wishlist");
   };
@@ -300,6 +318,7 @@ function ProductPage() {
 
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!checkAuthAndRedirect()) return;
     if (!reviewName.trim() || !reviewContent.trim() || !reviewTitle.trim()) {
       return toast.error("Please fill out all review fields.");
     }

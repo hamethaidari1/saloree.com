@@ -1,11 +1,12 @@
 import { useState, useMemo } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { ShoppingCart, Star, Eye, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart";
 import { useLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,9 @@ export type ProductCardData = {
 export function ProductCard({ p }: { p: ProductCardData }) {
   if (!p) return null;
   const cart = useCart();
+  const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { formatPrice, language } = useLocale();
   const [quickViewOpen, setQuickViewOpen] = useState(false);
   const [wishlisted, setWishlisted] = useState(false);
@@ -38,6 +42,18 @@ export function ProductCard({ p }: { p: ProductCardData }) {
   const storeName = p.stores?.name || "Unknown store";
   const productImage = p.featured_image || null;
   const storeSlug = p.stores?.slug || undefined;
+
+  const checkAuthAndRedirect = () => {
+    if (!user) {
+      toast.info("Please sign in to continue");
+      navigate({
+        to: "/login",
+        search: { redirect: location.pathname } as any,
+      });
+      return false;
+    }
+    return true;
+  };
 
   // Generate a deterministic rating based on product ID
   const rating = useMemo(() => {
@@ -63,6 +79,7 @@ export function ProductCard({ p }: { p: ProductCardData }) {
   }, [p.price, discountPercent]);
 
   const handleAddToCart = () => {
+    if (!checkAuthAndRedirect()) return;
     cart.add({
       product_id: p.id,
       slug: productSlug,
@@ -73,6 +90,16 @@ export function ProductCard({ p }: { p: ProductCardData }) {
       featured_image: productImage,
     });
     toast.success("Added to cart");
+  };
+
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!checkAuthAndRedirect()) return;
+    setWishlisted(!wishlisted);
+    toast.success(
+      !wishlisted ? "Added to wishlist" : "Removed from wishlist"
+    );
   };
 
   return (
@@ -88,14 +115,7 @@ export function ProductCard({ p }: { p: ProductCardData }) {
           {/* Wishlist Button Overlay */}
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setWishlisted(!wishlisted);
-              toast.success(
-                !wishlisted ? "Added to wishlist" : "Removed from wishlist"
-              );
-            }}
+            onClick={handleWishlistToggle}
             className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 hover:bg-white text-gray-600 hover:text-red-500 shadow-sm backdrop-blur-sm transition-all duration-200 focus:outline-none cursor-pointer"
             title={wishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
           >

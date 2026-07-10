@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StoresRouteImport } from './routes/stores'
 import { Route as SellerRouteImport } from './routes/seller'
 import { Route as SaloreeControlRouteImport } from './routes/saloree-control'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -47,6 +48,11 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminContentRouteImport } from './routes/admin.content'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 
+const StoresRoute = StoresRouteImport.update({
+  id: '/stores',
+  path: '/stores',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SellerRoute = SellerRouteImport.update({
   id: '/seller',
   path: '/seller',
@@ -118,9 +124,9 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 const StoresSlugRoute = StoresSlugRouteImport.update({
-  id: '/stores/$slug',
-  path: '/stores/$slug',
-  getParentRoute: () => rootRouteImport,
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => StoresRoute,
 } as any)
 const SellerThemesRoute = SellerThemesRouteImport.update({
   id: '/themes',
@@ -246,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/saloree-control': typeof SaloreeControlRouteWithChildren
   '/seller': typeof SellerRouteWithChildren
+  '/stores': typeof StoresRouteWithChildren
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/login': typeof AdminLoginRoute
@@ -283,6 +290,7 @@ export interface FileRoutesByTo {
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/saloree-control': typeof SaloreeControlRouteWithChildren
+  '/stores': typeof StoresRouteWithChildren
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/login': typeof AdminLoginRoute
@@ -323,6 +331,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/saloree-control': typeof SaloreeControlRouteWithChildren
   '/seller': typeof SellerRouteWithChildren
+  '/stores': typeof StoresRouteWithChildren
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/login': typeof AdminLoginRoute
@@ -364,6 +373,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/saloree-control'
     | '/seller'
+    | '/stores'
     | '/admin/categories'
     | '/admin/content'
     | '/admin/login'
@@ -401,6 +411,7 @@ export interface FileRouteTypes {
     | '/register'
     | '/reset-password'
     | '/saloree-control'
+    | '/stores'
     | '/admin/categories'
     | '/admin/content'
     | '/admin/login'
@@ -440,6 +451,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/saloree-control'
     | '/seller'
+    | '/stores'
     | '/admin/categories'
     | '/admin/content'
     | '/admin/login'
@@ -480,14 +492,21 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SaloreeControlRoute: typeof SaloreeControlRouteWithChildren
   SellerRoute: typeof SellerRouteWithChildren
+  StoresRoute: typeof StoresRouteWithChildren
   AuthCallbackRoute: typeof AuthCallbackRoute
   CategoriesSlugRoute: typeof CategoriesSlugRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
-  StoresSlugRoute: typeof StoresSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/stores': {
+      id: '/stores'
+      path: '/stores'
+      fullPath: '/stores'
+      preLoaderRoute: typeof StoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/seller': {
       id: '/seller'
       path: '/seller'
@@ -588,10 +607,10 @@ declare module '@tanstack/react-router' {
     }
     '/stores/$slug': {
       id: '/stores/$slug'
-      path: '/stores/$slug'
+      path: '/$slug'
       fullPath: '/stores/$slug'
       preLoaderRoute: typeof StoresSlugRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof StoresRoute
     }
     '/seller/themes': {
       id: '/seller/themes'
@@ -819,6 +838,17 @@ const SellerRouteChildren: SellerRouteChildren = {
 const SellerRouteWithChildren =
   SellerRoute._addFileChildren(SellerRouteChildren)
 
+interface StoresRouteChildren {
+  StoresSlugRoute: typeof StoresSlugRoute
+}
+
+const StoresRouteChildren: StoresRouteChildren = {
+  StoresSlugRoute: StoresSlugRoute,
+}
+
+const StoresRouteWithChildren =
+  StoresRoute._addFileChildren(StoresRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -832,10 +862,10 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SaloreeControlRoute: SaloreeControlRouteWithChildren,
   SellerRoute: SellerRouteWithChildren,
+  StoresRoute: StoresRouteWithChildren,
   AuthCallbackRoute: AuthCallbackRoute,
   CategoriesSlugRoute: CategoriesSlugRoute,
   ProductsSlugRoute: ProductsSlugRoute,
-  StoresSlugRoute: StoresSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

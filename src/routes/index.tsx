@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { HeroSlider } from "@/components/HeroSlider";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
+import { CategoryMedia, formatCategoryItemCount, homeCategoryItems } from "@/lib/home-categories";
 import { useLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -54,18 +55,6 @@ function Index() {
   const { data: settings } = useSiteSettings();
   const { data: sections } = useHomepageSections();
   const { data: promoBanners = [] } = usePromoBanners();
-
-  const { data: categories = [] } = useQuery({
-    queryKey: ["categories"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("categories").select("*").order("name");
-      if (error) {
-        console.error("[home-categories] Supabase error:", error);
-        throw error;
-      }
-      return data ?? [];
-    },
-  });
 
   // 1. New Arrivals query
   const { data: newArrivals = [], isLoading: loadingNewArrivals } = useQuery({
@@ -309,65 +298,6 @@ function Index() {
 
   const activeBanners = promoBanners.filter((b) => b.is_enabled);
 
-  const categoryCards = [
-    {
-      title: "Electronics",
-      count: "12,340+ Items",
-      link: "/categories/$slug",
-      params: { slug: "electronics" },
-      image: "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?auto=format&fit=crop&w=300&q=80",
-    },
-    {
-      title: "Fashion",
-      count: "18,250+ Items",
-      link: "/categories/$slug",
-      params: { slug: "fashion" },
-      image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=300&q=80",
-    },
-    {
-      title: "Home & Living",
-      count: "9,120+ Items",
-      link: "/categories/$slug",
-      params: { slug: "home-living" },
-      image: "https://images.unsplash.com/photo-1524758631624-e2822e304c36?auto=format&fit=crop&w=300&q=80",
-    },
-    {
-      title: "Beauty",
-      count: "6,780+ Items",
-      link: "/categories/$slug",
-      params: { slug: "beauty" },
-      image: "https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=300&q=80",
-    },
-    {
-      title: "Sports",
-      count: "7,540+ Items",
-      link: "/categories/$slug",
-      params: { slug: "sports" },
-      image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&w=300&q=80",
-    },
-    {
-      title: "Books",
-      count: "3,110+ Items",
-      link: "/categories/$slug",
-      params: { slug: "books" },
-      image: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=300&q=80",
-    },
-    {
-      title: "Gaming",
-      count: "5,420+ Items",
-      link: "/categories/$slug",
-      params: { slug: "gaming" },
-      image: "https://images.unsplash.com/photo-1612287230202-1bf1d85d1bdf?auto=format&fit=crop&w=300&q=80",
-    },
-    {
-      title: "Automotive",
-      count: "4,950+ Items",
-      link: "/categories/$slug",
-      params: { slug: "automotive" },
-      image: "https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=300&q=80",
-    },
-  ];
-
   const featureCards = [
     {
       icon: ShieldCheck,
@@ -422,7 +352,7 @@ function Index() {
       </section>
 
       {/* 2. Trust Section (Why Shop With Saloree) */}
-      <section className="space-y-6">
+      <section className="hidden md:block space-y-6">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
             Why Shop With Saloree?
@@ -470,7 +400,7 @@ function Index() {
           <div className="flex items-end justify-between border-b pb-3">
             <div>
               <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
-                {categoriesTitle || "Popular Categories"}
+                {categoriesTitle || "Shop by Category"}
               </h2>
               <p className="text-xs text-muted-foreground mt-1">
                 Explore our curated collections of top premium categories.
@@ -483,29 +413,28 @@ function Index() {
               View all
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-4">
-            {categoryCards.map((category, index) => (
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8">
+            {homeCategoryItems.map((category) => (
               <Link
-                key={category.title}
-                to={category.link as any}
-                params={category.params as any}
-                className={`group flex flex-col rounded-2xl bg-white border border-gray-100 p-3 shadow-soft hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5 overflow-hidden text-center cursor-pointer ${
-                  index >= 4 ? "hidden sm:flex" : "flex"
-                }`}
+                key={category.id}
+                to="/marketplace"
+                search={{ cat: category.slug }}
+                aria-label={`Browse ${category.name}`}
+                className="group flex min-w-0 flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white p-3 text-center shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
               >
                 <div className="relative w-full aspect-square rounded-xl bg-gray-50 overflow-hidden mb-3">
-                  <img
-                    src={category.image}
-                    alt={category.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  <CategoryMedia
+                    category={category}
+                    alt={`${category.name} category`}
+                    className="h-full w-full rounded-xl"
+                    imgClassName="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
                 <span className="text-xs sm:text-sm font-bold text-gray-800 group-hover:text-primary transition-colors truncate">
-                  {category.title}
+                  {category.name}
                 </span>
                 <span className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 font-semibold">
-                  {category.count}
+                  {formatCategoryItemCount(category.itemCount)}
                 </span>
               </Link>
             ))}

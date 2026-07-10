@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   Truck,
   Car,
+  Bell,
 } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { useState, useEffect } from "react";
@@ -45,6 +46,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Logo } from "@/components/Logo";
+import { CategoryMedia, formatCategoryItemCount, homeCategoryItems } from "@/lib/home-categories";
 import { useLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
 import { LocaleSelector } from "./LocaleSelector";
@@ -152,7 +154,13 @@ export function Header() {
   } catch (e) {
     console.error("[Header] Router location not ready:", e);
   }
-  const isAuthPage = ["/login", "/register", "/auth/callback"].includes(pathname);
+  const isAuthPage = [
+    "/login",
+    "/register",
+    "/auth/callback",
+    "/forgot-password",
+    "/reset-password",
+  ].includes(pathname);
 
   if (isAuthPage) {
     return (
@@ -161,12 +169,31 @@ export function Header() {
           <Link to="/" className="flex items-center">
             <Logo imgClassName="h-9 w-auto object-contain" />
           </Link>
-          <Link
-            to="/"
-            className="text-sm font-medium text-muted-foreground hover:text-[#FF3B3B] transition-colors duration-200"
-          >
-            {t("home", language) || "Back to Home"}
-          </Link>
+          <div className="flex items-center gap-6">
+            <a
+              href="mailto:info@saloree.com"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-[#FF3B3B] transition-colors"
+            >
+              <HelpCircle className="size-3.5" />
+              Help
+            </a>
+            {!pathname.includes("/login") && (
+              <Link
+                to="/login"
+                className="text-sm font-semibold text-muted-foreground hover:text-[#FF3B3B] transition-colors duration-200"
+              >
+                Login
+              </Link>
+            )}
+            {!pathname.includes("/register") && (
+              <Link
+                to="/register"
+                className="text-sm font-semibold text-[#FF3B3B] hover:text-[#E03030] transition-colors duration-200"
+              >
+                Sign Up
+              </Link>
+            )}
+          </div>
         </div>
       </header>
     );
@@ -264,33 +291,61 @@ export function Header() {
         {/* Right side options: Wishlist, Cart, Login, Premium Sign Up */}
         <div className="flex items-center gap-3 sm:gap-4 shrink-0">
           <Link
-            to="/seller"
+            to="/marketplace"
+            className="hidden xl:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
+          >
+            <LayoutGrid className="size-4" />
+            <span>Marketplace</span>
+          </Link>
+
+          <Link
+            to="/stores"
             className="hidden xl:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
           >
             <Store className="size-4" />
-            <span>Sell on Saloree</span>
+            <span>Stores</span>
           </Link>
 
-          <Link
-            to={"/wishlist" as any}
-            className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
-          >
-            <Heart className="size-4" />
-            <span>Wishlist</span>
-          </Link>
+          {user && (
+            <>
+              <Link
+                to="/seller"
+                className="hidden xl:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
+              >
+                <Store className="size-4" />
+                <span>Sell on Saloree</span>
+              </Link>
 
-          <Link
-            to="/cart"
-            className="relative flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
-          >
-            <ShoppingCart className="size-4" />
-            <span className="hidden md:inline">Cart</span>
-            {count > 0 && (
-              <span className="absolute -top-0.5 right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#FF3B3B] px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
-                {count}
-              </span>
-            )}
-          </Link>
+              <Link
+                to={"/wishlist" as any}
+                className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
+              >
+                <Heart className="size-4" />
+                <span>Wishlist</span>
+              </Link>
+
+              <Link
+                to="/cart"
+                className="relative flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
+              >
+                <ShoppingCart className="size-4" />
+                <span className="hidden md:inline">Cart</span>
+                {count > 0 && (
+                  <span className="absolute -top-0.5 right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#FF3B3B] px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
+                    {count}
+                  </span>
+                )}
+              </Link>
+
+              <button
+                className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50 cursor-pointer"
+                aria-label="Notifications"
+              >
+                <Bell className="size-4" />
+                <span className="hidden md:inline">Notifications</span>
+              </button>
+            </>
+          )}
 
           {/* Mobile search toggle icon */}
           <button
@@ -547,27 +602,20 @@ export function Header() {
                 {/* Main Menu Items */}
                 <nav className="px-3 py-2">
                   {[
-                    { label: "All Categories", to: "/marketplace", icon: LayoutGrid },
+                    { label: "Home", to: "/", icon: Home },
+                    { label: "Marketplace", to: "/marketplace", icon: LayoutGrid },
+                    { label: "Stores", to: "/stores", icon: Store },
                     { label: "Deals", to: "/marketplace", search: { filter: "deals" }, icon: Tag },
                     { label: "Best Sellers", to: "/marketplace", search: { filter: "best-sellers" }, icon: Flame },
                     { label: "New Arrivals", to: "/marketplace", search: { filter: "new-arrivals" }, icon: Sparkles },
-                    { label: "Electronics", to: "/categories/$slug", params: { slug: "electronics" }, icon: Laptop },
-                    { label: "Fashion", to: "/categories/$slug", params: { slug: "fashion" }, icon: Shirt },
-                    { label: "Home & Living", to: "/categories/$slug", params: { slug: "home-living" }, icon: Sofa },
-                    { label: "Beauty", to: "/categories/$slug", params: { slug: "beauty" }, icon: Sparkles },
-                    { label: "Sports", to: "/categories/$slug", params: { slug: "sports" }, icon: Dumbbell },
-                    { label: "Books", to: "/categories/$slug", params: { slug: "books" }, icon: BookOpen },
-                    { label: "Gaming", to: "/categories/$slug", params: { slug: "gaming" }, icon: Gamepad2 },
-                    { label: "Automotive", to: "/categories/$slug", params: { slug: "automotive" }, icon: Car },
-                    { label: "Toys & Kids", to: "/categories/$slug", params: { slug: "toys-kids" }, icon: HelpCircle },
                   ].map((item, index) => {
                     const Icon = item.icon;
                     return (
                       <Link
                         key={item.label}
                         to={item.to}
-                        params={item.params as any}
-                        search={item.search as any}
+                        params={("params" in item ? item.params : undefined) as any}
+                        search={("search" in item ? item.search : undefined) as any}
                         onClick={() => setDrawerOpen(false)}
                         className={`flex items-center justify-between px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all ${
                           index !== 0 ? "border-t border-gray-50" : ""
@@ -583,31 +631,78 @@ export function Header() {
                   })}
                 </nav>
 
+                <section className="border-t border-gray-100 px-4 py-4 md:hidden">
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-900">Shop by Category</h3>
+                      <p className="text-[11px] text-gray-500">Explore popular categories quickly.</p>
+                    </div>
+                    <Link
+                      to="/marketplace"
+                      onClick={() => setDrawerOpen(false)}
+                      className="text-xs font-semibold text-[#FF3B3B] hover:text-[#E03030]"
+                    >
+                      View all
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 md:hidden">
+                    {homeCategoryItems.map((category) => (
+                      <Link
+                        key={category.id}
+                        to="/categories/$slug"
+                        params={{ slug: category.slug }}
+                        onClick={() => setDrawerOpen(false)}
+                        aria-label={`Browse ${category.name}`}
+                        className="flex min-h-[92px] min-w-0 items-center gap-3 rounded-2xl border border-gray-100 bg-gray-50 p-3 text-left transition-all hover:border-gray-200 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF3B3B] focus-visible:ring-offset-2"
+                      >
+                        <CategoryMedia
+                          category={category}
+                          alt={`${category.name} category illustration`}
+                          className="h-14 w-14 shrink-0 rounded-2xl"
+                          imgClassName="h-14 w-14 shrink-0 rounded-2xl object-cover"
+                          iconClassName="size-5"
+                        />
+                        <div className="min-w-0">
+                          <p className="truncate text-xs font-bold text-gray-900">{category.name}</p>
+                          <p className="mt-1 truncate text-[10px] font-medium text-gray-500">
+                            {formatCategoryItemCount(category.itemCount)}
+                          </p>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+
                 {/* Additional Links */}
                 <div className="border-t border-gray-100 px-3 py-2">
-                  <Link
-                    to="/orders"
-                    onClick={() => setDrawerOpen(false)}
-                    className="flex items-center gap-3 px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
-                  >
-                    <Package className="size-4 text-gray-400" />
-                    <span>My Orders</span>
-                  </Link>
-                  <Link
-                    to="/cart"
-                    onClick={() => setDrawerOpen(false)}
-                    className="flex items-center justify-between px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
-                  >
-                    <div className="flex items-center gap-3">
-                      <ShoppingCart className="size-4 text-gray-400" />
-                      <span>Shopping Cart</span>
-                    </div>
-                    {count > 0 && (
-                      <span className="rounded-full bg-[#FF3B3B] px-2 py-0.5 text-xs font-bold text-white">
-                        {count}
-                      </span>
-                    )}
-                  </Link>
+                  {user && (
+                    <>
+                      <Link
+                        to="/orders"
+                        onClick={() => setDrawerOpen(false)}
+                        className="flex items-center gap-3 px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
+                      >
+                        <Package className="size-4 text-gray-400" />
+                        <span>My Orders</span>
+                      </Link>
+                      <Link
+                        to="/cart"
+                        onClick={() => setDrawerOpen(false)}
+                        className="flex items-center justify-between px-3 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all"
+                      >
+                        <div className="flex items-center gap-3">
+                          <ShoppingCart className="size-4 text-gray-400" />
+                          <span>Shopping Cart</span>
+                        </div>
+                        {count > 0 && (
+                          <span className="rounded-full bg-[#FF3B3B] px-2 py-0.5 text-xs font-bold text-white">
+                            {count}
+                          </span>
+                        )}
+                      </Link>
+                    </>
+                  )}
                   <Link
                     to="/seller"
                     onClick={() => setDrawerOpen(false)}
