@@ -217,29 +217,67 @@ function Index() {
   });
 
   // 5. Featured Stores query
-  const { data: featuredStores = [], isLoading: loadingStores } = useQuery({
+  const { data: featuredStores = [], isLoading: loadingStores, isError: storesError } = useQuery({
     queryKey: ["stores", "home", "featured"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: stores, error: fetchError } = await supabase
         .from("stores")
-        .select("id, name, slug, logo_url, description")
-        .eq("status", "active")
+        .select("id, name, slug, logo_url, description, status, updated_at, created_at, category, location")
+        .eq("status", "published")
         .limit(6);
 
-      if (error) {
-        console.error("[featured-stores] Supabase error:", error);
-        throw error;
+      if (fetchError) {
+        console.error("[featured-stores] Supabase error:", fetchError);
+        throw fetchError;
       }
-      return (data ?? []).map((store, index) => ({
+
+      if (!stores || stores.length === 0) return [];
+
+      const storeIds = stores.map((s) => s.id);
+
+      // Get product counts for these stores
+      const { data: products, error: productsError } = await supabase
+        .from("products")
+        .select("store_id")
+        .in("store_id", storeIds)
+        .eq("status", "active");
+
+      if (productsError) {
+        console.error("[featured-stores-products] Supabase error:", productsError);
+        throw productsError;
+      }
+
+      const productCounts = (products ?? []).reduce(
+        (acc, p) => {
+          acc[p.store_id] = (acc[p.store_id] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+
+      const mappedStores = stores.map((store) => ({
         id: store.id,
         name: store.name,
         slug: store.slug,
         logo_url: store.logo_url,
         description: store.description,
-        rating: (4.6 + (index % 5) * 0.1).toFixed(1),
-        followers: `${10 + (index % 10)}K`,
-        products: `${120 + (index % 5) * 45}+`,
+        category: store.category,
+        location: store.location,
+        updated_at: store.updated_at || store.created_at,
+        productCount: productCounts[store.id] || 0,
+        rating: null, // No real ratings table found in schema
+        is_verified: false, // No verification field found in schema
       }));
+
+      // Sort according to requirements
+      return mappedStores.sort((a, b) => {
+        // 1. Highest active product count
+        if (b.productCount !== a.productCount) {
+          return b.productCount - a.productCount;
+        }
+        // 2. Newest updated_at as fallback
+        return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+      });
     },
   });
 
@@ -336,13 +374,7 @@ function Index() {
     },
   ];
 
-  const fallbackStores = [
-    { id: "1", name: "Fashion Hub", slug: "fashion-hub", logo_url: null, rating: "4.9", followers: "10K", products: "500+" },
-    { id: "2", name: "Tech World", slug: "tech-world", logo_url: null, rating: "4.8", followers: "8K", products: "300+" },
-    { id: "3", name: "Home Decor", slug: "home-decor", logo_url: null, rating: "4.7", followers: "12K", products: "700+" },
-  ];
-
-  const storesToDisplay = featuredStores.length > 0 ? featuredStores : fallbackStores;
+  const storesToDisplay = featuredStores;
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 md:px-6 lg:px-8 space-y-16">
@@ -396,7 +428,7 @@ function Index() {
 
       {/* 4. Popular Categories Section */}
       {showCategories && (
-        <section className="space-y-6">
+        <section className="hidden md:block space-y-6">
           <div className="flex items-end justify-between border-b pb-3">
             <div>
               <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
@@ -507,62 +539,115 @@ function Index() {
       </section>
 
       {/* 7. Featured Stores Section */}
-      <section className="space-y-6">
-        <div className="flex items-end justify-between border-b pb-3 mb-6">
-          <div>
-            <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
-              Featured Stores
-            </h2>
-            <p className="text-xs text-muted-foreground mt-1">
-              Shop directly from trusted local and global brands.
-            </p>
-          </div>
-          <Link
-            to="/marketplace"
-            className="text-sm font-semibold text-primary hover:underline"
-          >
-            View all
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {storesToDisplay.map((store) => (
-            <div
-              key={store.id}
-              className="flex items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-soft hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group"
-            >
-              <div className="flex items-center gap-4 min-w-0">
-                <Avatar className="h-14 w-14 border border-gray-100 group-hover:scale-105 transition-transform shrink-0">
-                  <AvatarFallback className="bg-gradient-to-tr from-purple-500 to-indigo-600 text-white text-lg font-extrabold shadow-inner">
-                    {store.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-base font-extrabold text-gray-800 truncate group-hover:text-primary transition-colors">
-                      {store.name}
-                    </p>
-                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-500" title="Verified Store">
-                      ✓
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="text-xs text-muted-foreground">{store.products} Products</p>
-                    <span className="text-gray-300 text-[10px]">•</span>
-                    <p className="text-xs text-amber-500 flex items-center gap-0.5">
-                      <Star className="size-3 fill-amber-500 text-amber-500" /> {store.rating}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <Button asChild variant="outline" size="sm" className="rounded-full text-xs font-semibold px-4 border-gray-200 hover:bg-slate-50 shrink-0 cursor-pointer">
-                <Link to="/stores/$slug" params={{ slug: store.slug }}>
-                  Visit Store
-                </Link>
-              </Button>
+      {!storesError && (
+        <section className="space-y-6">
+          <div className="flex items-end justify-between border-b pb-3 mb-6">
+            <div>
+              <h2 className="text-xl font-extrabold sm:text-2xl text-secondary">
+                Featured Stores
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Shop directly from trusted local and global brands.
+              </p>
             </div>
-          ))}
-        </div>
-      </section>
+            <Link
+              to="/stores"
+              className="text-sm font-semibold text-primary hover:underline"
+            >
+              View all
+            </Link>
+          </div>
+
+          {loadingStores ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[...Array(3)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-24 rounded-2xl border border-gray-100 bg-slate-50 animate-pulse"
+                />
+              ))}
+            </div>
+          ) : storesToDisplay.length === 0 ? (
+            <div className="rounded-2xl border border-dashed p-10 text-center">
+              <Store className="mx-auto h-10 w-10 text-muted-foreground/30" />
+              <p className="mt-2 text-sm text-muted-foreground">Featured stores are coming soon.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {storesToDisplay.map((store) => (
+                <div
+                  key={store.id}
+                  className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-soft hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 group"
+                >
+                  <div className="flex flex-col sm:flex-row items-center gap-4 min-w-0 flex-1">
+                    <Avatar className="h-16 w-16 border border-gray-100 group-hover:scale-105 transition-transform shrink-0">
+                      {store.logo_url ? (
+                        <img
+                          src={store.logo_url}
+                          alt={store.name}
+                          className="object-cover h-full w-full rounded-full"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <AvatarFallback className="bg-gradient-to-tr from-rose-500 to-rose-600 text-white text-xl font-extrabold shadow-inner">
+                          {store.name.charAt(0)}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div className="min-w-0 text-center sm:text-left flex-1">
+                      <div className="flex items-center justify-center sm:justify-start gap-1.5">
+                        <p className="text-base font-extrabold text-gray-800 truncate group-hover:text-primary transition-colors">
+                          {store.name}
+                        </p>
+                        {store.is_verified && (
+                          <span
+                            className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-500"
+                            title="Verified Store"
+                          >
+                            ✓
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1 mt-1">
+                        <p className="text-xs text-muted-foreground font-medium">
+                          {store.productCount} {store.productCount === 1 ? "Product" : "Products"}
+                        </p>
+                        <span className="text-gray-300 text-[10px] hidden sm:inline">•</span>
+                        {store.rating ? (
+                          <p className="text-xs text-amber-500 flex items-center gap-0.5 font-bold">
+                            <Star className="size-3 fill-amber-500 text-amber-500" /> {store.rating}
+                          </p>
+                        ) : (
+                          <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-tight bg-emerald-50 px-2 py-0.5 rounded-full">
+                            New Store
+                          </p>
+                        )}
+                      </div>
+                      
+                      {(store.category || store.location) && (
+                        <p className="text-[11px] text-muted-foreground mt-1 truncate max-w-full">
+                          {store.category}{store.category && store.location ? " • " : ""}{store.location}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="w-full sm:w-auto rounded-full text-xs font-bold px-6 border-gray-200 hover:bg-slate-50 shrink-0 cursor-pointer min-h-[44px]"
+                  >
+                    <Link to="/stores/$slug" params={{ slug: store.slug }}>
+                      Visit Store
+                    </Link>
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       {/* 8. Become a Seller CTA Section */}
       <section className="relative overflow-hidden rounded-[24px] bg-gradient-to-r from-gray-900 via-indigo-950 to-slate-900 text-white p-8 md:p-12 shadow-2xl">

@@ -30,8 +30,8 @@ function StoresPage() {
     queryFn: async () => {
       let query = supabase
         .from("stores")
-        .select("id, name, slug, logo_url, description, created_at")
-        .eq("status", "active")
+        .select("id, name, slug, logo_url, description, created_at, status")
+        .eq("status", "published")
         .order("name");
 
       if (q.trim()) {
@@ -40,7 +40,27 @@ function StoresPage() {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      if (!data || data.length === 0) return [];
+
+      const storeIds = data.map((s) => s.id);
+      const { data: products } = await supabase
+        .from("products")
+        .select("store_id")
+        .in("store_id", storeIds)
+        .eq("status", "active");
+
+      const productCounts = (products ?? []).reduce(
+        (acc, p) => {
+          acc[p.store_id] = (acc[p.store_id] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+
+      return data.map((store) => ({
+        ...store,
+        productCount: productCounts[store.id] || 0,
+      }));
     },
   });
 
@@ -94,9 +114,6 @@ function StoresPage() {
                     <h3 className="text-lg font-extrabold text-gray-800 truncate group-hover:text-primary transition-colors">
                       {store.name}
                     </h3>
-                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[10px] font-bold text-blue-500" title="Verified Store">
-                      ✓
-                    </span>
                   </div>
                   <p className="text-xs text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
                     {store.description || "No description provided."}
@@ -106,11 +123,11 @@ function StoresPage() {
 
               <div className="mt-6 flex items-center justify-between pt-4 border-t border-gray-50">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-1 text-xs font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">
-                    <Star className="size-3 fill-amber-500" /> {(4.5 + (index % 5) * 0.1).toFixed(1)}
+                  <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-tight">
+                    New Store
                   </div>
                   <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
-                    {120 + (index % 5) * 45}+ Products
+                    {store.productCount} {store.productCount === 1 ? "Product" : "Products"}
                   </span>
                 </div>
                 <Button asChild variant="ghost" size="sm" className="rounded-full text-xs font-bold text-primary hover:bg-primary-soft cursor-pointer">
