@@ -59,123 +59,112 @@ export function Footer() {
   }
 
   return (
-    <footer className="mt-16 border-t bg-secondary text-secondary-foreground">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <Logo imgClassName="h-16 w-auto object-contain" />
-          <p className="mt-2 text-sm text-secondary-foreground/70">Build. Sell. Grow.</p>
-          <p className="mt-4 max-w-xs text-sm text-secondary-foreground/60">{description}</p>
-          {/* Social Links */}
-          {Object.keys(socials).some((k) => socials[k]) && (
-            <div className="mt-6 flex gap-3">
-              {Object.entries(socials).map(([platform, url]) => {
-                if (!url) return null;
-                const Icon = socialIcons[platform.toLowerCase()] || Globe;
-                return (
-                  <a
-                    key={platform}
-                    href={url.startsWith("http") ? url : `https://${url}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="grid h-8 w-8 place-items-center rounded-full bg-secondary-foreground/10 text-secondary-foreground/70 hover:bg-secondary-foreground/20 hover:text-secondary-foreground transition"
-                  >
-                    <Icon className="size-4" />
-                  </a>
-                );
-              })}
+    <footer className="mt-16 bg-slate-900 text-white pt-16 pb-8 border-t border-slate-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-14">
+          <div className="lg:col-span-2">
+            <Link to="/" className="font-editorial text-3xl font-extrabold tracking-tight mb-4 inline-block text-white">
+              Saloree
+            </Link>
+            <p className="text-slate-400 text-xs sm:text-sm leading-relaxed max-w-sm mb-6">
+              Your global marketplace for premium products. We connect passionate sellers with discerning buyers across every category.
+            </p>
+            <div className="flex items-center gap-3">
+              <a
+                href="mailto:info@saloree.com"
+                className="text-xs font-semibold text-[#E11D48] hover:underline"
+              >
+                info@saloree.com
+              </a>
             </div>
-          )}
+          </div>
+
+          <div>
+            <h4 className="font-bold text-xs uppercase tracking-wider mb-5 text-white">
+              SHOP
+            </h4>
+            <ul className="space-y-3 text-xs sm:text-sm text-slate-400">
+              <li>
+                <Link to="/marketplace" className="hover:text-white transition-colors">
+                  Marketplace
+                </Link>
+              </li>
+              <li>
+                <Link to="/marketplace" className="hover:text-white transition-colors">
+                  Categories
+                </Link>
+              </li>
+              <li>
+                <Link to="/marketplace" className="hover:text-white transition-colors">
+                  Stores
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-xs uppercase tracking-wider mb-5 text-white">
+              SELL
+            </h4>
+            <ul className="space-y-3 text-xs sm:text-sm text-slate-400">
+              <li>
+                <Link to="/seller" className="hover:text-white transition-colors">
+                  Become a Seller
+                </Link>
+              </li>
+              <li>
+                <Link to="/seller" className="hover:text-white transition-colors">
+                  Seller Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link to="/seller/products" className="hover:text-white transition-colors">
+                  Products
+                </Link>
+              </li>
+              <li>
+                <Link to="/seller/orders" className="hover:text-white transition-colors">
+                  Orders
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-bold text-xs uppercase tracking-wider mb-5 text-white">
+              ACCOUNT & SUPPORT
+            </h4>
+            <ul className="space-y-3 text-xs sm:text-sm text-slate-400">
+              <li>
+                <Link to="/login" className="hover:text-white transition-colors">
+                  Login
+                </Link>
+              </li>
+              <li>
+                <Link to="/register" className="hover:text-white transition-colors">
+                  Register
+                </Link>
+              </li>
+              <li>
+                <Link to="/orders" className="hover:text-white transition-colors">
+                  My Orders
+                </Link>
+              </li>
+              <li>
+                <Link to="/cart" className="hover:text-white transition-colors">
+                  Cart
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        {footerLinks.length > 0 ? (
-          // Render dynamic footer categories
-          categories.map((cat) => (
-            <div key={cat}>
-              <h4 className="mb-3 text-sm font-semibold">{cat}</h4>
-              <ul className="space-y-2 text-sm text-secondary-foreground/70">
-                {footerLinks
-                  .filter((l) => l.category === cat)
-                  .map((link) => (
-                    <li key={link.id}>
-                      {link.url.startsWith("/") ? (
-                        <Link to={link.url as any}>{link.label}</Link>
-                      ) : (
-                        <a href={link.url} target="_blank" rel="noopener noreferrer">
-                          {link.label}
-                        </a>
-                      )}
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          ))
-        ) : (
-          // Fallback to default columns
-          <>
-            <div>
-              <h4 className="mb-3 text-sm font-semibold">{t("home", language)}</h4>
-              <ul className="space-y-2 text-sm text-secondary-foreground/70">
-                <li>
-                  <Link to="/marketplace">{t("marketplace", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/categories/$slug" params={{ slug: "electronics" }}>
-                    {translateCategory("electronics")}
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/categories/$slug" params={{ slug: "fashion" }}>
-                    {translateCategory("fashion")}
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/categories/$slug" params={{ slug: "home-kitchen" }}>
-                    {translateCategory("home-kitchen")}
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="mb-3 text-sm font-semibold">{t("become_a_seller", language)}</h4>
-              <ul className="space-y-2 text-sm text-secondary-foreground/70">
-                <li>
-                  <Link to="/seller">{t("become_a_seller", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/seller/store">{t("seller_store_settings", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/seller/products">{t("seller_products", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/seller/orders">{t("seller_orders", language)}</Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="mb-3 text-sm font-semibold">
-                {t("language", language)} & {t("currency", language)}
-              </h4>
-              <ul className="space-y-2 text-sm text-secondary-foreground/70">
-                <li>
-                  <Link to="/login">{t("login", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/register">{t("sign_up", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/orders">{t("orders", language)}</Link>
-                </li>
-                <li>
-                  <Link to="/cart">{t("cart", language)}</Link>
-                </li>
-              </ul>
-            </div>
-          </>
-        )}
-      </div>
-      <div className="border-t border-white/10 py-4 text-center text-xs text-secondary-foreground/50">
-        {footerText}
+        <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-400">
+          <p>© 2026 Saloree. All rights reserved.</p>
+          <div className="flex items-center gap-6">
+            <span>Global Multi-Vendor Marketplace</span>
+          </div>
+        </div>
       </div>
     </footer>
   );

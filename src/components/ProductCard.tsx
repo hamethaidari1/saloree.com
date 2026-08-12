@@ -21,6 +21,8 @@ export type ProductCardData = {
   price: number;
   featured_image: string | null;
   description?: string | null;
+  status?: string | null;
+  created_at?: string;
   categories?: { name: string; slug?: string | null } | null;
   stores?: { name: string; slug?: string | null; logo_url?: string | null } | null;
 };
@@ -62,85 +64,78 @@ export function ProductCard({ p }: { p: ProductCardData }) {
 
   return (
     <>
-      <div className="group flex h-full flex-col overflow-hidden rounded-xl border bg-card shadow-soft hover:shadow-md transition-all duration-300">
+      <div className="product-card group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300">
         {/* Product Image Section */}
-        <div className="relative aspect-square w-full overflow-hidden bg-muted">
+        <div className="relative aspect-[4/5] w-full overflow-hidden bg-slate-100 p-3">
           <Link to="/products/$slug" params={{ slug: productSlug }} className="block h-full w-full">
             {productImage ? (
               <img
                 src={productImage}
                 alt={productTitle}
                 loading="lazy"
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                className="h-full w-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-500"
               />
             ) : (
-              <div className="grid h-full place-items-center text-xs text-muted-foreground">
-                No image
+              <div className="grid h-full place-items-center text-xs text-slate-400 font-medium">
+                No image available
               </div>
             )}
           </Link>
           
-          {/* Quick View Hover overlay */}
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none group-hover:pointer-events-auto">
-            <Button
+          {/* Top floating badge */}
+          <span className="absolute top-3 left-3 bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+            NEW
+          </span>
+
+          {/* Slide-up Quick Add button on hover */}
+          <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 translate-y-full group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-10">
+            <button
               type="button"
-              onClick={() => setQuickViewOpen(true)}
-              className="bg-white/90 text-black hover:bg-white backdrop-blur-md rounded-full shadow-lg gap-2 text-xs font-semibold px-4 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300"
+              onClick={handleAddToCart}
+              className="w-full bg-slate-900 text-white hover:bg-[#E11D48] py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors shadow-md flex items-center justify-center gap-1.5"
             >
-              <Eye className="size-4" /> Quick View
-            </Button>
+              <ShoppingCart className="size-3.5" />
+              <span>{t("add_to_cart", language)}</span>
+            </button>
           </div>
         </div>
 
         {/* Content Details */}
-        <div className="flex flex-1 flex-col gap-1.5 p-4">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{categoryName}</p>
-          <Link to="/products/$slug" params={{ slug: productSlug }} className="block">
-            <h3 className="line-clamp-2 text-sm font-semibold transition-colors hover:text-primary min-h-[40px] leading-snug">
-              {productTitle}
-            </h3>
-          </Link>
-          
+        <div className="flex flex-1 flex-col p-4">
           {storeSlug ? (
             <Link
               to="/stores/$slug"
               params={{ slug: storeSlug }}
-              className="truncate text-xs text-muted-foreground hover:text-primary transition-colors inline-block"
+              className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-[#E11D48] transition-colors truncate mb-1"
             >
               {storeName}
             </Link>
           ) : (
-            <p className="truncate text-xs text-muted-foreground">{storeName}</p>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 truncate mb-1">
+              {storeName}
+            </span>
           )}
 
-          {/* Price & Rating */}
-          <div className="mt-auto flex items-center justify-between pt-2">
-            <span className="text-base font-bold text-secondary">{formatPrice(Number(p.price))}</span>
-            <span className="flex items-center gap-1 text-xs font-medium text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">
-              <Star className="size-3 fill-amber-500 text-amber-500" /> {rating}
-            </span>
-          </div>
+          <Link to="/products/$slug" params={{ slug: productSlug }} className="block">
+            <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 hover:text-[#E11D48] transition-colors leading-snug min-h-[38px]">
+              {productTitle}
+            </h3>
+          </Link>
 
-          {/* Action Button Group */}
-          <div className="mt-3 flex gap-2">
-            <Button
+          {/* Price & Action */}
+          <div className="mt-auto pt-3 flex items-center justify-between border-t border-slate-100">
+            <span className="text-base font-extrabold text-slate-900">
+              {formatPrice(Number(p.price))}
+            </span>
+
+            <button
               type="button"
-              className="flex-1 rounded-full text-xs font-semibold"
-              onClick={handleAddToCart}
-            >
-              <ShoppingCart className="mr-1.5 size-3.5" /> {t("add_to_cart", language)}
-            </Button>
-            
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="rounded-full border-gray-200 hover:bg-slate-50 shrink-0 lg:hidden"
               onClick={() => setQuickViewOpen(true)}
-              title="Quick View"
+              className="text-xs text-slate-500 hover:text-slate-900 font-medium flex items-center gap-1 hover:underline"
             >
-              <Eye className="size-4 text-muted-foreground" />
-            </Button>
+              <Eye className="size-3.5" />
+              <span className="hidden sm:inline">Quick View</span>
+            </button>
           </div>
         </div>
       </div>

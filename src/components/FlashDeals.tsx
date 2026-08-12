@@ -46,7 +46,7 @@ export function FlashDeals({ products, isLoading }: FlashDealsProps) {
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {deals.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <ProductCard key={product.id} p={product} />
         ))}
       </div>
     </section>

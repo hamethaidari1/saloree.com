@@ -339,7 +339,7 @@ function StorePage() {
         .eq("store_id", store!.id)
         .order("display_order", { ascending: true });
       if (error) throw error;
-      return (data ?? []) as NavItem[];
+      return ((data ?? []) as unknown) as NavItem[];
     },
   });
 

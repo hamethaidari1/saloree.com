@@ -147,69 +147,56 @@ export function Header() {
 
   return (
     <header className="w-full border-b border-gray-100 bg-white sticky top-0 z-50">
-      {/* 1. Top Announcement Bar */}
-      <div className="bg-[#0F172A] text-white text-xs py-2 px-4 shadow-sm">
-        <div className="max-w-7xl mx-auto flex flex-col gap-2 sm:flex-row items-center justify-between">
-          <div className="flex flex-wrap items-center justify-center gap-6 text-gray-300">
-            <div className="flex items-center gap-1.5">
-              <Truck className="size-3.5 text-[#FF3B3B]" />
-              <span>Free Shipping Over $50</span>
-            </div>
-            <span className="hidden sm:inline text-gray-600">|</span>
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="size-3.5 text-[#FF3B3B]" />
-              <span>30-Day Money Back Guarantee</span>
-            </div>
-            <span className="hidden sm:inline text-gray-600">|</span>
-            <div className="flex items-center gap-1.5">
-              <HelpCircle className="size-3.5 text-[#FF3B3B]" />
-              <span>24/7 Customer Support</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
+      {/* 1. Top Utility Bar (UX Pilot Design) */}
+      <div className="bg-[#f8fafc] border-b border-slate-200 text-slate-600 text-[11px] font-medium py-1.5 px-4 sm:px-8">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-4">
             <LocaleSelector variant="desktop" />
+            <span className="hidden sm:inline text-slate-300">|</span>
+            <Link to="/seller" className="hover:text-[#E11D48] transition-colors font-semibold">
+              Become a Seller
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[#E11D48] animate-pulse">●</span>
+            <span className="uppercase tracking-wider font-semibold text-[10px] text-slate-500">
+              Live Marketplace Ticker
+            </span>
           </div>
         </div>
       </div>
 
-      {/* 2. Main Premium Header */}
-      <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex items-center justify-between gap-6">
-        {/* Logo and Mobile Menu toggle */}
-        <div className="flex items-center gap-4">
+      {/* 2. Main Header Bar */}
+      <div className="max-w-7xl mx-auto px-4 py-3.5 sm:px-6 lg:px-8 flex items-center justify-between gap-6">
+        {/* Logo & Mobile Menu Toggle */}
+        <div className="flex items-center gap-3 sm:gap-4">
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden h-10 w-10 shrink-0 hover:bg-gray-50 rounded-full"
+            className="lg:hidden h-10 w-10 shrink-0 hover:bg-slate-100 rounded-xl"
             aria-label="Open menu"
             onClick={() => setDrawerOpen(true)}
           >
-            <Menu className="size-5" />
+            <Menu className="size-5 text-slate-700" />
           </Button>
-          <Logo imgClassName="h-10 w-auto object-contain" />
+          <Link to="/" className="font-editorial text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+            Saloree
+          </Link>
         </div>
 
-        {/* Center: Premium Search Bar with Category Dropdown */}
+        {/* Center: Search Bar with Category Dropdown */}
         <div className="hidden lg:flex flex-1 max-w-2xl justify-center">
           <form
             onSubmit={onSearch}
-            className="relative flex w-full items-center bg-gray-50 border border-gray-200 rounded-full hover:bg-gray-100/50 hover:border-gray-300 focus-within:bg-white focus-within:border-[#FF3B3B] focus-within:ring-4 focus-within:ring-[#FF3B3B]/10 overflow-hidden transition-all duration-200"
+            className="relative flex w-full items-center bg-[#f1f5f9] rounded-xl overflow-hidden border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all duration-200"
           >
-            <div className="flex items-center pl-4 pr-2 text-gray-400 shrink-0">
-              <Search className="size-4" />
-            </div>
-            <input
-              type="text"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Search for products, brands and more..."
-              className="h-11 w-full bg-transparent pr-4 text-sm outline-none text-gray-800 placeholder-gray-400"
-            />
-            {/* Category Select Inside Search */}
-            <div className="relative shrink-0 flex items-center h-11 border-l border-gray-200">
+            {/* Category Select Dropdown */}
+            <div className="relative shrink-0 flex items-center h-11 border-r border-slate-200">
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="h-full bg-transparent pr-8 pl-4 text-xs font-semibold text-gray-500 hover:text-gray-800 outline-none cursor-pointer appearance-none"
+                className="h-full bg-transparent pr-7 pl-4 text-xs font-semibold uppercase tracking-wider text-slate-700 hover:text-slate-900 outline-none cursor-pointer appearance-none"
               >
                 <option value="all">All Categories</option>
                 {categories?.map((cat) => (
@@ -218,87 +205,100 @@ export function Header() {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="size-3 absolute right-3 pointer-events-none text-gray-400" />
+              <ChevronDown className="size-3 absolute right-2.5 pointer-events-none text-slate-400" />
             </div>
+
+            <input
+              type="text"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search for products, brands and more"
+              className="h-11 w-full bg-transparent px-4 text-sm outline-none text-slate-900 placeholder:text-slate-400"
+            />
+
             <button
               type="submit"
               aria-label="Search"
-              className="bg-[#FF3B3B] hover:bg-[#E03030] text-white font-semibold text-sm px-6 h-11 transition-all duration-200 active:scale-[0.98] shrink-0"
+              className="px-5 h-11 hover:bg-slate-900 hover:text-white text-slate-600 transition-colors shrink-0"
             >
-              Search
+              <Search className="size-4" />
             </button>
           </form>
         </div>
 
-        {/* Right side options: Wishlist, Cart, Login, Premium Sign Up */}
-        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+        {/* Right Action Icons */}
+        <div className="flex items-center gap-4 sm:gap-6 shrink-0">
           <Link
-            to="/seller"
-            className="hidden xl:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
+            to="/cart"
+            className="hidden lg:flex flex-col items-center group text-slate-700 hover:text-[#E11D48] transition-colors"
           >
-            <Store className="size-4" />
-            <span>Sell on Saloree</span>
+            <Heart className="size-5 mb-0.5 group-hover:text-[#E11D48] transition-colors" />
+            <span className="text-[10px] uppercase tracking-wider font-semibold">Wishlist</span>
           </Link>
 
-          <Link
-            to={"/wishlist" as any}
-            className="hidden sm:flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
-          >
-            <Heart className="size-4" />
-            <span>Wishlist</span>
-          </Link>
+          {user && (
+            <Link
+              to="/orders"
+              className="hidden lg:flex flex-col items-center group text-slate-700 hover:text-[#E11D48] transition-colors"
+            >
+              <Package className="size-5 mb-0.5 group-hover:text-[#E11D48] transition-colors" />
+              <span className="text-[10px] uppercase tracking-wider font-semibold">Orders</span>
+            </Link>
+          )}
 
           <Link
             to="/cart"
-            className="relative flex items-center gap-2 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] transition-colors py-2 px-3 rounded-full hover:bg-gray-50"
+            className="flex flex-col items-center group relative text-slate-700 hover:text-[#E11D48] transition-colors"
           >
-            <ShoppingCart className="size-4" />
-            <span className="hidden md:inline">Cart</span>
-            {count > 0 && (
-              <span className="absolute -top-0.5 right-1 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-[#FF3B3B] px-1 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
-                {count}
-              </span>
-            )}
+            <div className="relative">
+              <ShoppingCart className="size-5 mb-0.5 group-hover:text-[#E11D48] transition-colors" />
+              {count > 0 && (
+                <span className="absolute -top-1.5 -right-2.5 bg-[#E11D48] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                  {count}
+                </span>
+              )}
+            </div>
+            <span className="text-[10px] uppercase tracking-wider font-semibold">Cart</span>
           </Link>
 
-          <span className="hidden sm:inline w-[1px] h-5 bg-gray-200" />
+          <span className="hidden sm:inline w-[1px] h-5 bg-slate-200" />
 
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="gap-2 h-10 px-3 hover:bg-gray-50 rounded-full border border-gray-100"
+                  className="gap-2 h-10 px-3 hover:bg-slate-100 rounded-xl border border-slate-200"
                 >
-                  <UserIcon className="size-4 text-gray-500" />
-                  <span className="max-w-[90px] truncate text-xs font-semibold text-gray-700">
-                    Hi, {user.email?.split("@")[0]}
+                  <UserIcon className="size-4 text-slate-600" />
+                  <span className="max-w-[90px] truncate text-xs font-semibold text-slate-800">
+                    {user.email?.split("@")[0]}
                   </span>
-                  <ChevronDown className="size-3 text-gray-400" />
+                  <ChevronDown className="size-3 text-slate-400" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-xl mt-2 p-1.5">
                 <DropdownMenuItem className="flex flex-col items-start gap-1 py-2 px-3">
-                  <span className="text-xs text-gray-400 font-medium">Logged in as</span>
-                  <span className="text-sm font-semibold text-gray-800 truncate w-full">
+                  <span className="text-xs text-slate-400 font-medium">Logged in as</span>
+                  <span className="text-sm font-semibold text-slate-900 truncate w-full">
                     {user.email}
                   </span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
                   <Link to="/orders">
-                    <Package className="mr-2 size-4 text-gray-400" /> {t("my_orders", language)}
+                    <Package className="mr-2 size-4 text-slate-400" /> {t("my_orders", language)}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
                   <Link to="/seller">
-                    <Store className="mr-2 size-4 text-gray-400" /> {t("seller_dashboard", language)}
+                    <Store className="mr-2 size-4 text-slate-400" /> {t("seller_dashboard", language)}
                   </Link>
                 </DropdownMenuItem>
                 {roles.includes("admin") && (
                   <DropdownMenuItem asChild className="rounded-lg cursor-pointer">
                     <Link to="/admin">
-                      <UserIcon className="mr-2 size-4 text-gray-400" /> {t("admin_dashboard", language)}
+                      <UserIcon className="mr-2 size-4 text-slate-400" /> {t("admin_dashboard", language)}
                     </Link>
                   </DropdownMenuItem>
                 )}
@@ -316,78 +316,56 @@ export function Header() {
               <Button
                 asChild
                 variant="ghost"
-                className="h-10 px-4 text-sm font-semibold text-gray-600 hover:text-[#FF3B3B] hover:bg-transparent rounded-full"
+                className="h-9 px-3.5 text-xs font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
               >
                 <Link to="/login">Login</Link>
               </Button>
               <Button
                 asChild
-                className="h-10 px-5 text-sm font-bold text-white bg-[#FF3B3B] hover:bg-[#E03030] rounded-full shadow-md shadow-red-500/10 hover:shadow-red-500/20 active:scale-[0.98] transition-all"
+                className="h-9 px-4 text-xs font-bold text-white bg-slate-900 hover:bg-[#E11D48] rounded-lg transition-colors"
               >
-                <Link to="/register">Sign Up</Link>
+                <Link to="/register">Register</Link>
               </Button>
             </div>
           )}
         </div>
       </div>
 
-      {/* 3. Second Navigation (Horizontal navigation bar with icons) */}
-      <nav className="border-t border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <div className="flex h-12 items-center gap-6 overflow-x-auto scrollbar-none py-1.5 w-full">
-            {/* All Categories dropdown button */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 text-sm font-bold text-gray-800 hover:text-[#FF3B3B] transition-colors py-2 px-3 bg-gray-50 hover:bg-gray-100/80 rounded-lg whitespace-nowrap cursor-pointer">
-                  <LayoutGrid className="size-4 text-[#FF3B3B]" />
-                  <span>All Categories</span>
-                  <ChevronDown className="size-3.5 text-gray-400" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56 rounded-xl shadow-xl mt-1 p-1">
-                {(categories ?? []).map((cat) => {
-                  const Icon = getCategoryIcon(cat.icon);
-                  return (
-                    <DropdownMenuItem key={cat.id} asChild className="rounded-lg py-2 cursor-pointer">
-                      <Link to="/categories/$slug" params={{ slug: cat.slug }}>
-                        <Icon className="mr-2 size-4 text-gray-400" />
-                        <span>{cat.name}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Custom styled category/deal links with underline hover effects */}
-            {[
-              { label: "Deals", to: "/marketplace", icon: Tag, search: { filter: "deals" } },
-              { label: "Best Sellers", to: "/marketplace", icon: Flame, search: { filter: "best-sellers" } },
-              { label: "New Arrivals", to: "/marketplace", icon: Sparkles, search: { filter: "new-arrivals" } },
-              { label: "Electronics", to: "/categories/$slug", params: { slug: "electronics" }, icon: Laptop },
-              { label: "Fashion", to: "/categories/$slug", params: { slug: "fashion" }, icon: Shirt },
-              { label: "Home & Living", to: "/categories/$slug", params: { slug: "home-living" }, icon: Sofa },
-              { label: "Beauty", to: "/categories/$slug", params: { slug: "beauty" }, icon: Sparkles },
-              { label: "Sports", to: "/categories/$slug", params: { slug: "sports" }, icon: Dumbbell },
-              { label: "Toys & Games", to: "/categories/$slug", params: { slug: "toys-games" }, icon: Gamepad2 },
-              { label: "Books", to: "/categories/$slug", params: { slug: "books" }, icon: BookOpen },
-            ].map((link) => {
-              const Icon = link.icon;
-              return (
-                <Link
-                  key={link.label}
-                  to={link.to}
-                  params={link.params as any}
-                  search={link.search as any}
-                  className="group relative flex items-center gap-1.5 text-xs font-semibold text-gray-600 hover:text-gray-900 transition-colors py-1.5 whitespace-nowrap"
-                >
-                  <Icon className="size-3.5 text-gray-400 group-hover:text-[#FF3B3B] transition-colors" />
-                  <span>{link.label}</span>
-                  <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#FF3B3B] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
-                </Link>
-              );
-            })}
-          </div>
+      {/* 3. Secondary Navigation Bar */}
+      <nav className="px-4 sm:px-6 lg:px-8 border-t border-slate-200/80 overflow-x-auto no-scrollbar">
+        <div className="max-w-7xl mx-auto">
+          <ul className="flex min-w-max gap-8 py-2.5 text-xs font-semibold text-slate-700 uppercase tracking-wider">
+            <li>
+              <Link to="/marketplace" className="hover:text-[#E11D48] transition-colors py-1">
+                Today's Deals
+              </Link>
+            </li>
+            <li>
+              <Link to="/marketplace" className="hover:text-[#E11D48] transition-colors py-1">
+                New Arrivals
+              </Link>
+            </li>
+            <li>
+              <Link to="/marketplace" className="hover:text-[#E11D48] transition-colors py-1">
+                Best Sellers
+              </Link>
+            </li>
+            <li>
+              <Link to="/marketplace" className="hover:text-[#E11D48] transition-colors py-1">
+                Trending
+              </Link>
+            </li>
+            <li>
+              <Link to="/marketplace" className="hover:text-[#E11D48] transition-colors py-1">
+                Stores
+              </Link>
+            </li>
+            <li>
+              <Link to="/marketplace" className="hover:text-[#E11D48] transition-colors py-1">
+                Special Offers
+              </Link>
+            </li>
+          </ul>
         </div>
       </nav>
 

@@ -130,11 +130,12 @@ function ProductPage() {
     queryKey: ["related-products", product?.category_id, product?.id],
     enabled: !!product?.category_id,
     queryFn: async () => {
+      const p = product!;
       const { data, error } = await supabase
         .from("products")
         .select("*, stores(name, slug, logo_url), categories(name, slug)")
-        .eq("category_id", product.category_id)
-        .neq("id", product.id)
+        .eq("category_id", p.category_id!)
+        .neq("id", p.id)
         .eq("status", "active")
         .limit(8);
 
@@ -150,11 +151,12 @@ function ProductPage() {
     queryKey: ["store-products", product?.store_id, product?.id],
     enabled: !!product?.store_id,
     queryFn: async () => {
+      const p = product!;
       const { data, error } = await supabase
         .from("products")
         .select("*, stores(name, slug, logo_url), categories(name, slug)")
-        .eq("store_id", product.store_id)
-        .neq("id", product.id)
+        .eq("store_id", p.store_id)
+        .neq("id", p.id)
         .eq("status", "active")
         .limit(4);
 
@@ -244,7 +246,7 @@ function ProductPage() {
         product_id: product.id,
         slug: product.slug || product.id,
         store_id: product.store_id,
-        store_name: product.stores?.store_name || "Unknown store",
+        store_name: product.stores?.name || "Unknown store",
         title: product.title,
         price: Number(product.price),
         featured_image: product.featured_image,
@@ -260,7 +262,7 @@ function ProductPage() {
         product_id: product.id,
         slug: product.slug || product.id,
         store_id: product.store_id,
-        store_name: product.stores?.store_name || "Unknown store",
+        store_name: product.stores?.name || "Unknown store",
         title: product.title,
         price: Number(product.price),
         featured_image: product.featured_image,
@@ -362,7 +364,7 @@ function ProductPage() {
               <tr className="border-b hover:bg-slate-50/50 transition-colors">
                 <td className="p-4 font-semibold text-slate-700 bg-slate-50/20 w-1/3 border-r">Store Name</td>
                 <td className="p-4 text-slate-600">
-                  {product.stores?.store_name || "Unknown store"}
+                  {product.stores?.name || "Unknown store"}
                 </td>
               </tr>
               <tr className="border-b hover:bg-slate-50/50 transition-colors">
@@ -511,7 +513,7 @@ function ProductPage() {
                       params={{ slug: product.stores.slug }}
                       className="font-bold text-secondary hover:text-primary transition-colors"
                     >
-                      {product.stores.store_name}
+                      {product.stores.name}
                     </Link>
                     <CheckCircle2 className="size-3.5 fill-blue-500 text-white ml-1 shadow-sm rounded-full" />
                   </div>
@@ -662,9 +664,9 @@ function ProductPage() {
                 <div>
                   <div className="flex items-center gap-1">
                     <h3 className="font-extrabold text-slate-800 text-sm leading-tight">
-                      {product.stores.store_name}
+                      {product.stores.name}
                     </h3>
-                    <CheckCircle2 className="size-4 fill-blue-500 text-white shadow-sm rounded-full" title="Verified Seller" />
+                    <CheckCircle2 className="size-4 fill-blue-500 text-white shadow-sm rounded-full" aria-label="Verified Seller" />
                   </div>
                   <p className="text-[10px] text-muted-foreground mt-0.5 uppercase font-bold tracking-wider">Verified Seller Partner</p>
                 </div>
@@ -866,7 +868,7 @@ function ProductPage() {
             <div className="h-0.5 bg-slate-100 flex-1 mx-6 hidden sm:block"></div>
             <Link
               to="/marketplace"
-              search={{ category: product.categories?.slug }}
+              search={{ cat: product.categories?.slug }}
               className="text-xs font-bold text-primary hover:underline shrink-0 flex items-center gap-1"
             >
               {t("view_all", language)} <ArrowRight className="size-3.5" />
@@ -883,7 +885,7 @@ function ProductPage() {
       {storeProducts && storeProducts.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-extrabold text-secondary tracking-tight">More from {product.stores?.store_name}</h2>
+            <h2 className="text-xl font-extrabold text-secondary tracking-tight">More from {product.stores?.name}</h2>
             <div className="h-0.5 bg-slate-100 flex-1 mx-6 hidden sm:block"></div>
             {product.stores && (
               <Link
