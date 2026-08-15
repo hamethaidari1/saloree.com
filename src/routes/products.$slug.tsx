@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useLocation } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
 import { 
@@ -31,6 +31,7 @@ import { useLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
 import { useWishlist } from "@/lib/wishlist";
 import { ProductCard } from "@/components/ProductCard";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/products/$slug")({
   head: ({ params }) => ({
@@ -82,6 +83,8 @@ const DEFAULT_REVIEWS: Review[] = [
 function ProductPage() {
   const { slug } = Route.useParams();
   const cart = useCart();
+  const { user } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
   const { language, formatPrice, translateCategory } = useLocale();
   const wishlist = useWishlist();
@@ -94,12 +97,25 @@ function ProductPage() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxActiveIndex, setLightboxActiveIndex] = useState(0);
   const [lightboxZoom, setLightboxZoom] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
 
   const [reviews, setReviews] = useState<Review[]>(DEFAULT_REVIEWS);
   const [reviewName, setReviewName] = useState("");
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewTitle, setReviewTitle] = useState("");
   const [reviewContent, setReviewContent] = useState("");
+
+  const checkAuthAndRedirect = () => {
+    if (!user) {
+      toast.info("Please sign in to continue");
+      navigate({
+        to: "/login",
+        search: { redirect: location.pathname } as any,
+      });
+      return false;
+    }
+    return true;
+  };
 
   const {
     data: product,
@@ -241,6 +257,7 @@ function ProductPage() {
   };
 
   const handleAddToCart = () => {
+    if (!checkAuthAndRedirect()) return;
     cart.add(
       {
         product_id: product.id,
@@ -257,6 +274,7 @@ function ProductPage() {
   };
 
   const handleBuyNow = () => {
+    if (!checkAuthAndRedirect()) return;
     cart.add(
       {
         product_id: product.id,
@@ -273,6 +291,7 @@ function ProductPage() {
   };
 
   const handleWishlistToggle = async () => {
+    if (!checkAuthAndRedirect()) return;
     const isAdded = await wishlist.toggle(product.id);
     toast.success(isAdded ? "Added to wishlist" : "Removed from wishlist");
   };
@@ -282,8 +301,26 @@ function ProductPage() {
     setIsLightboxOpen(true);
   };
 
+  const handleTouchStartGallery = (e: React.TouchEvent) => {
+    setTouchStartX(e.changedTouches[0].clientX);
+  };
+
+  const handleTouchEndGallery = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) {
+        setActiveImageIndex((prev) => (prev + 1) % images.length);
+      } else {
+        setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
+      }
+    }
+    setTouchStartX(null);
+  };
+
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!checkAuthAndRedirect()) return;
     if (!reviewName.trim() || !reviewContent.trim() || !reviewTitle.trim()) {
       return toast.error("Please fill out all review fields.");
     }
@@ -391,7 +428,7 @@ function ProductPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:py-10">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:py-10 pb-24 md:pb-10">
       <nav className="mb-6 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground bg-slate-100/50 p-3 rounded-2xl w-fit">
         <Link to="/" className="hover:text-primary transition-colors">
           {t("home", language)}
@@ -443,6 +480,8 @@ function ProductPage() {
               onMouseEnter={() => setIsZooming(true)}
               onMouseLeave={() => setIsZooming(false)}
               onClick={() => handleOpenLightbox(activeImageIndex)}
+              onTouchStart={handleTouchStartGallery}
+              onTouchEnd={handleTouchEndGallery}
             >
               {images[activeImageIndex] ? (
                 <img
@@ -572,7 +611,7 @@ function ProductPage() {
                 {stock > 0 && (
                   <div className="flex items-center rounded-2xl border border-slate-200 bg-slate-50 p-1 shadow-inner shrink-0">
                     <button
-                      className="h-10 w-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white active:scale-95 transition-all shadow-none border-none bg-transparent cursor-pointer"
+                      className="h-11 w-11 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white active:scale-95 transition-all shadow-none border-none bg-transparent cursor-pointer"
                       onClick={() => setQty((q) => Math.max(1, q - 1))}
                       disabled={qty <= 1}
                     >
@@ -580,7 +619,7 @@ function ProductPage() {
                     </button>
                     <span className="w-10 text-center text-sm font-bold text-secondary select-none">{qty}</span>
                     <button
-                      className="h-10 w-10 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white active:scale-95 transition-all shadow-none border-none bg-transparent cursor-pointer"
+                      className="h-11 w-11 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-white active:scale-95 transition-all shadow-none border-none bg-transparent cursor-pointer"
                       onClick={() => setQty((q) => Math.min(stock, q + 1))}
                       disabled={qty >= stock}
                     >
@@ -1015,6 +1054,33 @@ function ProductPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Sticky Bottom Actions on Mobile */}
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-100 p-3 flex items-center justify-between gap-3 shadow-[0_-8px_30px_rgb(0,0,0,0.06)] md:hidden">
+        <div className="flex flex-col min-w-0 pr-2 pl-1">
+          <span className="text-[10px] text-muted-foreground font-semibold leading-none mb-1">Price</span>
+          <span className="text-lg font-black text-secondary truncate">{formatPrice(Number(product.price))}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            size="default"
+            variant="outline"
+            className="rounded-full font-bold h-11 px-4 border-slate-200 text-slate-800 text-xs shrink-0 cursor-pointer"
+            disabled={stock <= 0}
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="size-4" />
+          </Button>
+          <Button
+            size="default"
+            className="rounded-full font-bold h-11 px-6 text-xs bg-[#FF3B3B] hover:bg-[#E03030] text-white shrink-0 cursor-pointer"
+            disabled={stock <= 0}
+            onClick={handleBuyNow}
+          >
+            Buy Now
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth";
+import { AuthGuard } from "@/components/AuthGuard";
 import { CartProvider } from "@/lib/cart";
 import { LocaleProvider } from "@/lib/locale";
 import { Header } from "@/components/Header";
@@ -31,6 +32,12 @@ function NotFoundComponent() {
         >
           Back to Saloree
         </Link>
+        <p className="mt-6 text-xs text-muted-foreground">
+          Need help?{" "}
+          <a href="mailto:info@saloree.com" className="font-semibold underline hover:text-foreground">
+            Contact our support team
+          </a>
+        </p>
       </div>
     </div>
   );
@@ -64,6 +71,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             Go home
           </a>
         </div>
+        <p className="mt-6 text-xs text-muted-foreground">
+          If the problem persists, please contact our support team at{" "}
+          <a href="mailto:info@saloree.com" className="font-semibold underline hover:text-foreground">
+            info@saloree.com
+          </a>
+          .
+        </p>
       </div>
     </div>
   );
@@ -163,17 +177,19 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LocaleProvider>
         <AuthProvider>
-          <CartProvider>
-            <SiteThemeIntegrator />
-            <div className="flex min-h-screen flex-col">
-              <Header />
-              <main className="flex-1">
-                <Outlet />
-              </main>
-              <Footer />
-            </div>
-            <Toaster richColors position="top-right" />
-          </CartProvider>
+          <AuthGuard>
+            <CartProvider>
+              <SiteThemeIntegrator />
+              <div className="flex min-h-screen flex-col">
+                <Header />
+                <main className="flex-1">
+                  <Outlet />
+                </main>
+                <Footer />
+              </div>
+              <Toaster richColors position="top-right" />
+            </CartProvider>
+          </AuthGuard>
         </AuthProvider>
       </LocaleProvider>
     </QueryClientProvider>

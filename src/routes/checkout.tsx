@@ -187,32 +187,32 @@ function Checkout() {
     <div className="min-h-screen bg-[#F7F9FA] pb-24">
       {/* Checkout Header / Breadcrumbs */}
       <header className="bg-white border-b border-slate-200">
-        <div className="mx-auto max-w-6xl px-4 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm text-slate-500 font-medium">
-            <Link to="/cart" className="hover:text-slate-900 transition-colors flex items-center gap-1">
+        <div className="mx-auto max-w-6xl px-4 py-3 sm:py-5 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 font-medium overflow-x-auto scrollbar-none whitespace-nowrap">
+            <Link to="/cart" className="hover:text-slate-900 transition-colors flex items-center gap-1 shrink-0">
               Cart
             </Link>
-            <ChevronRight className="h-4 w-4" />
-            <span className="text-slate-900">Details & Payment</span>
-            <ChevronRight className="h-4 w-4 text-slate-300" />
-            <span className="text-slate-400">Confirmation</span>
+            <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+            <span className="text-slate-900 shrink-0">Details &amp; Payment</span>
+            <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-300 shrink-0" />
+            <span className="text-slate-400 shrink-0">Confirmation</span>
           </div>
-          <div className="flex items-center gap-2 text-emerald-600 text-sm font-semibold">
-            <ShieldCheck className="h-5 w-5" />
+          <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-semibold shrink-0 ml-2">
+            <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5" />
             <span className="hidden sm:inline tracking-wide uppercase text-xs">Secure Checkout</span>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <div className="flex items-center gap-2 mb-8">
+      <div className="mx-auto max-w-6xl px-4 py-4 sm:py-8">
+        <div className="flex items-center gap-2 mb-4 sm:mb-8">
           <Link to="/cart" className="text-slate-500 hover:text-slate-900 flex items-center gap-1.5 text-sm font-semibold transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Return to cart
           </Link>
         </div>
 
-        <div className="grid gap-10 lg:grid-cols-[1fr_420px] items-start">
+        <div className="grid gap-6 lg:gap-10 lg:grid-cols-[1fr_420px] items-start">
           
           {/* LEFT COLUMN - DETAILS */}
           <div className="space-y-8">
@@ -289,7 +289,7 @@ function Checkout() {
                     <input
                       required
                       type="email"
-                      placeholder="john@example.com"
+                      placeholder="info@saloree.com"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       onBlur={() => handleBlur("email")}
@@ -517,7 +517,7 @@ function Checkout() {
                         <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 opacity-90" />
                       </div>
                       
-                      <div className="min-h-[150px]">
+                      <div className="min-h-[150px] overflow-hidden">
                         <PayPalScriptProvider options={initialOptions}>
                           <PayPalButtons
                             style={{ layout: "vertical", shape: "rect", color: "gold" }}
@@ -531,7 +531,7 @@ function Checkout() {
                                 return orderId;
                               } catch (error) {
                                 console.error("Create order failed", error);
-                                toast.error("Could not initiate PayPal checkout");
+                                toast.error("Could not initiate PayPal checkout. If the problem persists, please contact our support team at info@saloree.com.");
                                 throw error;
                               }
                             }}
@@ -545,11 +545,11 @@ function Checkout() {
                                   toast.success(t("order_success", language));
                                   navigate({ to: "/orders" });
                                 } else {
-                                  toast.error("Payment was not completed successfully.");
+                                  toast.error("Payment was not completed successfully. If the problem persists, please contact our support team at info@saloree.com.");
                                 }
                               } catch (error) {
                                 console.error("Capture order failed", error);
-                                toast.error("Payment capture failed. Please contact support.");
+                                toast.error("Payment capture failed. If the problem persists, please contact our support team at info@saloree.com.");
                               } finally {
                                 setLoading(false);
                               }
@@ -559,7 +559,7 @@ function Checkout() {
                             }}
                             onError={(err) => {
                               console.error("PayPal Error:", err);
-                              toast.error("An error occurred with PayPal.");
+                              toast.error("An error occurred with PayPal. If the problem persists, please contact our support team at info@saloree.com.");
                             }}
                           />
                         </PayPalScriptProvider>

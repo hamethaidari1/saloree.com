@@ -2,6 +2,7 @@ import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { DashboardShell } from "@/components/DashboardShell";
 import { useLocale } from "@/lib/locale";
 import { t } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/seller")({
   head: () => ({ meta: [{ title: "Seller Dashboard — Saloree" }] }),
@@ -10,6 +11,20 @@ export const Route = createFileRoute("/seller")({
 
 function SellerLayout() {
   const { language } = useLocale();
+  const { roles } = useAuth();
+
+  const isSeller = roles.includes("seller") || roles.includes("admin") || roles.includes("super_admin");
+
+  if (!isSeller) {
+    return (
+      <div className="mx-auto max-w-md p-10 text-center">
+        <h1 className="text-xl font-bold">Access Denied</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Your account doesn't have permission to access the seller dashboard.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <DashboardShell
@@ -32,6 +47,7 @@ function SellerLayout() {
           ],
         },
         { to: "/seller/store", label: "Store Settings" },
+        { to: "mailto:info@saloree.com", label: "Support" },
       ]}
     >
       <Outlet />

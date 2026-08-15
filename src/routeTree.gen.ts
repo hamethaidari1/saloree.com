@@ -9,12 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as StoresRouteImport } from './routes/stores'
 import { Route as SellerRouteImport } from './routes/seller'
 import { Route as SaloreeControlRouteImport } from './routes/saloree-control'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -45,6 +48,11 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminContentRouteImport } from './routes/admin.content'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 
+const StoresRoute = StoresRouteImport.update({
+  id: '/stores',
+  path: '/stores',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SellerRoute = SellerRouteImport.update({
   id: '/seller',
   path: '/seller',
@@ -53,6 +61,11 @@ const SellerRoute = SellerRouteImport.update({
 const SaloreeControlRoute = SaloreeControlRouteImport.update({
   id: '/saloree-control',
   path: '/saloree-control',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -73,6 +86,11 @@ const MarketplaceRoute = MarketplaceRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -106,9 +124,9 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 const StoresSlugRoute = StoresSlugRouteImport.update({
-  id: '/stores/$slug',
-  path: '/stores/$slug',
-  getParentRoute: () => rootRouteImport,
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => StoresRoute,
 } as any)
 const SellerThemesRoute = SellerThemesRouteImport.update({
   id: '/themes',
@@ -226,12 +244,15 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/marketplace': typeof MarketplaceRoute
   '/orders': typeof OrdersRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/saloree-control': typeof SaloreeControlRouteWithChildren
   '/seller': typeof SellerRouteWithChildren
+  '/stores': typeof StoresRouteWithChildren
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/login': typeof AdminLoginRoute
@@ -262,11 +283,14 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/marketplace': typeof MarketplaceRoute
   '/orders': typeof OrdersRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/saloree-control': typeof SaloreeControlRouteWithChildren
+  '/stores': typeof StoresRouteWithChildren
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/login': typeof AdminLoginRoute
@@ -299,12 +323,15 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/marketplace': typeof MarketplaceRoute
   '/orders': typeof OrdersRoute
   '/register': typeof RegisterRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/saloree-control': typeof SaloreeControlRouteWithChildren
   '/seller': typeof SellerRouteWithChildren
+  '/stores': typeof StoresRouteWithChildren
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/login': typeof AdminLoginRoute
@@ -338,12 +365,15 @@ export interface FileRouteTypes {
     | '/admin'
     | '/cart'
     | '/checkout'
+    | '/forgot-password'
     | '/login'
     | '/marketplace'
     | '/orders'
     | '/register'
+    | '/reset-password'
     | '/saloree-control'
     | '/seller'
+    | '/stores'
     | '/admin/categories'
     | '/admin/content'
     | '/admin/login'
@@ -374,11 +404,14 @@ export interface FileRouteTypes {
     | '/'
     | '/cart'
     | '/checkout'
+    | '/forgot-password'
     | '/login'
     | '/marketplace'
     | '/orders'
     | '/register'
+    | '/reset-password'
     | '/saloree-control'
+    | '/stores'
     | '/admin/categories'
     | '/admin/content'
     | '/admin/login'
@@ -410,12 +443,15 @@ export interface FileRouteTypes {
     | '/admin'
     | '/cart'
     | '/checkout'
+    | '/forgot-password'
     | '/login'
     | '/marketplace'
     | '/orders'
     | '/register'
+    | '/reset-password'
     | '/saloree-control'
     | '/seller'
+    | '/stores'
     | '/admin/categories'
     | '/admin/content'
     | '/admin/login'
@@ -448,20 +484,29 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   MarketplaceRoute: typeof MarketplaceRoute
   OrdersRoute: typeof OrdersRoute
   RegisterRoute: typeof RegisterRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SaloreeControlRoute: typeof SaloreeControlRouteWithChildren
   SellerRoute: typeof SellerRouteWithChildren
+  StoresRoute: typeof StoresRouteWithChildren
   AuthCallbackRoute: typeof AuthCallbackRoute
   CategoriesSlugRoute: typeof CategoriesSlugRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
-  StoresSlugRoute: typeof StoresSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/stores': {
+      id: '/stores'
+      path: '/stores'
+      fullPath: '/stores'
+      preLoaderRoute: typeof StoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/seller': {
       id: '/seller'
       path: '/seller'
@@ -474,6 +519,13 @@ declare module '@tanstack/react-router' {
       path: '/saloree-control'
       fullPath: '/saloree-control'
       preLoaderRoute: typeof SaloreeControlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -502,6 +554,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -548,10 +607,10 @@ declare module '@tanstack/react-router' {
     }
     '/stores/$slug': {
       id: '/stores/$slug'
-      path: '/stores/$slug'
+      path: '/$slug'
       fullPath: '/stores/$slug'
       preLoaderRoute: typeof StoresSlugRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof StoresRoute
     }
     '/seller/themes': {
       id: '/seller/themes'
@@ -779,21 +838,34 @@ const SellerRouteChildren: SellerRouteChildren = {
 const SellerRouteWithChildren =
   SellerRoute._addFileChildren(SellerRouteChildren)
 
+interface StoresRouteChildren {
+  StoresSlugRoute: typeof StoresSlugRoute
+}
+
+const StoresRouteChildren: StoresRouteChildren = {
+  StoresSlugRoute: StoresSlugRoute,
+}
+
+const StoresRouteWithChildren =
+  StoresRoute._addFileChildren(StoresRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   MarketplaceRoute: MarketplaceRoute,
   OrdersRoute: OrdersRoute,
   RegisterRoute: RegisterRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SaloreeControlRoute: SaloreeControlRouteWithChildren,
   SellerRoute: SellerRouteWithChildren,
+  StoresRoute: StoresRouteWithChildren,
   AuthCallbackRoute: AuthCallbackRoute,
   CategoriesSlugRoute: CategoriesSlugRoute,
   ProductsSlugRoute: ProductsSlugRoute,
-  StoresSlugRoute: StoresSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
