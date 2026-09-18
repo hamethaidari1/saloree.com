@@ -16,58 +16,62 @@ export function MobileBottomNav() {
   if (isAuthPage) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-200 lg:hidden shadow-lg">
+    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[var(--color-hairline)] lg:hidden shadow-lg">
       <div className="grid grid-cols-5 h-14 items-center max-w-md mx-auto px-1">
         <Link
           to="/"
           className={`flex flex-col items-center justify-center min-h-[44px] py-1 text-[10px] font-medium transition-colors ${
-            pathname === "/" ? "text-[#E11D48]" : "text-slate-500 hover:text-slate-900"
+            pathname === "/"
+              ? "text-[var(--color-brand)]"
+              : "text-[var(--color-text-muted)] hover:text-[var(--color-ink)]"
           }`}
         >
           <Home className="size-5 mb-0.5" />
-          <span>HOME</span>
+          <span>Home</span>
         </Link>
 
         <Link
           to="/marketplace"
           className={`flex flex-col items-center justify-center min-h-[44px] py-1 text-[10px] font-medium transition-colors ${
             pathname.startsWith("/categories") || pathname === "/marketplace"
-              ? "text-[#E11D48]"
-              : "text-slate-500 hover:text-slate-900"
+              ? "text-[var(--color-brand)]"
+              : "text-[var(--color-text-muted)] hover:text-[var(--color-ink)]"
           }`}
         >
           <LayoutGrid className="size-5 mb-0.5" />
-          <span>CATEGORIES</span>
+          <span>Categories</span>
         </Link>
 
         <Link
           to="/marketplace"
-          className="flex flex-col items-center justify-center min-h-[44px] py-1 text-[10px] font-medium text-slate-500 hover:text-slate-900 transition-colors"
+          className="flex flex-col items-center justify-center min-h-[44px] py-1 text-[10px] font-medium text-[var(--color-text-muted)] hover:text-[var(--color-ink)] transition-colors"
         >
           <Search className="size-5 mb-0.5" />
-          <span>SEARCH</span>
+          <span>Search</span>
         </Link>
 
         <Link
-          to="/cart"
+          to={"/wishlist" as never}
           className={`flex flex-col items-center justify-center min-h-[44px] py-1 text-[10px] font-medium transition-colors ${
-            pathname === "/cart" ? "text-[#E11D48]" : "text-slate-500 hover:text-slate-900"
+            pathname === "/wishlist"
+              ? "text-[var(--color-brand)]"
+              : "text-[var(--color-text-muted)] hover:text-[var(--color-ink)]"
           }`}
         >
           <Heart className="size-5 mb-0.5" />
-          <span>WISHLIST</span>
+          <span>Wishlist</span>
         </Link>
 
         <Link
           to={user ? "/seller" : "/login"}
           className={`flex flex-col items-center justify-center min-h-[44px] py-1 text-[10px] font-medium transition-colors ${
             pathname.startsWith("/seller") || pathname === "/login"
-              ? "text-[#E11D48]"
-              : "text-slate-500 hover:text-slate-900"
+              ? "text-[var(--color-brand)]"
+              : "text-[var(--color-text-muted)] hover:text-[var(--color-ink)]"
           }`}
         >
           <User className="size-5 mb-0.5" />
-          <span>ACCOUNT</span>
+          <span>Account</span>
         </Link>
       </div>
     </div>

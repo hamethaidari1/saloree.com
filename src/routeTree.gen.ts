@@ -9,15 +9,20 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StoresRouteImport } from './routes/stores'
 import { Route as SellerRouteImport } from './routes/seller'
 import { Route as SaloreeControlRouteImport } from './routes/saloree-control'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RegisterRouteImport } from './routes/register'
+import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -39,8 +44,11 @@ import { Route as SellerContentRouteImport } from './routes/seller.content'
 import { Route as SellerAnalyticsRouteImport } from './routes/seller.analytics'
 import { Route as SaloreeControlContentRouteImport } from './routes/saloree-control.content'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
+import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
+import { Route as CheckoutCancelRouteImport } from './routes/checkout.cancel'
 import { Route as CategoriesSlugRouteImport } from './routes/categories.$slug'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api.stripe-webhook'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminStoresRouteImport } from './routes/admin.stores'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
@@ -48,6 +56,16 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminContentRouteImport } from './routes/admin.content'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StoresRoute = StoresRouteImport.update({
   id: '/stores',
   path: '/stores',
@@ -73,6 +91,16 @@ const RegisterRoute = RegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RefundPolicyRoute = RefundPolicyRouteImport.update({
+  id: '/refund-policy',
+  path: '/refund-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OrdersRoute = OrdersRouteImport.update({
   id: '/orders',
   path: '/orders',
@@ -91,6 +119,11 @@ const LoginRoute = LoginRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -198,6 +231,16 @@ const ProductsSlugRoute = ProductsSlugRouteImport.update({
   path: '/products/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
+  id: '/success',
+  path: '/success',
+  getParentRoute: () => CheckoutRoute,
+} as any)
+const CheckoutCancelRoute = CheckoutCancelRouteImport.update({
+  id: '/cancel',
+  path: '/cancel',
+  getParentRoute: () => CheckoutRoute,
+} as any)
 const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
   id: '/categories/$slug',
   path: '/categories/$slug',
@@ -206,6 +249,11 @@ const CategoriesSlugRoute = CategoriesSlugRouteImport.update({
 const AuthCallbackRoute = AuthCallbackRouteImport.update({
   id: '/auth/callback',
   path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe-webhook',
+  path: '/api/stripe-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
@@ -243,24 +291,32 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
+  '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/marketplace': typeof MarketplaceRoute
   '/orders': typeof OrdersRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/saloree-control': typeof SaloreeControlRouteWithChildren
   '/seller': typeof SellerRouteWithChildren
   '/stores': typeof StoresRouteWithChildren
+  '/terms': typeof TermsRoute
+  '/wishlist': typeof WishlistRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/stores': typeof AdminStoresRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/categories/$slug': typeof CategoriesSlugRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/saloree-control/content': typeof SaloreeControlContentRoute
   '/seller/analytics': typeof SellerAnalyticsRoute
@@ -282,23 +338,31 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
+  '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/marketplace': typeof MarketplaceRoute
   '/orders': typeof OrdersRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/saloree-control': typeof SaloreeControlRouteWithChildren
   '/stores': typeof StoresRouteWithChildren
+  '/terms': typeof TermsRoute
+  '/wishlist': typeof WishlistRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/stores': typeof AdminStoresRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/categories/$slug': typeof CategoriesSlugRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/saloree-control/content': typeof SaloreeControlContentRoute
   '/seller/analytics': typeof SellerAnalyticsRoute
@@ -322,24 +386,32 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/cart': typeof CartRoute
-  '/checkout': typeof CheckoutRoute
+  '/checkout': typeof CheckoutRouteWithChildren
+  '/faq': typeof FaqRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/marketplace': typeof MarketplaceRoute
   '/orders': typeof OrdersRoute
+  '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/register': typeof RegisterRoute
   '/reset-password': typeof ResetPasswordRoute
   '/saloree-control': typeof SaloreeControlRouteWithChildren
   '/seller': typeof SellerRouteWithChildren
   '/stores': typeof StoresRouteWithChildren
+  '/terms': typeof TermsRoute
+  '/wishlist': typeof WishlistRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/content': typeof AdminContentRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/stores': typeof AdminStoresRoute
   '/admin/users': typeof AdminUsersRoute
+  '/api/stripe-webhook': typeof ApiStripeWebhookRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/categories/$slug': typeof CategoriesSlugRoute
+  '/checkout/cancel': typeof CheckoutCancelRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
   '/products/$slug': typeof ProductsSlugRoute
   '/saloree-control/content': typeof SaloreeControlContentRoute
   '/seller/analytics': typeof SellerAnalyticsRoute
@@ -365,23 +437,31 @@ export interface FileRouteTypes {
     | '/admin'
     | '/cart'
     | '/checkout'
+    | '/faq'
     | '/forgot-password'
     | '/login'
     | '/marketplace'
     | '/orders'
+    | '/privacy'
+    | '/refund-policy'
     | '/register'
     | '/reset-password'
     | '/saloree-control'
     | '/seller'
     | '/stores'
+    | '/terms'
+    | '/wishlist'
     | '/admin/categories'
     | '/admin/content'
     | '/admin/login'
     | '/admin/orders'
     | '/admin/stores'
     | '/admin/users'
+    | '/api/stripe-webhook'
     | '/auth/callback'
     | '/categories/$slug'
+    | '/checkout/cancel'
+    | '/checkout/success'
     | '/products/$slug'
     | '/saloree-control/content'
     | '/seller/analytics'
@@ -404,22 +484,30 @@ export interface FileRouteTypes {
     | '/'
     | '/cart'
     | '/checkout'
+    | '/faq'
     | '/forgot-password'
     | '/login'
     | '/marketplace'
     | '/orders'
+    | '/privacy'
+    | '/refund-policy'
     | '/register'
     | '/reset-password'
     | '/saloree-control'
     | '/stores'
+    | '/terms'
+    | '/wishlist'
     | '/admin/categories'
     | '/admin/content'
     | '/admin/login'
     | '/admin/orders'
     | '/admin/stores'
     | '/admin/users'
+    | '/api/stripe-webhook'
     | '/auth/callback'
     | '/categories/$slug'
+    | '/checkout/cancel'
+    | '/checkout/success'
     | '/products/$slug'
     | '/saloree-control/content'
     | '/seller/analytics'
@@ -443,23 +531,31 @@ export interface FileRouteTypes {
     | '/admin'
     | '/cart'
     | '/checkout'
+    | '/faq'
     | '/forgot-password'
     | '/login'
     | '/marketplace'
     | '/orders'
+    | '/privacy'
+    | '/refund-policy'
     | '/register'
     | '/reset-password'
     | '/saloree-control'
     | '/seller'
     | '/stores'
+    | '/terms'
+    | '/wishlist'
     | '/admin/categories'
     | '/admin/content'
     | '/admin/login'
     | '/admin/orders'
     | '/admin/stores'
     | '/admin/users'
+    | '/api/stripe-webhook'
     | '/auth/callback'
     | '/categories/$slug'
+    | '/checkout/cancel'
+    | '/checkout/success'
     | '/products/$slug'
     | '/saloree-control/content'
     | '/seller/analytics'
@@ -483,16 +579,22 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   CartRoute: typeof CartRoute
-  CheckoutRoute: typeof CheckoutRoute
+  CheckoutRoute: typeof CheckoutRouteWithChildren
+  FaqRoute: typeof FaqRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   MarketplaceRoute: typeof MarketplaceRoute
   OrdersRoute: typeof OrdersRoute
+  PrivacyRoute: typeof PrivacyRoute
+  RefundPolicyRoute: typeof RefundPolicyRoute
   RegisterRoute: typeof RegisterRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SaloreeControlRoute: typeof SaloreeControlRouteWithChildren
   SellerRoute: typeof SellerRouteWithChildren
   StoresRoute: typeof StoresRouteWithChildren
+  TermsRoute: typeof TermsRoute
+  WishlistRoute: typeof WishlistRoute
+  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   CategoriesSlugRoute: typeof CategoriesSlugRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
@@ -500,6 +602,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/stores': {
       id: '/stores'
       path: '/stores'
@@ -535,6 +651,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/refund-policy': {
+      id: '/refund-policy'
+      path: '/refund-policy'
+      fullPath: '/refund-policy'
+      preLoaderRoute: typeof RefundPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/orders': {
       id: '/orders'
       path: '/orders'
@@ -561,6 +691,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -710,6 +847,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/checkout/success': {
+      id: '/checkout/success'
+      path: '/success'
+      fullPath: '/checkout/success'
+      preLoaderRoute: typeof CheckoutSuccessRouteImport
+      parentRoute: typeof CheckoutRoute
+    }
+    '/checkout/cancel': {
+      id: '/checkout/cancel'
+      path: '/cancel'
+      fullPath: '/checkout/cancel'
+      preLoaderRoute: typeof CheckoutCancelRouteImport
+      parentRoute: typeof CheckoutRoute
+    }
     '/categories/$slug': {
       id: '/categories/$slug'
       path: '/categories/$slug'
@@ -722,6 +873,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/callback'
       fullPath: '/auth/callback'
       preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stripe-webhook': {
+      id: '/api/stripe-webhook'
+      path: '/api/stripe-webhook'
+      fullPath: '/api/stripe-webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/users': {
@@ -791,6 +949,20 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface CheckoutRouteChildren {
+  CheckoutCancelRoute: typeof CheckoutCancelRoute
+  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
+}
+
+const CheckoutRouteChildren: CheckoutRouteChildren = {
+  CheckoutCancelRoute: CheckoutCancelRoute,
+  CheckoutSuccessRoute: CheckoutSuccessRoute,
+}
+
+const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
+  CheckoutRouteChildren,
+)
+
 interface SaloreeControlRouteChildren {
   SaloreeControlContentRoute: typeof SaloreeControlContentRoute
 }
@@ -853,16 +1025,22 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   CartRoute: CartRoute,
-  CheckoutRoute: CheckoutRoute,
+  CheckoutRoute: CheckoutRouteWithChildren,
+  FaqRoute: FaqRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   MarketplaceRoute: MarketplaceRoute,
   OrdersRoute: OrdersRoute,
+  PrivacyRoute: PrivacyRoute,
+  RefundPolicyRoute: RefundPolicyRoute,
   RegisterRoute: RegisterRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SaloreeControlRoute: SaloreeControlRouteWithChildren,
   SellerRoute: SellerRouteWithChildren,
   StoresRoute: StoresRouteWithChildren,
+  TermsRoute: TermsRoute,
+  WishlistRoute: WishlistRoute,
+  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   CategoriesSlugRoute: CategoriesSlugRoute,
   ProductsSlugRoute: ProductsSlugRoute,

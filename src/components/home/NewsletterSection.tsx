@@ -1,39 +1,72 @@
-import { Mail, ArrowRight } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { Mail } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export function NewsletterSection() {
-  return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      <div className="bg-slate-50 border border-slate-200 rounded-3xl p-8 sm:p-14 text-center max-w-4xl mx-auto shadow-soft">
-        <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center mx-auto mb-6 text-[#E11D48]">
-          <Mail className="size-6" />
-        </div>
-        
-        <h2 className="font-editorial text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 mb-4">
-          Stay Updated with Saloree
-        </h2>
-        <p className="text-slate-500 text-sm sm:text-base max-w-lg mx-auto mb-8 leading-relaxed">
-          Discover new drops, trending stores, and exclusive marketplace offers direct to your inbox.
-        </p>
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-        <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = email.trim();
+    if (!trimmed || !/^\S+@\S+\.\S+$/.test(trimmed)) {
+      toast.error("Enter a valid email address");
+      return;
+    }
+
+    setSubmitting(true);
+    const { error } = await supabase.from("newsletter_subscribers").insert({ email: trimmed });
+    setSubmitting(false);
+
+    if (error) {
+      if (error.code === "23505") {
+        toast.info("You're already subscribed");
+      } else {
+        console.error("[NewsletterSection] Supabase error:", error);
+        toast.error("Couldn't subscribe right now. Please try again.");
+      }
+      return;
+    }
+
+    toast.success("Subscribed! Thanks for joining.");
+    setEmail("");
+  };
+
+  return (
+    <section className="bg-[var(--color-brand-surface)]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
+        <div className="grid size-11 shrink-0 place-items-center rounded-full bg-white/10 text-white">
+          <Mail className="size-5" />
+        </div>
+
+        <div className="flex-1 min-w-0 text-center sm:text-left">
+          <h2 className="font-heading text-lg sm:text-xl font-bold text-white">
+            Get new arrivals and deals in your inbox
+          </h2>
+          <p className="text-white/60 text-sm mt-1">Updates from real Saloree sellers — no spam.</p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="flex w-full sm:w-auto flex-col sm:flex-row gap-2 shrink-0"
+        >
           <input
             type="email"
-            placeholder="Enter your email address"
-            className="flex-1 bg-white border border-slate-300 rounded-xl px-5 py-3.5 text-sm outline-none focus:border-[#E11D48] transition-colors shadow-sm placeholder:text-slate-400"
-            disabled
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
+            aria-label="Email address"
+            className="flex-1 sm:w-64 bg-white border border-transparent rounded-lg px-4 py-2.5 text-sm outline-none focus:border-[var(--color-brand)] transition-colors placeholder:text-[var(--color-text-muted)] text-[var(--color-ink)]"
           />
-          <Link
-            to="/marketplace"
-            className="bg-black text-white px-7 py-3.5 rounded-xl font-semibold text-sm hover:bg-[#E11D48] transition-colors shadow-sm inline-flex items-center justify-center gap-2 shrink-0"
+          <button
+            type="submit"
+            disabled={submitting}
+            className="bg-[var(--color-brand)] text-white px-5 py-2.5 rounded-lg font-semibold text-sm hover:bg-[var(--color-brand-dark)] transition-colors inline-flex items-center justify-center gap-2 shrink-0 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-brand-surface)]"
           >
-            <span>Explore Deals</span>
-            <ArrowRight className="size-4" />
-          </Link>
-        </div>
-        <p className="text-[10px] text-slate-400 mt-4 uppercase tracking-wider">
-          JOIN OUR GLOBAL MARKETPLACE COMMUNITY
-        </p>
+            <span>{submitting ? "Subscribing…" : "Subscribe"}</span>
+          </button>
+        </form>
       </div>
     </section>
   );

@@ -34,7 +34,10 @@ function NotFoundComponent() {
         </Link>
         <p className="mt-6 text-xs text-muted-foreground">
           Need help?{" "}
-          <a href="mailto:info@saloree.com" className="font-semibold underline hover:text-foreground">
+          <a
+            href="mailto:info@saloree.com"
+            className="font-semibold underline hover:text-foreground"
+          >
             Contact our support team
           </a>
         </p>
@@ -73,7 +76,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         </div>
         <p className="mt-6 text-xs text-muted-foreground">
           If the problem persists, please contact our support team at{" "}
-          <a href="mailto:info@saloree.com" className="font-semibold underline hover:text-foreground">
+          <a
+            href="mailto:info@saloree.com"
+            className="font-semibold underline hover:text-foreground"
+          >
             info@saloree.com
           </a>
           .
@@ -111,7 +117,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700&display=swap",
       },
       // Favicon — browsers pick the most appropriate size automatically
       { rel: "icon", type: "image/png", sizes: "32x32", href: "/src/assets/logo.png.png" },
@@ -139,6 +145,7 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { adjustColor, isValidHexColor } from "@/lib/color";
 
 function SiteThemeIntegrator() {
   const { data: settings } = useSiteSettings();
@@ -164,6 +171,41 @@ function SiteThemeIntegrator() {
         document.documentElement.style.setProperty("--button", settings.button_color);
       } else {
         document.documentElement.style.removeProperty("--button");
+      }
+
+      // Drive every "brand red" surface in the marketplace UI (buttons,
+      // header/hero/footer surfaces, badges) from this single stored color
+      // instead of a hardcoded hex, per site_settings.primary_color /
+      // button_color. Large surfaces get a darker, more muted derivative so
+      // white text keeps strong contrast — never the bright color at that
+      // scale.
+      const brandSource = isValidHexColor(settings.primary_color)
+        ? settings.primary_color
+        : isValidHexColor(settings.button_color)
+          ? settings.button_color
+          : null;
+
+      if (brandSource) {
+        const root = document.documentElement.style;
+        root.setProperty("--color-brand", brandSource);
+        root.setProperty(
+          "--color-brand-dark",
+          adjustColor(brandSource, { lightness: -12, saturation: -8 }),
+        );
+        root.setProperty(
+          "--color-brand-surface",
+          adjustColor(brandSource, { lightness: -20, saturation: -25 }),
+        );
+        root.setProperty(
+          "--color-brand-surface-2",
+          adjustColor(brandSource, { lightness: -27, saturation: -30 }),
+        );
+      } else {
+        const root = document.documentElement.style;
+        root.removeProperty("--color-brand");
+        root.removeProperty("--color-brand-dark");
+        root.removeProperty("--color-brand-surface");
+        root.removeProperty("--color-brand-surface-2");
       }
     }
   }, [settings]);

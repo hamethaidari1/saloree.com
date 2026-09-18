@@ -104,6 +104,13 @@ export type Database = {
           subtotal: number | null;
           total: number | null;
           total_amount: number;
+          paypal_order_id: string | null;
+          paypal_capture_id: string | null;
+          payment_provider: string | null;
+          payment_status: string | null;
+          paid_at: string | null;
+          provider_reference: string | null;
+          updated_at: string;
         };
         Insert: {
           address?: string | null;
@@ -122,6 +129,13 @@ export type Database = {
           subtotal?: number | null;
           total?: number | null;
           total_amount: number;
+          paypal_order_id?: string | null;
+          paypal_capture_id?: string | null;
+          payment_provider?: string | null;
+          payment_status?: string | null;
+          paid_at?: string | null;
+          provider_reference?: string | null;
+          updated_at?: string;
         };
         Update: {
           address?: string | null;
@@ -140,6 +154,13 @@ export type Database = {
           subtotal?: number | null;
           total?: number | null;
           total_amount?: number;
+          paypal_order_id?: string | null;
+          paypal_capture_id?: string | null;
+          payment_provider?: string | null;
+          payment_status?: string | null;
+          paid_at?: string | null;
+          provider_reference?: string | null;
+          updated_at?: string;
         };
         Relationships: [
           {
@@ -164,21 +185,21 @@ export type Database = {
           id: string;
           image_url: string;
           product_id: string;
-          position: number | null;
+          sort_order: number | null;
         };
         Insert: {
           created_at?: string;
           id?: string;
           image_url: string;
           product_id: string;
-          position?: number | null;
+          sort_order?: number | null;
         };
         Update: {
           created_at?: string;
           id?: string;
           image_url?: string;
           product_id?: string;
-          position?: number | null;
+          sort_order?: number | null;
         };
         Relationships: [
           {
@@ -198,6 +219,7 @@ export type Database = {
           featured_image: string | null;
           id: string;
           price: number;
+          compare_price: number | null;
           search_tsv: unknown;
           stock: number;
           store_id: string;
@@ -212,6 +234,7 @@ export type Database = {
           featured_image?: string | null;
           id?: string;
           price: number;
+          compare_price?: number | null;
           search_tsv?: unknown;
           stock?: number;
           store_id: string;
@@ -226,6 +249,7 @@ export type Database = {
           featured_image?: string | null;
           id?: string;
           price?: number;
+          compare_price?: number | null;
           search_tsv?: unknown;
           stock?: number;
           store_id?: string;
@@ -514,6 +538,24 @@ export type Database = {
           url?: string;
           category?: string;
           display_order?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      newsletter_subscribers: {
+        Row: {
+          id: string;
+          email: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string;
           created_at?: string;
         };
         Relationships: [];

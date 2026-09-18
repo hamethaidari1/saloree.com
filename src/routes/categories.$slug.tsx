@@ -29,7 +29,7 @@ function CategoryPage() {
       const { data, error } = await supabase
         .from("products")
         .select(
-          "id, slug, store_id, title, price, featured_image, stores(name, slug, logo_url), categories!inner(name, slug)",
+          "id, slug, store_id, title, price, featured_image, stock, created_at, stores(name, slug, logo_url), categories!inner(name, slug)",
         )
         .eq("status", "active")
         .eq("categories.slug", slug)

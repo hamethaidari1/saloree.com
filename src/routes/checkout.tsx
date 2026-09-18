@@ -1,18 +1,29 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
-import { useCart } from "@/lib/cart";
-import { supabase } from "@/integrations/supabase/client";
+import { useCart, type CartItem } from "@/lib/cart";
+import { createStripeCheckoutSessionFn } from "@/lib/stripe";
 import { useLocale } from "@/lib/locale";
-import { t } from "@/lib/i18n";
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
-import { createPayPalOrderFn, capturePayPalOrderFn } from "@/lib/paypal";
-import { 
-  Lock, ShieldCheck, CheckCircle, ChevronRight, ArrowLeft, 
-  HelpCircle, User, Mail, Phone, MapPin, Building2, Map, FileText,
-  CreditCard, Info, AlertCircle, ShoppingCart
+import {
+  Lock,
+  ShieldCheck,
+  CheckCircle,
+  ChevronRight,
+  ArrowLeft,
+  HelpCircle,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Building2,
+  Map,
+  FileText,
+  CreditCard,
+  AlertCircle,
+  ShoppingCart,
+  Loader2,
 } from "lucide-react";
 
 export const Route = createFileRoute("/checkout")({
@@ -21,11 +32,10 @@ export const Route = createFileRoute("/checkout")({
 });
 
 function Checkout() {
-  const { user } = useAuth();
-  const { items, clear } = useCart();
-  const { language, formatPrice } = useLocale();
-  const navigate = useNavigate();
-  
+  const { user, session } = useAuth();
+  const { items } = useCart();
+  const { formatPrice } = useLocale();
+
   const [form, setForm] = useState({
     full_name: "",
     phone: "",
@@ -35,14 +45,26 @@ function Checkout() {
     address: "",
     notes: "",
   });
-  
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [loading, setLoading] = useState(false);
 
-  // Compute total dynamically in USD
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [payingStoreId, setPayingStoreId] = useState<string | null>(null);
+
   const subtotalUSD = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const shippingUSD = 0; // Free shipping for now
-  const totalUSD = subtotalUSD + shippingUSD;
+
+  // Cart items are already split by store for order-splitting purposes —
+  // now each store group also gets its own Stripe Checkout Session, so one
+  // seller's payment never touches another's.
+  const storeGroups = useMemo(() => {
+    const groups: Record<string, { storeId: string; storeName: string; items: CartItem[] }> = {};
+    for (const item of items) {
+      if (!item.store_id) continue;
+      if (!groups[item.store_id]) {
+        groups[item.store_id] = { storeId: item.store_id, storeName: item.store_name, items: [] };
+      }
+      groups[item.store_id].items.push(item);
+    }
+    return Object.values(groups);
+  }, [items]);
 
   if (!user) {
     return (
@@ -51,13 +73,19 @@ function Checkout() {
           <Lock className="h-10 w-10 text-primary" />
         </div>
         <h1 className="text-3xl font-bold text-slate-900">Secure Checkout</h1>
-        <p className="mt-3 text-base text-slate-600">Sign in or create an account to proceed with your order securely.</p>
+        <p className="mt-3 text-base text-slate-600">
+          Sign in or create an account to proceed with your order securely.
+        </p>
         <div className="mt-8 flex justify-center gap-4">
           <Button asChild className="h-12 px-8 font-semibold text-base">
-            <Link to="/login">{t("login", language)}</Link>
+            <Link to="/login">Login</Link>
           </Button>
-          <Button asChild variant="outline" className="h-12 px-8 font-semibold text-base border-slate-300">
-            <Link to="/register">{t("sign_up", language)}</Link>
+          <Button
+            asChild
+            variant="outline"
+            className="h-12 px-8 font-semibold text-base border-slate-300"
+          >
+            <Link to="/register">Sign up</Link>
           </Button>
         </div>
       </div>
@@ -81,82 +109,6 @@ function Checkout() {
     );
   }
 
-  const createOrderInDatabase = async (paypalOrderId: string, paypalCaptureId: string) => {
-    const itemsByStore: Record<string, typeof items> = {};
-    for (const item of items) {
-      if (!item.store_id) throw new Error(`Cart item "${item.title}" is missing store information.`);
-      if (!itemsByStore[item.store_id]) itemsByStore[item.store_id] = [];
-      itemsByStore[item.store_id].push(item);
-    }
-
-    const storeIds = Object.keys(itemsByStore);
-    if (storeIds.length === 0) throw new Error("Your cart is empty.");
-
-    for (const storeId of storeIds) {
-      const storeItems = itemsByStore[storeId];
-      const storeSubtotal = storeItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-      const orderPayload = {
-        customer_id: user.id,
-        store_id: storeId,
-        full_name: form.full_name.trim(),
-        phone: form.phone.trim(),
-        email: form.email.trim(),
-        country: form.country.trim(),
-        city: form.city.trim(),
-        address: form.address.trim(),
-        notes: form.notes.trim() || null,
-        subtotal: storeSubtotal,
-        total: storeSubtotal,
-        total_amount: storeSubtotal,
-        shipping_address: {
-          full_name: form.full_name.trim(),
-          phone: form.phone.trim(),
-          email: form.email.trim(),
-          country: form.country.trim(),
-          city: form.city.trim(),
-          address: form.address.trim(),
-          notes: form.notes.trim(),
-        },
-        status: "processing", 
-        paypal_order_id: paypalOrderId,
-        paypal_capture_id: paypalCaptureId,
-        payment_provider: "paypal",
-        payment_status: "paid",
-        paid_at: new Date().toISOString(),
-      };
-
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert(orderPayload as any)
-        .select("id")
-        .single();
-
-      if (orderError) {
-        console.error("[checkout-order-creation-failed]", orderError);
-        throw new Error(`Failed to create order. Details: ${orderError.message}`);
-      }
-
-      const orderItemsPayload = storeItems.map((item) => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        store_id: item.store_id,
-        title: item.title,
-        price: item.price,
-        quantity: item.quantity,
-        total: item.price * item.quantity,
-        unit_price: item.price,
-      }));
-
-      const { error: orderItemsError } = await supabase.from("order_items").insert(orderItemsPayload);
-
-      if (orderItemsError) {
-        console.error("[checkout-order-items-creation-failed]", orderItemsError);
-        throw new Error(`Failed to create items. Details: ${orderItemsError.message}`);
-      }
-    }
-  };
-
   const getMissingFields = () => {
     const required = ["full_name", "email", "country", "city", "address", "phone"];
     return required.filter((field) => !form[field as keyof typeof form]?.trim());
@@ -168,10 +120,57 @@ function Checkout() {
     setTouched((prev) => ({ ...prev, [field]: true }));
   };
 
-  const initialOptions = {
-    clientId: import.meta.env.VITE_PAYPAL_CLIENT_ID || "test",
-    currency: "USD",
-    intent: "capture",
+  const handlePayStore = async (group: {
+    storeId: string;
+    storeName: string;
+    items: CartItem[];
+  }) => {
+    if (!isFormValid()) {
+      setTouched({
+        full_name: true,
+        phone: true,
+        email: true,
+        country: true,
+        city: true,
+        address: true,
+      });
+      toast.error("Please complete your shipping details first.");
+      return;
+    }
+    if (!session?.access_token) {
+      toast.error("Your session has expired. Please sign in again.");
+      return;
+    }
+
+    setPayingStoreId(group.storeId);
+    try {
+      const { url } = await createStripeCheckoutSessionFn({
+        data: {
+          accessToken: session.access_token,
+          storeId: group.storeId,
+          items: group.items.map((item) => ({
+            productId: item.product_id,
+            quantity: item.quantity,
+          })),
+          customer: {
+            full_name: form.full_name.trim(),
+            phone: form.phone.trim(),
+            email: form.email.trim(),
+            country: form.country.trim(),
+            city: form.city.trim(),
+            address: form.address.trim(),
+            notes: form.notes.trim(),
+          },
+        },
+      });
+      window.location.href = url;
+    } catch (error) {
+      console.error("[checkout] Failed to start Stripe checkout:", error);
+      toast.error(
+        "Could not start checkout. If the problem persists, please contact our support team at info@saloree.com.",
+      );
+      setPayingStoreId(null);
+    }
   };
 
   // Date estimation
@@ -181,7 +180,7 @@ function Checkout() {
   const deliveryEnd = new Date(today);
   deliveryEnd.setDate(today.getDate() + 5);
 
-  const deliveryRange = `${deliveryStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${deliveryEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  const deliveryRange = `${deliveryStart.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${deliveryEnd.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
 
   return (
     <div className="min-h-screen bg-[#F7F9FA] pb-24">
@@ -189,7 +188,10 @@ function Checkout() {
       <header className="bg-white border-b border-slate-200">
         <div className="mx-auto max-w-6xl px-4 py-3 sm:py-5 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 font-medium overflow-x-auto scrollbar-none whitespace-nowrap">
-            <Link to="/cart" className="hover:text-slate-900 transition-colors flex items-center gap-1 shrink-0">
+            <Link
+              to="/cart"
+              className="hover:text-slate-900 transition-colors flex items-center gap-1 shrink-0"
+            >
               Cart
             </Link>
             <ChevronRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
@@ -199,24 +201,27 @@ function Checkout() {
           </div>
           <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-semibold shrink-0 ml-2">
             <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline tracking-wide uppercase text-xs">Secure Checkout</span>
+            <span className="hidden sm:inline tracking-wide uppercase text-xs">
+              Secure Checkout
+            </span>
           </div>
         </div>
       </header>
 
       <div className="mx-auto max-w-6xl px-4 py-4 sm:py-8">
         <div className="flex items-center gap-2 mb-4 sm:mb-8">
-          <Link to="/cart" className="text-slate-500 hover:text-slate-900 flex items-center gap-1.5 text-sm font-semibold transition-colors">
+          <Link
+            to="/cart"
+            className="text-slate-500 hover:text-slate-900 flex items-center gap-1.5 text-sm font-semibold transition-colors"
+          >
             <ArrowLeft className="h-4 w-4" />
             Return to cart
           </Link>
         </div>
 
         <div className="grid gap-6 lg:gap-10 lg:grid-cols-[1fr_420px] items-start">
-          
           {/* LEFT COLUMN - DETAILS */}
           <div className="space-y-8">
-            
             {/* Billing / Shipping Card */}
             <div className="rounded-xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
               <div className="mb-8 border-b border-slate-100 pb-5">
@@ -224,7 +229,9 @@ function Checkout() {
                   <User className="h-6 w-6 text-slate-400" />
                   Shipping & Billing Details
                 </h2>
-                <p className="text-sm text-slate-500 mt-2">Please enter your delivery information.</p>
+                <p className="text-sm text-slate-500 mt-2">
+                  Please enter your delivery information.
+                </p>
               </div>
 
               <div className="grid gap-6">
@@ -246,11 +253,15 @@ function Checkout() {
                         onChange={(e) => setForm({ ...form, full_name: e.target.value })}
                         onBlur={() => handleBlur("full_name")}
                         className={`h-12 w-full rounded-lg border bg-slate-50/50 pl-11 pr-4 text-sm outline-none transition-all focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 ${
-                          touched.full_name && !form.full_name ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50" : "border-slate-200"
+                          touched.full_name && !form.full_name
+                            ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50"
+                            : "border-slate-200"
                         }`}
                       />
                     </div>
-                    {touched.full_name && !form.full_name && <p className="text-xs text-red-500 font-medium">Full name is required.</p>}
+                    {touched.full_name && !form.full_name && (
+                      <p className="text-xs text-red-500 font-medium">Full name is required.</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -269,11 +280,15 @@ function Checkout() {
                         onChange={(e) => setForm({ ...form, phone: e.target.value })}
                         onBlur={() => handleBlur("phone")}
                         className={`h-12 w-full rounded-lg border bg-slate-50/50 pl-11 pr-4 text-sm outline-none transition-all focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 ${
-                          touched.phone && !form.phone ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50" : "border-slate-200"
+                          touched.phone && !form.phone
+                            ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50"
+                            : "border-slate-200"
                         }`}
                       />
                     </div>
-                    {touched.phone && !form.phone && <p className="text-xs text-red-500 font-medium">Phone number is required.</p>}
+                    {touched.phone && !form.phone && (
+                      <p className="text-xs text-red-500 font-medium">Phone number is required.</p>
+                    )}
                   </div>
                 </div>
 
@@ -294,11 +309,17 @@ function Checkout() {
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       onBlur={() => handleBlur("email")}
                       className={`h-12 w-full rounded-lg border bg-slate-50/50 pl-11 pr-4 text-sm outline-none transition-all focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 ${
-                        touched.email && !form.email ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50" : "border-slate-200"
+                        touched.email && !form.email
+                          ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50"
+                          : "border-slate-200"
                       }`}
                     />
                   </div>
-                  {touched.email && !form.email && <p className="text-xs text-red-500 font-medium">Valid email is required for order updates.</p>}
+                  {touched.email && !form.email && (
+                    <p className="text-xs text-red-500 font-medium">
+                      Valid email is required for order updates.
+                    </p>
+                  )}
                 </div>
 
                 {/* Country & City */}
@@ -319,11 +340,15 @@ function Checkout() {
                         onChange={(e) => setForm({ ...form, country: e.target.value })}
                         onBlur={() => handleBlur("country")}
                         className={`h-12 w-full rounded-lg border bg-slate-50/50 pl-11 pr-4 text-sm outline-none transition-all focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 ${
-                          touched.country && !form.country ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50" : "border-slate-200"
+                          touched.country && !form.country
+                            ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50"
+                            : "border-slate-200"
                         }`}
                       />
                     </div>
-                    {touched.country && !form.country && <p className="text-xs text-red-500 font-medium">Country is required.</p>}
+                    {touched.country && !form.country && (
+                      <p className="text-xs text-red-500 font-medium">Country is required.</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -342,11 +367,15 @@ function Checkout() {
                         onChange={(e) => setForm({ ...form, city: e.target.value })}
                         onBlur={() => handleBlur("city")}
                         className={`h-12 w-full rounded-lg border bg-slate-50/50 pl-11 pr-4 text-sm outline-none transition-all focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 ${
-                          touched.city && !form.city ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50" : "border-slate-200"
+                          touched.city && !form.city
+                            ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50"
+                            : "border-slate-200"
                         }`}
                       />
                     </div>
-                    {touched.city && !form.city && <p className="text-xs text-red-500 font-medium">City is required.</p>}
+                    {touched.city && !form.city && (
+                      <p className="text-xs text-red-500 font-medium">City is required.</p>
+                    )}
                   </div>
                 </div>
 
@@ -367,11 +396,15 @@ function Checkout() {
                       onChange={(e) => setForm({ ...form, address: e.target.value })}
                       onBlur={() => handleBlur("address")}
                       className={`h-12 w-full rounded-lg border bg-slate-50/50 pl-11 pr-4 text-sm outline-none transition-all focus:bg-white focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 ${
-                        touched.address && !form.address ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50" : "border-slate-200"
+                        touched.address && !form.address
+                          ? "border-red-400 focus:border-red-500 focus:ring-red-500/20 bg-red-50/50"
+                          : "border-slate-200"
                       }`}
                     />
                   </div>
-                  {touched.address && !form.address && <p className="text-xs text-red-500 font-medium">Street address is required.</p>}
+                  {touched.address && !form.address && (
+                    <p className="text-xs text-red-500 font-medium">Street address is required.</p>
+                  )}
                 </div>
 
                 {/* Notes */}
@@ -397,67 +430,36 @@ function Checkout() {
 
             <div className="flex items-center justify-center gap-2 text-sm text-slate-500 pb-8">
               <HelpCircle className="h-4 w-4" />
-              Need help? <a href="#" className="text-slate-900 hover:underline font-semibold">Contact Customer Support</a>
+              Need help?{" "}
+              <a href="#" className="text-slate-900 hover:underline font-semibold">
+                Contact Customer Support
+              </a>
             </div>
-
           </div>
 
-          {/* RIGHT COLUMN - STICKY ORDER SUMMARY & PAYMENT */}
+          {/* RIGHT COLUMN - ORDER SUMMARY + PER-STORE PAYMENT */}
           <aside className="lg:sticky lg:top-8 h-fit space-y-6">
-            
+            {/* Overall total (informational — payment happens per store below) */}
             <div className="rounded-xl border border-slate-200 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
               <div className="bg-white border-b border-slate-100 px-6 sm:px-8 py-5">
                 <h2 className="text-xl font-bold text-slate-900">Order Summary</h2>
               </div>
-              
               <div className="px-6 sm:px-8 py-6">
-                <ul className="space-y-5 mb-8">
-                  {items.map((it) => (
-                    <li key={it.product_id} className="flex items-start gap-4">
-                      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-slate-50 flex items-center justify-center">
-                        {it.featured_image ? (
-                          <img src={it.featured_image} alt={it.title} className="h-full w-full object-cover" />
-                        ) : (
-                          <ShoppingCart className="h-6 w-6 text-slate-300" />
-                        )}
-                      </div>
-                      <div className="flex flex-1 flex-col min-h-[4rem] justify-center">
-                        <div className="flex justify-between gap-4">
-                          <span className="text-sm font-semibold text-slate-900 line-clamp-2 leading-snug">{it.title}</span>
-                          <span className="text-sm font-bold text-slate-900 whitespace-nowrap">{formatPrice(it.price * it.quantity)}</span>
-                        </div>
-                        <div className="mt-1 text-sm text-slate-500">
-                          Qty: {it.quantity}
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="space-y-3.5 border-t border-slate-100 pt-6 text-sm text-slate-600">
-                  <div className="flex justify-between">
-                    <span>Subtotal</span>
-                    <span className="font-semibold text-slate-900">{formatPrice(subtotalUSD)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Shipping</span>
-                    <span className="font-semibold text-emerald-600">Free</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Taxes</span>
-                    <span className="text-slate-400">Calculated at payment</span>
-                  </div>
+                <div className="flex items-end justify-between">
+                  <span className="text-sm text-slate-600">
+                    {items.length} item{items.length === 1 ? "" : "s"} across {storeGroups.length}{" "}
+                    store{storeGroups.length === 1 ? "" : "s"}
+                  </span>
+                  <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                    {formatPrice(subtotalUSD)}
+                  </span>
                 </div>
-
-                <div className="mt-6 flex items-end justify-between border-t border-slate-200 pt-6">
-                  <span className="text-lg font-bold text-slate-900">Total</span>
-                  <div className="text-right">
-                    <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{formatPrice(totalUSD)}</span>
-                    <p className="text-[11px] text-slate-500 uppercase font-bold tracking-widest mt-1">USD</p>
-                  </div>
-                </div>
+                {storeGroups.length > 1 && (
+                  <p className="mt-2 text-xs text-slate-500">
+                    Each store is a separate seller, so you'll pay each one individually below.
+                  </p>
+                )}
               </div>
-              
               <div className="bg-[#F7F9FA] px-6 sm:px-8 py-5 border-t border-slate-100">
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 shrink-0">
@@ -469,128 +471,161 @@ function Checkout() {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* INTEGRATED PAYMENT SECTION */}
-              <div className="border-t border-slate-200 bg-white px-6 sm:px-8 py-6">
-                <div className="mb-5 flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <CreditCard className="h-5 w-5 text-slate-400" />
-                    Payment
-                  </h3>
-                  <div className="flex items-center gap-1.5 text-slate-600">
-                    <Lock className="h-3.5 w-3.5" />
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Encrypted</span>
+            {/* One card + one Stripe payment per store */}
+            {storeGroups.map((group) => {
+              const storeSubtotal = group.items.reduce(
+                (sum, item) => sum + item.price * item.quantity,
+                0,
+              );
+              const isPayingThisStore = payingStoreId === group.storeId;
+
+              return (
+                <div
+                  key={group.storeId}
+                  className="rounded-xl border border-slate-200 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden"
+                >
+                  <div className="border-b border-slate-100 px-6 sm:px-8 py-4">
+                    <h3 className="text-base font-bold text-slate-900">{group.storeName}</h3>
                   </div>
-                </div>
 
-                {!isFormValid() ? (
-                  <div className="rounded-lg border-2 border-dashed border-slate-200 bg-[#F7F9FA] p-6 text-center">
-                    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-200/50">
-                      <Lock className="h-5 w-5 text-slate-500" />
+                  <div className="px-6 sm:px-8 py-5">
+                    <ul className="space-y-4 mb-5">
+                      {group.items.map((it) => (
+                        <li key={it.product_id} className="flex items-start gap-4">
+                          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-slate-50 flex items-center justify-center">
+                            {it.featured_image ? (
+                              <img
+                                src={it.featured_image}
+                                alt={it.title}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <ShoppingCart className="h-5 w-5 text-slate-300" />
+                            )}
+                          </div>
+                          <div className="flex flex-1 flex-col min-h-[3.5rem] justify-center">
+                            <div className="flex justify-between gap-4">
+                              <span className="text-sm font-semibold text-slate-900 line-clamp-2 leading-snug">
+                                {it.title}
+                              </span>
+                              <span className="text-sm font-bold text-slate-900 whitespace-nowrap">
+                                {formatPrice(it.price * it.quantity)}
+                              </span>
+                            </div>
+                            <div className="mt-1 text-sm text-slate-500">Qty: {it.quantity}</div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="flex justify-between border-t border-slate-100 pt-4 text-sm text-slate-600">
+                      <span>Subtotal</span>
+                      <span className="font-semibold text-slate-900">
+                        {formatPrice(storeSubtotal)}
+                      </span>
                     </div>
-                    <h4 className="text-[15px] font-bold text-slate-900">Payment Locked</h4>
-                    <p className="mt-1.5 text-sm text-slate-600 max-w-[280px] mx-auto leading-relaxed">
-                      Complete billing details to unlock secure PayPal payment.
-                    </p>
-                    {Object.keys(touched).length > 0 && getMissingFields().length > 0 && (
-                      <div className="mt-4 flex items-start gap-2.5 text-left bg-red-50 text-red-700 p-3.5 rounded-md text-sm border border-red-100">
-                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-                        <div>
-                          <strong className="font-semibold">Missing required fields:</strong>
-                          <ul className="list-disc pl-4 mt-1.5 space-y-0.5 opacity-90">
-                            {getMissingFields().map(f => (
-                              <li key={f}>{f.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</li>
-                            ))}
-                          </ul>
-                        </div>
+                    <div className="flex justify-between pt-1 text-sm text-slate-600">
+                      <span>Shipping</span>
+                      <span className="font-semibold text-emerald-600">Free</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-200 bg-white px-6 sm:px-8 py-6">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-slate-400" />
+                        Payment
+                      </h4>
+                      <div className="flex items-center gap-1.5 text-slate-500">
+                        <Lock className="h-3 w-3" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">
+                          Encrypted
+                        </span>
                       </div>
+                    </div>
+
+                    {!isFormValid() ? (
+                      <div className="rounded-lg border-2 border-dashed border-slate-200 bg-[#F7F9FA] p-5 text-center">
+                        <div className="mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-slate-200/50">
+                          <Lock className="h-4 w-4 text-slate-500" />
+                        </div>
+                        <p className="text-sm font-bold text-slate-900">Payment Locked</p>
+                        <p className="mt-1 text-xs text-slate-600 max-w-[260px] mx-auto leading-relaxed">
+                          Complete billing details to unlock payment.
+                        </p>
+                        {Object.keys(touched).length > 0 && getMissingFields().length > 0 && (
+                          <div className="mt-3 flex items-start gap-2 text-left bg-red-50 text-red-700 p-3 rounded-md text-xs border border-red-100">
+                            <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                            <div>
+                              <strong className="font-semibold">Missing required fields:</strong>
+                              <ul className="list-disc pl-4 mt-1 space-y-0.5 opacity-90">
+                                {getMissingFields().map((f) => (
+                                  <li key={f}>
+                                    {f.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handlePayStore(group)}
+                        disabled={payingStoreId !== null}
+                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#635BFF] px-4 py-3.5 text-sm font-bold text-white transition-colors hover:bg-[#524ae0] disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {isPayingThisStore ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Redirecting to Stripe…
+                          </>
+                        ) : (
+                          <>Pay {formatPrice(storeSubtotal)} with Stripe</>
+                        )}
+                      </button>
                     )}
                   </div>
-                ) : (
-                  <div className="space-y-4 animate-in fade-in duration-300">
-                    <div className="rounded-lg border border-slate-200 p-5 bg-[#F7F9FA]">
-                      <div className="flex items-center justify-between mb-5">
-                        <div className="flex items-center gap-2">
-                          <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                          <span className="text-[13px] font-bold text-slate-900 uppercase tracking-wide">Pay Securely</span>
-                        </div>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b5/PayPal.svg" alt="PayPal" className="h-4 opacity-90" />
-                      </div>
-                      
-                      <div className="min-h-[150px] overflow-hidden">
-                        <PayPalScriptProvider options={initialOptions}>
-                          <PayPalButtons
-                            style={{ layout: "vertical", shape: "rect", color: "gold" }}
-                            createOrder={async () => {
-                              try {
-                                const payload = items.map(item => ({
-                                  productId: item.product_id,
-                                  quantity: item.quantity
-                                }));
-                                const { orderId } = await createPayPalOrderFn({ data: payload });
-                                return orderId;
-                              } catch (error) {
-                                console.error("Create order failed", error);
-                                toast.error("Could not initiate PayPal checkout. If the problem persists, please contact our support team at info@saloree.com.");
-                                throw error;
-                              }
-                            }}
-                            onApprove={async (data, actions) => {
-                              setLoading(true);
-                              try {
-                                const result = await capturePayPalOrderFn({ data: data.orderID });
-                                if (result.success && result.captureId) {
-                                  await createOrderInDatabase(data.orderID, result.captureId);
-                                  clear();
-                                  toast.success(t("order_success", language));
-                                  navigate({ to: "/orders" });
-                                } else {
-                                  toast.error("Payment was not completed successfully. If the problem persists, please contact our support team at info@saloree.com.");
-                                }
-                              } catch (error) {
-                                console.error("Capture order failed", error);
-                                toast.error("Payment capture failed. If the problem persists, please contact our support team at info@saloree.com.");
-                              } finally {
-                                setLoading(false);
-                              }
-                            }}
-                            onCancel={() => {
-                              toast.info("Payment cancelled. You can try again when ready.");
-                            }}
-                            onError={(err) => {
-                              console.error("PayPal Error:", err);
-                              toast.error("An error occurred with PayPal. If the problem persists, please contact our support team at info@saloree.com.");
-                            }}
-                          />
-                        </PayPalScriptProvider>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            {/* Trust Badges under the entire card */}
+                </div>
+              );
+            })}
+
+            {/* Trust Badges */}
             <div className="grid grid-cols-3 gap-3 pt-2">
               <div className="flex flex-col items-center justify-center text-center gap-2 p-3 rounded-lg bg-white border border-slate-200 shadow-sm">
                 <ShieldCheck className="h-5 w-5 text-emerald-600" />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 leading-tight">Secure<br/>Checkout</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 leading-tight">
+                  Secure
+                  <br />
+                  Checkout
+                </span>
               </div>
               <div className="flex flex-col items-center justify-center text-center gap-2 p-3 rounded-lg bg-white border border-slate-200 shadow-sm">
-                <CheckCircle className="h-5 w-5 text-blue-600" />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 leading-tight">PayPal<br/>Protected</span>
+                <CheckCircle className="h-5 w-5 text-[#635BFF]" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 leading-tight">
+                  Stripe
+                  <br />
+                  Protected
+                </span>
               </div>
               <div className="flex flex-col items-center justify-center text-center gap-2 p-3 rounded-lg bg-white border border-slate-200 shadow-sm">
                 <Lock className="h-5 w-5 text-slate-600" />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 leading-tight">Encrypted<br/>Payment</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 leading-tight">
+                  Encrypted
+                  <br />
+                  Payment
+                </span>
               </div>
             </div>
 
             <p className="text-xs text-center text-slate-500 px-4 pt-2">
-              Your payment information is processed securely by PayPal. Saloree never stores your credit card details or PayPal credentials.
+              Your payment information is processed securely by Stripe. Saloree never stores your
+              card details.
             </p>
           </aside>
-
         </div>
       </div>
     </div>

@@ -43,7 +43,7 @@ function Marketplace() {
       let query = supabase
         .from("products")
         .select(
-          "id, slug, store_id, title, price, featured_image, stores(name, slug, logo_url), categories!inner(name, slug)",
+          "id, slug, store_id, title, price, featured_image, stock, created_at, stores(name, slug, logo_url), categories!inner(name, slug)",
         )
         .eq("status", "active")
         .order("created_at", { ascending: false })
@@ -114,7 +114,7 @@ function Marketplace() {
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : products && products.length ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-6">
               {products.map((p) => (
                 <ProductCard key={p.id} p={p} />
               ))}

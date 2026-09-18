@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 type Role = "admin" | "super_admin" | "content_admin" | "seller" | "customer";
 export type AuthRedirectPath = "/seller" | "/";
@@ -16,6 +15,28 @@ type AuthContextValue = {
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+// Supabase auth-js resolves its OWN internal `initializePromise` from inside
+// `_recoverAndRefresh()`, which — for a still-valid session found in
+// storage — synchronously calls every `onAuthStateChange` subscriber (with a
+// SIGNED_IN event) and awaits each one before that promise can resolve.
+// `getSession()` (and therefore any `supabase.from(...)`/`.rpc(...)` call,
+// since those fetch the access token via `getSession()` internally) starts
+// by awaiting that SAME `initializePromise`. So calling one of those,
+// directly or indirectly, synchronously inside an onAuthStateChange
+// callback deadlocks: the callback can't finish until the nested call
+// finishes, and the nested call can't finish until the callback (as part of
+// the promise it's blocking) finishes. Deferring with a macrotask lets the
+// callback return immediately, so initializePromise can resolve, before the
+// deferred code makes its own Supabase call.
+const DEFERRED_ROLE_LOAD_EVENTS = new Set(["SIGNED_IN", "INITIAL_SESSION", "USER_UPDATED"]);
+
+// Safety net: even with the fix above, never let a stalled network request
+// or an unexpected future regression hang the whole app on the loading
+// screen — fail open to "not loading" after a few seconds so protected
+// routes fall back to their normal signed-out/redirect behavior instead of
+// spinning forever.
+const AUTH_INIT_TIMEOUT_MS = 8000;
 
 export async function getPostAuthRedirectPath(userId: string): Promise<AuthRedirectPath> {
   const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
@@ -54,35 +75,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange(async (event, s) => {
-      setSession(s);
-      setUser(s?.user ?? null);
-      
-      if (event === "SIGNED_IN") {
-        await loadRoles(s?.user?.id ?? null);
-      } else if (event === "SIGNED_OUT") {
-        setRoles([]);
-        queryClient.clear();
-      } else if (event === "TOKEN_REFRESHED") {
-        console.log("[auth] Token refreshed");
-      } else if (event === "USER_UPDATED") {
-        await loadRoles(s?.user?.id ?? null);
-      } else if (event === "INITIAL_SESSION") {
-        if (s?.user) await loadRoles(s.user.id);
-      }
-    });
-
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setUser(data.session?.user ?? null);
-      if (data.session?.user) {
-        loadRoles(data.session.user.id).finally(() => setLoading(false));
-      } else {
+    let settled = false;
+    const finishInitialLoad = () => {
+      if (!settled) {
+        settled = true;
         setLoading(false);
       }
+    };
+
+    const safetyTimer = setTimeout(() => {
+      if (!settled) {
+        console.error(
+          "[auth] Session check did not finish within the expected time — proceeding without waiting further.",
+        );
+        finishInitialLoad();
+      }
+    }, AUTH_INIT_TIMEOUT_MS);
+
+    // The callback itself must stay synchronous (no awaited Supabase calls)
+    // — see the comment on DEFERRED_ROLE_LOAD_EVENTS above for why.
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      setSession(s);
+      setUser(s?.user ?? null);
+
+      if (event === "SIGNED_OUT") {
+        setRoles([]);
+        queryClient.clear();
+        finishInitialLoad();
+        return;
+      }
+
+      if (event === "TOKEN_REFRESHED" || event === "PASSWORD_RECOVERY") {
+        return;
+      }
+
+      if (!DEFERRED_ROLE_LOAD_EVENTS.has(event)) {
+        return;
+      }
+
+      const uid = s?.user?.id ?? null;
+      setTimeout(() => {
+        loadRoles(uid).finally(() => {
+          // INITIAL_SESSION is guaranteed to fire exactly once per
+          // subscription (with or without a user) and is the correct
+          // signal that the initial auth check is complete.
+          if (event === "INITIAL_SESSION") {
+            finishInitialLoad();
+          }
+        });
+      }, 0);
     });
 
     return () => {
+      clearTimeout(safetyTimer);
       sub.subscription.unsubscribe();
     };
   }, [queryClient]);

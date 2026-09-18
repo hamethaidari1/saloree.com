@@ -1608,7 +1608,7 @@ function StorePage() {
           icon: <Lock className="size-6" />,
           title: "Payment & Security",
           items: [
-            "Accepted: Visa, Mastercard, PayPal, Apple Pay",
+            "Accepted: Visa, Mastercard, and other major cards via Stripe",
             "256-bit SSL encryption on all transactions",
             "Payment info never stored on our servers",
             "PCI DSS compliant payment processing",

@@ -82,8 +82,8 @@ function toPublicProductImageUrl(value: string | null | undefined) {
 
 function getSortedProductImages(product: any) {
   return [...(product.product_images ?? [])].sort(
-    (a: { position?: number | null }, b: { position?: number | null }) =>
-      (a.position ?? 0) - (b.position ?? 0),
+    (a: { sort_order?: number | null }, b: { sort_order?: number | null }) =>
+      (a.sort_order ?? 0) - (b.sort_order ?? 0),
   );
 }
 
@@ -205,9 +205,9 @@ function SellerProducts() {
       const ids = list.map((p) => p.id);
       const { data: imgRows, error: imgErr } = await supabase
         .from("product_images")
-        .select("id, product_id, image_url, position")
+        .select("id, product_id, image_url, sort_order")
         .in("product_id", ids)
-        .order("position");
+        .order("sort_order");
 
       if (imgErr) console.warn("[seller-products] product_images warning (non-fatal):", imgErr);
 
@@ -413,20 +413,28 @@ function SellerProducts() {
           status: form.status,
         };
 
-        console.log("[save:update] payload:", updatePayload);
-
         const { data: updateResponse, error: updateError } = await supabase
           .from("products")
           .update(updatePayload)
           .eq("id", selectedProduct.id)
           .select();
 
-        console.log("[save:update] Supabase update response:", updateResponse);
-        console.log("[save:update] Supabase update error:", updateError);
-
         if (updateError) {
           console.error("[save:update] product update error:", updateError);
           throw updateError;
+        }
+
+        // A Postgres RLS policy that blocks the update (rather than erroring)
+        // makes .update() return zero rows instead of throwing — silently
+        // discarding the change while this code carries on as if it saved.
+        // Treat that as a real failure instead of a false "success" toast.
+        if (!updateResponse || updateResponse.length === 0) {
+          console.error(
+            "[save:update] update affected 0 rows — likely blocked by a row-level security policy",
+          );
+          throw new Error(
+            "The update didn't save. You may not have permission to edit this product.",
+          );
         }
 
         // Diff: which images were removed?
@@ -456,7 +464,7 @@ function SellerProducts() {
           const imgRows = normalizedImages.map((url, idx) => ({
             product_id: selectedProduct.id,
             image_url: url,
-            position: idx,
+            sort_order: idx,
           }));
           const { error: insImgErr } = await supabase.from("product_images").insert(imgRows);
           if (insImgErr) console.warn("[save:update] product_images insert warning:", insImgErr);
@@ -492,7 +500,7 @@ function SellerProducts() {
         const imgRows = normalizedImages.map((url, idx) => ({
           product_id: productId,
           image_url: url,
-          position: idx,
+          sort_order: idx,
         }));
         if (imgRows.length > 0) {
           const { error: insImgErr } = await supabase.from("product_images").insert(imgRows);
